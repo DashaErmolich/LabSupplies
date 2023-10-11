@@ -39,6 +39,7 @@
         }
     },
     "sapux": [
+        "app/orders",
         "app/orders"
     ]
 }

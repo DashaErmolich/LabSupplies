@@ -1,5 +1,4 @@
-﻿ID;firstName;lastName;email;title;manager_ID;department_ID
-a9710b20-96e2-4f1d-8cce-13745d6889c4;Simon;Villarreal;simon.villarreal.test@walgreens.com;Head of Laboratory;9c80570a-f8b2-4fce-9621-4749cbcb2ffc;28fefdb6-a552-4d74-9b97-df167a129305
-d35ec5cd-52ca-4c6a-90a4-11d9c76e0df2;Carter;Matthews;carter.matthews.test@united.com;Head of Laboratory;9c80570a-f8b2-4fce-9621-4749cbcb2ffc;4563b47e-9ea8-4123-b90c-25bcdea21ee2
-9c80570a-f8b2-4fce-9621-4749cbcb2ffc;Annika;Milligan;annika.milligan.test@instagram.com;Head of QC Department;96a9cd5d-569c-48e1-b3bd-14ae4352c967;e1180faf-f747-4e47-9b39-a15fb229dea3
-96a9cd5d-569c-48e1-b3bd-14ae4352c967;Bradley;Castle;bradley.castle.test@meta.com;Factory CEO;;
+﻿ID;firstName;lastName;email;title;manager_ID;
+a9710b20-96e2-4f1d-8cce-13745d6889c4;Simon;Villarreal;simon.villarreal.test@walgreens.com;Supplier manager;9c80570a-f8b2-4fce-9621-4749cbcb2ffc;
+d35ec5cd-52ca-4c6a-90a4-11d9c76e0df2;Carter;Matthews;carter.matthews.test@united.com;Supplier manager;9c80570a-f8b2-4fce-9621-4749cbcb2ffc;
+9c80570a-f8b2-4fce-9621-4749cbcb2ffc;Annika;Milligan;annika.milligan.test@instagram.com;Head of Suppliers Department;;

@@ -5,7 +5,6 @@ using {
     Currency,
     managed,
     sap,
-    Addresses,
 } from '@sap/cds/common';
 
 using {
@@ -17,40 +16,40 @@ using {
 namespace db;
 
 entity Orders : cuid, managed {
-    department       : Association to one FactoriesDepartments;
-    contact          : Association to one Contacts;
-    criticality_code : Integer;
-    criticality      : Association to one Criticality
-                           on criticality.code = criticality_code;
-    items            : Composition of many OrdersItems
-                           on items.order = $self;
+    contact    : Association to one Contacts;
+    items      : Composition of many OrdersItems
+                     on items.order = $self;
+    deliveryTo : Association to one Addresses;
 }
 
-entity Factories : cuid {
+entity Departments : cuid {
     name    : String;
-    address : Association to one Addresses;
+    address : Composition of many Addresses
+                  on address.department = $self;
 }
 
-entity FactoriesDepartments : cuid {
-    name     : String;
-    factory  : Association to one Factories;
-    contacts : Composition of many Contacts
-                   on contacts.department = $self;
+entity Addresses : cuid {
+    department : Association to one Departments;
+    region     : Region;
+    postCode   : String;
+    street     : String;
+    building   : String;
 }
 
 entity Contacts : cuid {
-    firstName       : String;
-    lastName       : String;
-    email       : String;
-    title      : String;
-    manager    : Association to one Contacts;
-    department : Association to one FactoriesDepartments;
+    firstName : String;
+    lastName  : String;
+    email     : String;
+    title     : String;
+    telephone : String;
+    manager   : Association to one Contacts;
 }
 
 
 entity OrdersItems : cuid {
-    order   : Association to one Orders;
-    product : Association to one WarehousesProducts;
+    order : Association to one Orders;
+    item  : Association to one WarehousesProducts;
+    qty   : Integer;
 }
 
 entity WarehousesProducts {
