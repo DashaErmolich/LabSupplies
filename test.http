@@ -1,0 +1,11 @@
+@server = http://localhost:4004
+
+POST {{server}}/app/Orders
+Content-Type: application/json
+Authorization: Basic ZGFzaGEuZXJtb2xpY2hAZ21haWwuY29tOg==
+
+{
+    "products": {
+        
+    }
+}
