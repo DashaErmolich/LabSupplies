@@ -37,3 +37,11 @@ entity sap.common.UnitOfMeasureCodeList : CodeList {
 };
 
 type sap.common.UnitOfMeasure : Association to one sap.common.UnitOfMeasureCodeList;
+
+entity Addresses {
+  street  : String;
+  town    : String;
+  country : Country; //> using reuse type
+  postCode : String;
+  building : String;
+}
