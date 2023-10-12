@@ -39,6 +39,12 @@ annotate service.Orders with @(
             ID : 'Items',
             Target : 'items/@UI.LineItem#Items',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Delivery',
+            ID : 'Delivery',
+            Target : '@UI.FieldGroup#Delivery',
+        },
     ]
 );
 annotate service.OrdersItems with @(
@@ -60,4 +66,44 @@ annotate service.OrdersItems with @(
             Value : qty,
             Label : 'qty',
         },]
+);
+annotate service.Orders with @(
+    UI.FieldGroup #Delivery : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : deliveryTo.building,
+                Label : 'building',
+                ![@Common.FieldControl] : #ReadOnly
+                
+            },{
+                $Type : 'UI.DataField',
+                Value : deliveryTo.postCode,
+                Label : 'postCode',
+            },{
+                $Type : 'UI.DataField',
+                Value : deliveryTo.street,
+                Label : 'street',
+            },{
+                $Type : 'UI.DataField',
+                Value : deliveryTo.region.name,
+            },{
+                $Type : 'UI.DataField',
+                Value : deliveryTo.region.descr,
+            },{
+                $Type : 'UI.DataField',
+                Value : contact.email,
+                Label : 'email',
+            },{
+                $Type : 'UI.DataField',
+                Value : deliveryTo.department.name,
+                Label : 'name',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : deliveryTo.region_country_code,
+                Label : 'region_country_code',
+            },],
+    }
 );
