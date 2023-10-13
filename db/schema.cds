@@ -16,10 +16,12 @@ using {
 namespace db;
 
 entity Orders : cuid, managed {
+    title      : String;
     contact    : Association to one Contacts;
     items      : Composition of many OrdersItems
                      on items.order = $self;
     deliveryTo : Association to one Addresses;
+    notes      : String;
 }
 
 entity Departments : cuid {
@@ -29,6 +31,7 @@ entity Departments : cuid {
 }
 
 entity Addresses : cuid {
+    title      : String;
     department : Association to one Departments;
     region     : Region;
     postCode   : String;
@@ -39,9 +42,10 @@ entity Addresses : cuid {
 entity Contacts : cuid {
     firstName : String;
     lastName  : String;
+    fullName  : String;
     email     : String;
     title     : String;
-    telephone : String;
+    tel       : String;
     manager   : Association to one Contacts;
 }
 
@@ -59,18 +63,18 @@ entity WarehousesProducts {
 }
 
 entity Products : cuid {
-    category          : Association to one Categories;
-    manufacturer      : Association to one Manufacturies;
-    title             : String;
-    description       : String;
-    manufacturerCatNo : String;
+    category      : Association to one Categories;
+    supplier      : Association to one Suppliers;
+    title         : String;
+    description   : String;
+    supplierCatNo : String;
 }
 
 entity Categories : cuid {
     name : String;
 }
 
-entity Manufacturies : cuid {
+entity Suppliers : cuid {
     name : String;
 }
 

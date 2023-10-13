@@ -142,6 +142,11 @@
                                         "creationMode": {}
                                     }
                                 }
+                            },
+                            "content": {
+                                "header": {
+                                    "anchorBarVisible": true
+                                }
                             }
                         }
                     }

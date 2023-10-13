@@ -2,12 +2,13 @@
 
 
 ### CREATE ORDER
-POST {{server}}/app/Orders
+POST {{server}}/admin/Orders
 Content-Type: application/json
 
 {
-    "deliveryTo_ID": "feb824f0-88ad-49b1-8645-4d78d64e94bf",
+    "deliveryTo_ID": "ae3047da-0236-4b06-9a6a-62033647c5f6",
     "contact_ID": "d35ec5cd-52ca-4c6a-90a4-11d9c76e0df2",
+    "notes": "NOTES",
         "items": [
             {
                 "item_warehouse_ID": "0f51fc48-03fd-44c9-91bc-532f8906d186",
@@ -24,5 +25,4 @@ Content-Type: application/json
 
 
 ### DELETE ORDER
-
-DELETE  {{server}}/app/Orders(28d64cc9-099d-4b3e-bce4-8a1ebe93d600)
+DELETE  {{server}}/admin/Orders(d710c81b-aadf-4e5e-89b9-21d0ec9dcb2e)
