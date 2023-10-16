@@ -3,12 +3,11 @@ using from './annotations';
 
 annotate service.Orders with @(
     UI.HeaderInfo         : {
-        Title         : {
+        Title   : {
             $Type: 'UI.DataField',
             Value: title,
         },
-        TypeName      : 'hvdslbf',
-        TypeNamePlural: '',
+        TypeName: 'Order',
     },
     UI.HeaderFacets       : [{
         $Type : 'UI.ReferenceFacet',
@@ -47,7 +46,7 @@ annotate service.Orders with @(UI.Facets: [
     {
         $Type : 'UI.ReferenceFacet',
         ID    : 'Items',
-        Target: 'items/@UI.LineItem#Items',
+        Target: 'items/@UI.PresentationVariant#Items',
         Label : '{i18n>productsInfo}',
     },
     {
@@ -77,6 +76,11 @@ annotate AppService.OrdersItems with @(UI.LineItem #Items: [
     {
         $Type: 'UI.DataField',
         Value: qty,
+    },
+    {
+        $Type                   : 'UI.DataField',
+        Value                   : item.stock,
+        ![@Common.FieldControl] : #ReadOnly,
     },
     {
         $Type                   : 'UI.DataField',
@@ -148,16 +152,12 @@ annotate service.OrdersItems with {
     qty  @mandatory;
 }
 
-// annotate service.OrdersItems with @(
-//     UI.PresentationVariant :{
-//         SortOrder : [
-//             {
-//                 Property : field,
-//                 Descending : false,
-//             },
-//         ],
-//         Visualizations : [
-//             '@UI.LineItem',
-//         ],
-//     },
-// );
+annotate service.Warehouses with {
+    ID @UI.HiddenFilter;
+}
+
+annotate AppService.OrdersItems with @(UI.PresentationVariant #Items: {
+    $Type         : 'UI.PresentationVariantType',
+    Visualizations: ['@UI.LineItem#Items', ],
+    GroupBy       : [item.warehouse.name, ],
+});

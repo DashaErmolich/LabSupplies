@@ -89,6 +89,7 @@ annotate AppService.OrdersItems with @(Common.SideEffects: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [item_product_ID, ],
     TargetEntities  : [item, ],
+    TargetProperties: ['qty', ],
 });
 
 // ObjectPage - Items Info Linked Filters

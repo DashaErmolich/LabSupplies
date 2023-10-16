@@ -58,7 +58,7 @@ entity OrdersItems : cuid {
 entity WarehousesProducts {
     key warehouse : Association to one Warehouses;
     key product   : Association to one Products;
-        stock     : Integer ;
+        stock     : Integer;
 }
 
 entity Products : cuid {
@@ -69,9 +69,9 @@ entity Products : cuid {
     supplierCatNo : String;
 }
 
-entity Categories  {
-    key ID : UUID @Common.Text : name @Common.TextArrangement : #TextOnly;
-    name : String;
+entity Categories {
+    key ID   : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
+        name : String;
 }
 
 entity Suppliers : cuid {
@@ -79,7 +79,7 @@ entity Suppliers : cuid {
 }
 
 entity Warehouses : cuid {
-    name : String;
+    name     : String;
     region   : Association to one Regions;
     products : Composition of many WarehousesProducts
                    on products.warehouse = $self;

@@ -32,6 +32,7 @@ service AppService {
             wp.warehouse.region.country.code as warehouseCountryCode,
             wp.warehouse.region.code         as warehouseRegionCode,
         }
+        where wp.stock <> 0;
 }
 
 @path: '/admin'
