@@ -1,4 +1,4 @@
-using { User, sap, managed, Country, sap.common.CodeList } from '@sap/cds/common';
+using { User, sap, managed, sap.common.CodeList } from '@sap/cds/common';
 
 //From cap-sflight
 extend sap.common.Currencies with {
@@ -13,16 +13,20 @@ extend sap.common.Currencies with {
   minor    : String; //> e.g. 'Cent'
 }
 
-type sap.common.Region : Association to sap.common.Regions;
+// type sap.common.Region : Association to sap.common.Regions;
 
-entity sap.common.Regions : CodeList {
-  key code    : String(10) @title : '{i18n>region}' @Common.Text : name @Common.TextArrangement : #TextFirst;
-  key country : Country @UI.Hidden;
+  entity Countries : CodeList {
+    key code : String(3) @Common.Text : name @Common.TextArrangement : #TextFirst;
+  }
+
+entity Regions : CodeList {
+  key code    : String(10) @Common.Text : name @Common.TextArrangement : #TextFirst;
+  country : Association to one Countries;
 }
 
-extend sap.common.Countries with {
-  regions : Composition of many sap.common.Regions on regions.country = $self;
-}
+// extend sap.common.Countries with {
+//   regions : Composition of many sap.common.Regions on regions.country = $self;
+// }
 
 //
 // Code Lists

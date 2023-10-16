@@ -1,14 +1,13 @@
 using {
-    Country,
     sap.common.CodeList as CodeList,
-    cuid,
     Currency,
     managed,
     sap,
+    cuid,
 } from '@sap/cds/common';
 
 using {
-    sap.common.Region,
+    Regions,
     sap.common.UnitOfMeasure,
     sap.common.Criticality
 } from './common.cds';
@@ -33,7 +32,7 @@ entity Departments : cuid {
 entity Addresses : cuid {
     title      : String;
     department : Association to one Departments;
-    region     : Region;
+    region     : Association to one Regions;
     postCode   : String;
     street     : String;
     building   : String;
@@ -59,7 +58,7 @@ entity OrdersItems : cuid {
 entity WarehousesProducts {
     key warehouse : Association to one Warehouses;
     key product   : Association to one Products;
-        stock     : Integer;
+        stock     : Integer ;
 }
 
 entity Products : cuid {
@@ -70,7 +69,8 @@ entity Products : cuid {
     supplierCatNo : String;
 }
 
-entity Categories : cuid {
+entity Categories  {
+    key ID : UUID @Common.Text : name @Common.TextArrangement : #TextOnly;
     name : String;
 }
 
@@ -79,7 +79,8 @@ entity Suppliers : cuid {
 }
 
 entity Warehouses : cuid {
-    region   : Region;
+    name : String;
+    region   : Association to one Regions;
     products : Composition of many WarehousesProducts
                    on products.warehouse = $self;
 }

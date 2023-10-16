@@ -19,3 +19,8 @@ annotate service.Orders with @(
 );
 
 
+annotate service.Orders with @(
+    UI.SelectionFields : [
+        deliveryTo.region_code,
+    ]
+);

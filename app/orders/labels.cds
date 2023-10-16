@@ -1,4 +1,5 @@
 using db as schema from '../../db/schema';
+using AppService from '../../srv/app-service.cds';
 
 annotate schema.Departments with {
   name @title: '{i18n>departmentTitle}';
@@ -32,3 +33,16 @@ annotate schema.Products with {
 annotate schema.OrdersItems with {
   qty @title: '{i18n>qty}';
 };
+
+annotate schema.Warehouses with {
+  name @title: '{i18n>warehouseName}';
+};
+
+annotate schema.WarehousesProducts with {
+  stock @title : '{i18n>stock}';
+};
+
+annotate schema.Categories with {
+  name @title: '{i18n>categoryName}';
+};
+

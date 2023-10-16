@@ -94,11 +94,6 @@
                     "pattern": "Orders({key}):?query:",
                     "name": "OrdersObjectPage",
                     "target": "OrdersObjectPage"
-                },
-                {
-                    "pattern": "Orders({key})/items({key2}):?query:",
-                    "name": "OrdersItemsObjectPage",
-                    "target": "OrdersItemsObjectPage"
                 }
             ],
             "targets": {
@@ -129,13 +124,7 @@
                         "settings": {
                             "editableHeaderContent": false,
                             "entitySet": "Orders",
-                            "navigation": {
-                                "items": {
-                                    "detail": {
-                                        "route": "OrdersItemsObjectPage"
-                                    }
-                                }
-                            },
+                            "navigation": {},
                             "controlConfiguration": {
                                 "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
                                     "tableSettings": {
@@ -148,17 +137,6 @@
                                     "anchorBarVisible": true
                                 }
                             }
-                        }
-                    }
-                },
-                "OrdersItemsObjectPage": {
-                    "type": "Component",
-                    "id": "OrdersItemsObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "editableHeaderContent": false,
-                            "entitySet": "OrdersItems"
                         }
                     }
                 }
