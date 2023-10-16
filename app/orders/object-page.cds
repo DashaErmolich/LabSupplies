@@ -87,6 +87,23 @@ annotate AppService.OrdersItems with @(UI.LineItem #Items: [
         Value                   : item.warehouse.name,
         ![@Common.FieldControl] : #ReadOnly,
     },
+    {
+        $Type: 'UI.DataField',
+        Label: '{i18n>warehouseID}',
+        Value: item_warehouse_ID,
+        ![@UI.Hidden] ,
+    },
+    {
+        $Type: 'UI.DataField',
+        Label: '{i18n>orderID}',
+        Value: order_ID,
+        ![@UI.Hidden] ,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: ID,
+        ![@UI.Hidden] ,
+    },
 ]);
 
 annotate service.Orders with @(UI.FieldGroup #Delivery: {
@@ -145,6 +162,8 @@ annotate service.Addresses with {
     postCode @UI.HiddenFilter;
     building @UI.HiddenFilter;
     street   @UI.HiddenFilter;
+    ID       @UI.Hidden;
+    title    @UI.HiddenFilter;
 }
 
 annotate service.OrdersItems with {
@@ -161,3 +180,18 @@ annotate AppService.OrdersItems with @(UI.PresentationVariant #Items: {
     Visualizations: ['@UI.LineItem#Items', ],
     GroupBy       : [item.warehouse.name, ],
 });
+
+annotate AppService.Catalogue with {
+    productID     @UI.Hidden;
+    title         @UI.HiddenFilter;
+    description   @UI.HiddenFilter;
+    supplierCatNo @UI.HiddenFilter;
+    warehouseID   @UI.Hidden;
+    warehouseName @UI.HiddenFilter;
+}
+
+annotate AppService.Regions with {
+    name  @UI.HiddenFilter;
+    descr @UI.HiddenFilter;
+    code  @UI.HiddenFilter;
+};

@@ -1,4 +1,5 @@
 using db as schema from '../../db/schema';
+using { Regions } from '../../db/common.cds';
 using AppService from '../../srv/app-service.cds';
 
 annotate schema.Departments with {
@@ -10,6 +11,7 @@ annotate schema.Addresses with {
   postCode @title: '{i18n>postCode}';
   street   @title: '{i18n>street}';
   building @title: '{i18n>building}';
+  region @(Common.Label: '{i18n>departmentRegionName}');
 };
 
 annotate schema.Contacts with {

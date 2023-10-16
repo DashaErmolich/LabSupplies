@@ -38,6 +38,55 @@ annotate AppService.Orders with @(Common.SideEffects #delivery: {
     TargetEntities  : [deliveryTo, ],
 });
 
+annotate AppService.Addresses with {
+    department @Common: {
+        Text           : department.title,
+        TextArrangement: #TextOnly,
+        ValueListWithFixedValues: true,
+        Label: '{i18n>departmentTitle}',
+        ValueList      : {
+            $Type          : 'Common.ValueListType',
+            Parameters     : [
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'name',
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'ID',
+                    LocalDataProperty: department_ID,
+                },
+            ],
+            CollectionPath : 'Departments',
+            SearchSupported: true,
+        }
+    };
+};
+
+annotate AppService.Regions with {
+    country @Common: {
+        Text           : country.name,
+        TextArrangement: #TextOnly,
+        ValueListWithFixedValues: true,
+        Label: '{i18n>country}',
+        ValueList      : {
+            $Type          : 'Common.ValueListType',
+            Parameters     : [
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'name',
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'code',
+                    LocalDataProperty: country_code,
+                },
+            ],
+            CollectionPath : 'Countries',
+            SearchSupported: true,
+        }
+    };
+};
 
 // ObjectPage - Items Info
 

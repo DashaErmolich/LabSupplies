@@ -23,10 +23,11 @@ entity Orders : cuid, managed {
     notes      : String;
 }
 
-entity Departments : cuid {
-    name    : String;
-    address : Composition of many Addresses
-                  on address.department = $self;
+entity Departments {
+    key ID      : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
+        name    : String;
+        address : Composition of many Addresses
+                      on address.department = $self;
 }
 
 entity Addresses : cuid {

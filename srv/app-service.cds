@@ -20,15 +20,15 @@ service AppService {
         inner join Products as p
             on wp.product.ID = p.ID
         {
-            p.ID                             as productID     @UI.Hidden,
-            p.title                          as title         @UI.HiddenFilter,
-            p.description                    as description   @UI.HiddenFilter,
-            p.supplierCatNo                  as supplierCatNo @UI.HiddenFilter,
+            p.ID                             as productID,
+            p.title                          as title,
+            p.description                    as description,
+            p.supplierCatNo                  as supplierCatNo,
             p.supplier.name                  as supplier,
             p.category                       as category,
             wp.stock                         as stock,
-            wp.warehouse.ID                  as warehouseID   @UI.Hidden,
-            wp.warehouse.name                as warehouseName @UI.HiddenFilter,
+            wp.warehouse.ID                  as warehouseID,
+            wp.warehouse.name                as warehouseName,
             wp.warehouse.region.country.code as warehouseCountryCode,
             wp.warehouse.region.code         as warehouseRegionCode,
         }
