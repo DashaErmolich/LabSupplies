@@ -1,7 +1,7 @@
 using db from '../db/schema';
 
 @path: '/app'
-service AppService {
+service AppService @(requires: 'authenticated-user') {
     entity Contacts           as projection on db.Contacts;
     entity Departments        as projection on db.Departments;
 

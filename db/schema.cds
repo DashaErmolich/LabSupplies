@@ -4,6 +4,7 @@ using {
     managed,
     sap,
     cuid,
+    User,
 } from '@sap/cds/common';
 
 using {
@@ -16,7 +17,8 @@ namespace db;
 
 entity Orders : cuid, managed {
     title      : String;
-    contact    : Association to one Contacts;
+    contact    : Association to one Contacts
+                     on contact.email = $self.createdBy;
     items      : Composition of many OrdersItems
                      on items.order = $self;
     deliveryTo : Association to one Addresses;
@@ -39,14 +41,14 @@ entity Addresses : cuid {
     building   : String;
 }
 
-entity Contacts : cuid {
-    firstName : String;
-    lastName  : String;
-    fullName  : String;
-    email     : String;
-    title     : String;
-    tel       : String;
-    manager   : Association to one Contacts;
+entity Contacts {
+    key email     : User;
+        firstName : String;
+        lastName  : String;
+        fullName  : String;
+        title     : String;
+        tel       : String;
+        manager   : Association to one Contacts;
 }
 
 
