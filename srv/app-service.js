@@ -1,12 +1,27 @@
 const cds = require("@sap/cds");
 
 module.exports = function (srv) {
-  const { Orders, OrdersItems, WarehousesProducts } = srv.entities;
+  const { Orders, OrdersItems, WarehousesProducts, OrderStatuses } = srv.entities;
+
+  this.before("NEW", Orders.drafts, async (req) => {
+    req.data.status_ID = 'OPENED';
+  });
 
   this.before("CREATE", Orders, async (req) => {
     const data = new Date();
 
     req.data.title = `Order ${data.getDate()}/${data.getMinutes()}`;
+  });
+
+  this.before("SAVE", Orders, async (req) => {
+
+    if (!req.data.items.length) {
+      req.error({
+        message: "Add at least one item to order",
+      });
+    } else {
+      req.data.status_ID = 'WAITING_FOR_APPROVE';
+    }
   });
 
   this.before("UPDATE", OrdersItems.drafts, async (req) => {

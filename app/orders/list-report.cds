@@ -6,6 +6,9 @@ annotate service.Orders with @(
         {
             $Type : 'UI.DataField',
             Value : createdAt,
+        },        {
+            $Type : 'UI.DataField',
+            Value : title,
         },{
             $Type : 'UI.DataField',
             Value : contact.email,
@@ -15,6 +18,12 @@ annotate service.Orders with @(
         },{
             $Type : 'UI.DataField',
             Value : deliveryTo.department.name,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : status.name,
+            Criticality : status.criticalityCode,
+            CriticalityRepresentation : #WithIcon,
         },]
 );
 

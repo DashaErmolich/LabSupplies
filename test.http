@@ -7,7 +7,6 @@ Content-Type: application/json
 
 {
     "deliveryTo_ID": "ae3047da-0236-4b06-9a6a-62033647c5f6",
-    "contact_ID": "d35ec5cd-52ca-4c6a-90a4-11d9c76e0df2",
     "notes": "NOTES",
         "items": [
             {

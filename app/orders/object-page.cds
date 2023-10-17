@@ -9,11 +9,18 @@ annotate service.Orders with @(
         },
         TypeName: 'Order',
     },
-    UI.HeaderFacets       : [{
-        $Type : 'UI.ReferenceFacet',
-        ID    : 'Contact',
-        Target: '@UI.FieldGroup#Contact',
-    }, ],
+    UI.HeaderFacets       : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'Contact',
+            Target: '@UI.FieldGroup#Contact',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'Status',
+            Target: 'status/@UI.DataPoint#Status',
+        },
+    ],
     UI.FieldGroup #Contact: {
         $Type: 'UI.FieldGroupType',
         Data : [
@@ -195,3 +202,10 @@ annotate AppService.Regions with {
     descr @UI.HiddenFilter;
     code  @UI.HiddenFilter;
 };
+
+annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
+    $Type      : 'UI.DataPointType',
+    Value      : name,
+    Title      : '{i18n>status}',
+    Criticality: criticalityCode,
+});

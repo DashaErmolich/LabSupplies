@@ -23,6 +23,7 @@ entity Orders : cuid, managed {
                      on items.order = $self;
     deliveryTo : Association to one Addresses;
     notes      : String;
+    status     : Association to one OrderStatuses;
 }
 
 entity Departments {
@@ -86,4 +87,10 @@ entity Warehouses : cuid {
     region   : Association to one Regions;
     products : Composition of many WarehousesProducts
                    on products.warehouse = $self;
+}
+
+entity OrderStatuses {
+    key ID          : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
+        name        : String;
+        criticalityCode : Int16;
 }

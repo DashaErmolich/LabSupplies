@@ -6,6 +6,10 @@ annotate schema.Departments with {
   name @title: '{i18n>departmentTitle}';
 };
 
+annotate schema.OrderStatuses with {
+  name @title: '{i18n>status}';
+};
+
 annotate schema.Addresses with {
   title    @title: '{i18n>addressTitle}';
   postCode @title: '{i18n>postCode}';

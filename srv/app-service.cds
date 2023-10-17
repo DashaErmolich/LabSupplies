@@ -14,6 +14,7 @@ service AppService @(requires: 'authenticated-user') {
     entity WarehousesProducts as projection on db.WarehousesProducts;
     entity Warehouses         as projection on db.Warehouses;
     entity Addresses          as projection on db.Addresses;
+    entity OrderStatuses      as projection on db.OrderStatuses;
 
     view Catalogue as
         select from WarehousesProducts as wp
@@ -32,7 +33,8 @@ service AppService @(requires: 'authenticated-user') {
             wp.warehouse.region.country.code as warehouseCountryCode,
             wp.warehouse.region.code         as warehouseRegionCode,
         }
-        where wp.stock <> 0;
+        where
+            wp.stock <> 0;
 }
 
 @path: '/admin'
