@@ -40,6 +40,7 @@ entity Addresses : cuid {
     postCode   : String;
     street     : String;
     building   : String;
+    city       : String;
 }
 
 entity Contacts {
@@ -90,7 +91,7 @@ entity Warehouses : cuid {
 }
 
 entity OrderStatuses {
-    key ID          : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
-        name        : String;
+    key ID              : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
+        name            : String;
         criticalityCode : Int16;
 }

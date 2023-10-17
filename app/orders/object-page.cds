@@ -132,10 +132,16 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
             Value                   : deliveryTo.region.country.name,
             ![@Common.FieldControl] : #ReadOnly,
         },
+                {
+            $Type                   : 'UI.DataField',
+            Label                   : '{i18n>region}',
+            Value                   : deliveryTo.region.name,
+            ![@Common.FieldControl] : #ReadOnly,
+        },
         {
             $Type                   : 'UI.DataField',
             Label                   : '{i18n>city}',
-            Value                   : deliveryTo.region.name,
+            Value                   : deliveryTo.city,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {

@@ -15,6 +15,7 @@ service AppService @(requires: 'authenticated-user') {
     entity Warehouses         as projection on db.Warehouses;
     entity Addresses          as projection on db.Addresses;
     entity OrderStatuses      as projection on db.OrderStatuses;
+    entity OrdersItems        as projection on db.OrdersItems;
 
     view Catalogue as
         select from WarehousesProducts as wp
