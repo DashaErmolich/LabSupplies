@@ -1,10 +1,11 @@
 const cds = require("@sap/cds");
 
 module.exports = function (srv) {
-  const { Orders, OrderItems, WarehouseProducts } = srv.entities;
+  const { Orders, OrderItems, WarehouseProducts, Contacts } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
     req.data.status_ID = "OPENED";
+    req.data.processor_email = req.user.id;
   });
 
   this.before("CREATE", Orders, async (req) => {
@@ -110,6 +111,18 @@ module.exports = function (srv) {
     return next();
   });
 
+  this.before("SAVE", Orders, async (req) => {
+    if (!req.data.processor_email) {
+      const userID = req.user.id;
+
+      const userContact = await SELECT.one
+        .from(Contacts)
+        .where({ email: userID });
+    
+      req.data.processor_email = userContact.manager_email;
+    }
+  });
+
   this.before("UPDATE", OrderItems.drafts, async (req) => {
     if (!req.data.item_product_ID && !req.data.item_product_ID) {
       const one = await SELECT.one.from(OrderItems.drafts, req.data.ID);
@@ -161,4 +174,60 @@ module.exports = function (srv) {
   //     })
   //   }
   // });
+
+  this.on("approveOrder", async (req) => {
+    const orderID = req._params[0].ID;
+
+    try {
+      await UPDATE(Orders, {
+        ID: orderID,
+      }).with({
+        status_ID: "APPROVED",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  this.on("rejectOrder", async (req) => {
+    const orderID = req._params[0].ID;
+
+    try {
+      await UPDATE(Orders, {
+        ID: orderID,
+      }).with({
+        status_ID: "REJECTED",
+        notes: req.data.note,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  this.after("READ", Orders, (data, req) => {
+    if (data.length) {
+      console.log(1);
+    
+      let isReviewerRole = false;
+      let isApproveButtonHidden = true;
+      let isRejectButtonHidden = true;
+
+      if (req.user.is('Reviewer')) {
+        isReviewerRole = true;
+      }
+
+      if (isReviewerRole) {
+        if (data[0]?.status?.ID !== "REJECTED" || data[0]?.status?.ID !== "APPROVED") {
+          data[0].isRejectHidden = false;
+          data[0].isApproveHidden = false;
+        } else {
+          data[0].isRejectHidden = true;
+          data[0].isApproveHidden = true;
+        }
+      } else {
+        data[0].isRejectHidden = true;
+        data[0].isApproveHidden = true;
+      }
+    }
+  });
 };

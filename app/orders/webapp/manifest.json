@@ -134,7 +134,20 @@
                             },
                             "content": {
                                 "header": {
-                                    "anchorBarVisible": true
+                                    "anchorBarVisible": true,
+                                    "actions": {
+                                        "DataFieldForAction::AppService.approveOrder": {
+                                            "afterExecution": {
+                                                "navigateToInstance": true,
+                                                "enableAutoScroll": true
+                                            }
+                                        },
+                                        "DataFieldForAction::AppService.rejectOrder": {
+                                            "afterExecution": {
+                                                "navigateToInstance": true
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

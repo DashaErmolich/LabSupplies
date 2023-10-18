@@ -2,6 +2,6 @@
 OPENED;Opened;0
 WAITING_FOR_APPROVE;Waiting for Approve;2
 APPROVED;Approved;3
-DECLINED;Declined;1
+REJECTED;Rejected;1
 WAITING_FOR_DELIVERY;Waiting for Delivery;2
 CLOSED;Closed;3

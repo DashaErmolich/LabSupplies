@@ -1,19 +1,48 @@
 using db from '../db/schema';
 
 @path: '/app'
-service AppService @(requires: 'authenticated-user') {
+service AppService @(requires: 'Manager') {
     entity Contacts          as projection on db.Contacts;
     entity Departments       as projection on db.Departments;
 
     @odata.draft.enabled
-    entity Orders            as projection on db.Orders;
+    // @(restrict: [
+    //     {
+    //         grant: [
+    //             'READ',
+    //             'WRITE'
+    //         ],
+    //         to   : ['Manager']
+    //     },
+    //     {
+    //         grant: ['UPDATE'],
+    //         to   : ['Reviewer', 'Manager'],
+    //     },
+    // ])
+    entity Orders            as projection on db.Orders actions {
+        action approveOrder();
+        action rejectOrder(note: String);
+    }
 
+    @readonly
     entity Products          as projection on db.Products;
+
+    @readonly
     entity Suppliers         as projection on db.Suppliers;
+
+    @readonly
     entity Categories        as projection on db.Categories;
+
+    @readonly
     entity WarehouseProducts as projection on db.WarehouseProducts;
+
+    @readonly
     entity Warehouses        as projection on db.Warehouses;
+
+    @readonly
     entity Addresses         as projection on db.Addresses;
+
+    @readonly
     entity OrderStatuses     as projection on db.OrderStatuses;
 
     entity OrderItems        as projection on db.OrderItems;

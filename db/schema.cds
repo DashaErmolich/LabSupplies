@@ -24,6 +24,9 @@ entity Orders : cuid, managed {
     deliveryTo : Association to one Addresses;
     notes      : String;
     status     : Association to one OrderStatuses;
+    processor: Association to one Contacts;
+    virtual isApproveHidden: Boolean default true;
+    virtual isRejectHidden: Boolean default true;
 }
 
 entity Departments {
@@ -91,7 +94,7 @@ entity Warehouses : cuid {
 }
 
 entity OrderStatuses {
-    key ID              : UUID  @Common.Text: name  @Common.TextArrangement: #TextOnly;
+    key ID              : String;
         name            : String;
         criticalityCode : Int16;
 }
