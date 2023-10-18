@@ -16,17 +16,18 @@ using {
 namespace db;
 
 entity Orders : cuid, managed {
-    title      : String;
-    contact    : Association to one Contacts
-                     on contact.email = $self.createdBy;
-    items      : Composition of many OrderItems
-                     on items.order = $self;
-    deliveryTo : Association to one Addresses;
-    notes      : String;
-    status     : Association to one OrderStatuses;
-    processor: Association to one Contacts;
-    virtual isApproveHidden: Boolean default true;
-    virtual isRejectHidden: Boolean default true;
+    title                   : String;
+    contact                 : Association to one Contacts
+                                  on contact.email = $self.createdBy;
+    items                   : Composition of many OrderItems
+                                  on items.order = $self;
+    deliveryTo              : Association to one Addresses;
+    notes                   : String;
+    status                  : Association to one OrderStatuses;
+    processor               : Association to one Contacts;
+    virtual isApproveHidden : Boolean default true;
+    virtual isRejectHidden  : Boolean default true;
+    reviewNotes: String;
 }
 
 entity Departments {
@@ -94,7 +95,7 @@ entity Warehouses : cuid {
 }
 
 entity OrderStatuses {
-    key ID              : String;
+    key ID              : String @Common.Text: name  @Common.TextArrangement: #TextOnly;
         name            : String;
         criticalityCode : Int16;
 }

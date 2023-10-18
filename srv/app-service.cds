@@ -20,8 +20,40 @@ service AppService @(requires: 'Manager') {
     //     },
     // ])
     entity Orders            as projection on db.Orders actions {
+
+        @(
+            cds.odata.bindingparameter.name: '_it',
+            Common.SideEffects             : {TargetEntities: ['_it']}
+        )
         action approveOrder();
-        action rejectOrder(note: String);
+
+        @(
+            cds.odata.bindingparameter.name: '_it',
+            Common.SideEffects             : {TargetEntities: ['_it']}
+        )
+        action rejectOrder(
+                           @(Common:{
+                               Text                    : status.name,
+                               TextArrangement         : #TextOnly,
+                               ValueListWithFixedValues: true,
+                               Label                   : '{i18n>orderStatus}',
+                               ValueListMapping        : {
+                                   Parameters    : [
+                                       {
+                                           $Type            : 'Common.ValueListParameterDisplayOnly',
+                                           ValueListProperty: 'name',
+                                       },
+                                       {
+                                           $Type            : 'Common.ValueListParameterOut',
+                                           ValueListProperty: 'ID',
+                                           LocalDataProperty: statusID,
+                                       },
+                                   ],
+                                   CollectionPath: 'RejectStatuses',
+                               }
+                           })
+                           statusID : String @mandatory,
+                           notes : String);
     }
 
     @readonly
@@ -66,6 +98,12 @@ service AppService @(requires: 'Manager') {
         }
         where
             wp.stock <> 0;
+
+    view RejectStatuses as
+        select from OrderStatuses as os
+        where
+               os.ID = 'WAITING_FOR_EDIT'
+            or os.ID = 'REJECTED';
 }
 
 @path: '/admin'

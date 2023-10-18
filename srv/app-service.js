@@ -112,15 +112,13 @@ module.exports = function (srv) {
   });
 
   this.before("SAVE", Orders, async (req) => {
-    if (!req.data.processor_email) {
-      const userID = req.user.id;
+    const userID = req.user.id;
 
-      const userContact = await SELECT.one
-        .from(Contacts)
-        .where({ email: userID });
-    
-      req.data.processor_email = userContact.manager_email;
-    }
+    const userContact = await SELECT.one
+      .from(Contacts)
+      .where({ email: userID });
+  
+    req.data.processor_email = userContact.manager_email;
   });
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
@@ -190,17 +188,32 @@ module.exports = function (srv) {
   });
 
   this.on("rejectOrder", async (req) => {
-    const orderID = req._params[0].ID;
+    const orderID = req.params[0].ID;
 
     try {
       await UPDATE(Orders, {
         ID: orderID,
       }).with({
-        status_ID: "REJECTED",
-        notes: req.data.note,
+        status_ID: req.data.statusID,
+        reviewNotes: req.data.notes,
       });
     } catch (error) {
       console.log(error);
+    }
+
+    if (req.data.statusID === 'WAITING_FOR_EDIT') {
+      try {
+        const order = await SELECT.one.from(Orders).where({
+          ID: orderID,
+        });
+        await UPDATE(Orders, {
+          ID: orderID,
+        }).with({
+          processor_email: order.createdBy,
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   });
 
@@ -208,13 +221,9 @@ module.exports = function (srv) {
     if (data.length) {
       console.log(1);
     
-      let isReviewerRole = false;
+      let isReviewerRole = req.user.is('Reviewer');
       let isApproveButtonHidden = true;
       let isRejectButtonHidden = true;
-
-      if (req.user.is('Reviewer')) {
-        isReviewerRole = true;
-      }
 
       if (isReviewerRole) {
         if (data[0]?.status?.ID !== "REJECTED" || data[0]?.status?.ID !== "APPROVED") {

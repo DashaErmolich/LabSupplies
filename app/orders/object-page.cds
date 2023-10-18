@@ -9,6 +9,7 @@ annotate service.Orders with @(
         },
         TypeName: 'Order',
     },
+    
     UI.HeaderFacets       : [
         {
             $Type : 'UI.ReferenceFacet',
@@ -25,30 +26,19 @@ annotate service.Orders with @(
         $Type: 'UI.FieldGroupType',
         Data : [
             {
-                $Type: 'UI.DataField',
-                Value: contact.fullName,
+                $Type : 'UI.DataFieldForAnnotation',
+                Target: 'contact/@Communication.Contact',
+                Label : '{i18n>createdBy}',
             },
             {
-                $Type: 'UI.DataField',
-                Value: contact.title,
+                $Type : 'UI.DataFieldForAnnotation',
+                Target: 'processor/@Communication.Contact',
+                Label : '{i18n>processedBy}',
             },
-            {
-                $Type: 'UI.DataField',
-                Value: contact.email,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: contact.tel,
-            },
-            {
-                $Type: 'UI.DataField',
-                Label: '{i18n>managerFullName}',
-                Value: contact.manager.fullName,
-            },
-            {
-                $Type: 'UI.DataField',
-                Value: processor.email,
-                Label: 'Processor email',
+                               {
+                $Type : 'UI.DataField',
+                Value : reviewNotes,
+                Label : '{i18n>reviewNotes}',
             },
         ],
     }
@@ -239,3 +229,20 @@ annotate AppService.Orders with @(UI.Identification: [
         ![@UI.Importance] : #High,
     },
 ]);
+
+annotate AppService.Contacts with @(Communication.Contact: {
+    $Type: 'Communication.ContactType',
+    email: [{
+        $Type  : 'Communication.EmailAddressType',
+        type   : #work,
+        address: email,
+    }, ],
+    fn   : fullName,
+    photo: true,
+    role : title,
+    tel  : [{
+        $Type: 'Communication.PhoneNumberType',
+        type : #work,
+        uri  : tel,
+    }, ],
+});

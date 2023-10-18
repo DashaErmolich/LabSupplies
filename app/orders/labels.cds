@@ -51,3 +51,8 @@ annotate schema.WarehouseProducts with {
 annotate schema.Categories with {
   name @title: '{i18n>categoryName}';
 };
+
+annotate schema.Orders with {
+  notes @title: '{i18n>orderNotes}';
+  reviewNotes @title: '{i18n>rewiewerNotes}';
+}
