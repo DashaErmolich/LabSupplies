@@ -9,7 +9,7 @@ annotate service.Orders with @(
         },
         TypeName: 'Order',
     },
-    
+
     UI.HeaderFacets       : [
         {
             $Type : 'UI.ReferenceFacet',
@@ -35,10 +35,10 @@ annotate service.Orders with @(
                 Target: 'processor/@Communication.Contact',
                 Label : '{i18n>processedBy}',
             },
-                               {
-                $Type : 'UI.DataField',
-                Value : reviewNotes,
-                Label : '{i18n>reviewNotes}',
+            {
+                $Type: 'UI.DataField',
+                Value: reviewNotes,
+                Label: '{i18n>reviewNotes}',
             },
         ],
     }
@@ -56,6 +56,12 @@ annotate service.Orders with @(UI.Facets: [
         ID    : 'Delivery',
         Target: '@UI.FieldGroup#Delivery',
         Label : '{i18n>deliveryInfo}'
+    },
+    {
+        $Type : 'UI.ReferenceFacet',
+        Label : '{i18n>attachments}',
+        ID    : 'Attachments',
+        Target: 'attachments/@UI.LineItem#Attachments',
     },
 ]);
 
@@ -246,3 +252,26 @@ annotate AppService.Contacts with @(Communication.Contact: {
         uri  : tel,
     }, ],
 });
+
+annotate AppService.Attachments with @(UI.LineItem #Attachments: [
+    {
+        $Type: 'UI.DataField',
+        Value: content,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: notes,
+    },
+]);
+
+annotate service.Attachments with {
+    content @mandatory;
+    notes   @UI.MultiLineText;
+    count @UI.Hidden;
+    fileName @UI.Hidden;
+    ID @UI.Hidden;
+    mediaType @UI.Hidden;
+    url @UI.Hidden;
+    order @UI.Hidden;
+
+};

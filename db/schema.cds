@@ -27,7 +27,9 @@ entity Orders : cuid, managed {
     processor               : Association to one Contacts;
     virtual isApproveHidden : Boolean default true;
     virtual isRejectHidden  : Boolean default true;
-    reviewNotes: String;
+    reviewNotes             : String;
+    attachments             : Composition of many Attachments
+                                  on attachments.order = $self;
 }
 
 entity Departments {
@@ -95,7 +97,21 @@ entity Warehouses : cuid {
 }
 
 entity OrderStatuses {
-    key ID              : String @Common.Text: name  @Common.TextArrangement: #TextOnly;
+    key ID              : String  @Common.Text: name  @Common.TextArrangement: #TextOnly;
         name            : String;
         criticalityCode : Int16;
+}
+
+entity Attachments : cuid {
+    @Core.MediaType                  : mediaType
+    @Core.ContentDisposition.Filename: fileName
+    content   : LargeBinary;
+
+    @Core.IsMediaType                : true
+    mediaType : String;
+    fileName  : String;
+    url       : String;
+    count     : Int64 default 0;
+    order     : Association to one Orders;
+    notes     : String;
 }

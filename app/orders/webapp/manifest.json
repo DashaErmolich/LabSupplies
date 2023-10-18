@@ -130,6 +130,13 @@
                                     "tableSettings": {
                                         "creationMode": {}
                                     }
+                                },
+                                "attachments/@com.sap.vocabularies.UI.v1.LineItem#Attachments": {
+                                    "tableSettings": {
+                                        "creationMode": {
+                                            "createAtEnd": true
+                                        }
+                                    }
                                 }
                             },
                             "content": {
