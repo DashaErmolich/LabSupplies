@@ -1,7 +1,7 @@
 const cds = require("@sap/cds");
 
 module.exports = function (srv) {
-  const { Orders, OrdersItems, WarehousesProducts } = srv.entities;
+  const { Orders, OrderItems, WarehouseProducts } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
     req.data.status_ID = "OPENED";
@@ -24,35 +24,55 @@ module.exports = function (srv) {
 
   this.on("SAVE", Orders, async (req, next) => {
     const currentOrderItems = req.data.items;
-    const prevOrderItems = await SELECT.from(OrdersItems).where({
+    const prevOrderItems = await SELECT.from(OrderItems).where({
       order_ID: req.data.ID,
     });
 
     const diffForInserting = currentOrderItems.filter(
       ({ item_product_ID, item_warehouse_ID }) =>
-        !prevOrderItems.some((item) => item.item_product_ID === item_product_ID && item.item_warehouse_ID === item_warehouse_ID)
+        !prevOrderItems.some(
+          (item) =>
+            item.item_product_ID === item_product_ID &&
+            item.item_warehouse_ID === item_warehouse_ID
+        )
     );
 
-    const diffForDeletion = prevOrderItems.filter(
-      ({ item_product_ID, item_warehouse_ID }) =>
-      !currentOrderItems.some((item) => item.item_product_ID === item_product_ID && item.item_warehouse_ID === item_warehouse_ID)
-    ).map((item) => ({...item, qty: item.qty * (-1)}));
+    const diffForDeletion = prevOrderItems
+      .filter(
+        ({ item_product_ID, item_warehouse_ID }) =>
+          !currentOrderItems.some(
+            (item) =>
+              item.item_product_ID === item_product_ID &&
+              item.item_warehouse_ID === item_warehouse_ID
+          )
+      )
+      .map((item) => ({ ...item, qty: item.qty * -1 }));
 
-    const diffForUpdate = prevOrderItems.filter(
-      ({ item_product_ID, item_warehouse_ID, qty }) =>
-      currentOrderItems.some((item) => item.item_product_ID === item_product_ID && item.item_warehouse_ID === item_warehouse_ID && item.qty !== qty)
-    ).map((item) => {
-      const current = currentOrderItems.find((v) => v.item_product_ID === item.item_product_ID && v.item_warehouse_ID === item.item_warehouse_ID);
-      return { ...item, qty: current.qty - item.qty }
-    });
+    const diffForUpdate = prevOrderItems
+      .filter(({ item_product_ID, item_warehouse_ID, qty }) =>
+        currentOrderItems.some(
+          (item) =>
+            item.item_product_ID === item_product_ID &&
+            item.item_warehouse_ID === item_warehouse_ID &&
+            item.qty !== qty
+        )
+      )
+      .map((item) => {
+        const current = currentOrderItems.find(
+          (v) =>
+            v.item_product_ID === item.item_product_ID &&
+            v.item_warehouse_ID === item.item_warehouse_ID
+        );
+        return { ...item, qty: current.qty - item.qty };
+      });
 
-    const all = [...diffForDeletion, ...diffForInserting, ...diffForUpdate]
+    const all = [...diffForDeletion, ...diffForInserting, ...diffForUpdate];
 
     const final = [];
 
     for (let i = 0; i < all.length; i++) {
       const item = all[i];
-      const data = await SELECT(WarehousesProducts, {
+      const data = await SELECT(WarehouseProducts, {
         warehouse_ID: item.item_warehouse_ID,
         product_ID: item.item_product_ID,
       });
@@ -71,7 +91,7 @@ module.exports = function (srv) {
       for (let i = 0; i < final.length; i++) {
         const item = final[i];
         try {
-          await UPDATE(WarehousesProducts, {
+          await UPDATE(WarehouseProducts, {
             warehouse_ID: item.listItem.item_warehouse_ID,
             product_ID: item.listItem.item_product_ID,
           }).with({
@@ -90,10 +110,10 @@ module.exports = function (srv) {
     return next();
   });
 
-  this.before("UPDATE", OrdersItems.drafts, async (req) => {
+  this.before("UPDATE", OrderItems.drafts, async (req) => {
     if (!req.data.item_product_ID && !req.data.item_product_ID) {
-      const one = await SELECT.one.from(OrdersItems.drafts, req.data.ID);
-      const whp = await SELECT.one.from(WarehousesProducts, {
+      const one = await SELECT.one.from(OrderItems.drafts, req.data.ID);
+      const whp = await SELECT.one.from(WarehouseProducts, {
         product_ID: one.item_product_ID,
         warehouse_ID: one.item_warehouse_ID,
       });
@@ -112,9 +132,9 @@ module.exports = function (srv) {
     }
   });
 
-  this.before("UPDATE", OrdersItems.drafts, async (req) => {
+  this.before("UPDATE", OrderItems.drafts, async (req) => {
     if (req.data.item_product_ID && req.data.item_product_ID) {
-      const whp = await SELECT.one.from(WarehousesProducts, {
+      const whp = await SELECT.one.from(WarehouseProducts, {
         product_ID: req.data.item_product_ID,
         warehouse_ID: req.data.item_warehouse_ID,
       });
@@ -128,4 +148,17 @@ module.exports = function (srv) {
       }
     }
   });
+
+  // this.before("UPDATE", OrderItems.drafts, async (req) => {
+  //   const item = await SELECT.from(OrderItems.drafts, req.data.ID);
+  //   const items = await SELECT.from(OrderItems.drafts).where({order_ID: item.order_ID});
+  //   const a =  items.filter((v) => v.item_product_ID !== item.item_product_ID && v.item_warehouse_ID !== item.item_warehouse_ID).length < items.length - 1;
+
+  //   if (a) {
+  //     req.error({
+  //       message: "this Item already exists in list",
+  //       target: 'item_product_ID',
+  //     })
+  //   }
+  // });
 };

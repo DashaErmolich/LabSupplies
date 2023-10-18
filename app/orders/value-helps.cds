@@ -40,11 +40,11 @@ annotate AppService.Orders with @(Common.SideEffects #delivery: {
 
 annotate AppService.Addresses with {
     department @Common: {
-        Text           : department.title,
-        TextArrangement: #TextOnly,
+        Text                    : department.title,
+        TextArrangement         : #TextOnly,
         ValueListWithFixedValues: true,
-        Label: '{i18n>departmentTitle}',
-        ValueList      : {
+        Label                   : '{i18n>departmentTitle}',
+        ValueList               : {
             $Type          : 'Common.ValueListType',
             Parameters     : [
                 {
@@ -65,11 +65,11 @@ annotate AppService.Addresses with {
 
 annotate AppService.Regions with {
     country @Common: {
-        Text           : country.name,
-        TextArrangement: #TextOnly,
+        Text                    : country.name,
+        TextArrangement         : #TextOnly,
         ValueListWithFixedValues: true,
-        Label: '{i18n>country}',
-        ValueList      : {
+        Label                   : '{i18n>country}',
+        ValueList               : {
             $Type          : 'Common.ValueListType',
             Parameters     : [
                 {
@@ -90,7 +90,7 @@ annotate AppService.Regions with {
 
 // ObjectPage - Items Info
 
-annotate AppService.OrdersItems with {
+annotate AppService.OrderItems with {
     item @Common: {
         Text           : item.product.supplierCatNo,
         TextArrangement: #TextOnly,
@@ -134,7 +134,7 @@ annotate AppService.OrdersItems with {
     }
 };
 
-annotate AppService.OrdersItems with @(Common.SideEffects: {
+annotate AppService.OrderItems with @(Common.SideEffects: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [item_product_ID, ],
     TargetEntities  : [item, ],

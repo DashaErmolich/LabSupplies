@@ -1,5 +1,5 @@
 using db as schema from '../../db/schema';
-using { Regions } from '../../db/common.cds';
+using {Regions} from '../../db/common.cds';
 using AppService from '../../srv/app-service.cds';
 
 annotate schema.Departments with {
@@ -15,7 +15,7 @@ annotate schema.Addresses with {
   postCode @title: '{i18n>postCode}';
   street   @title: '{i18n>street}';
   building @title: '{i18n>building}';
-  region @(Common.Label: '{i18n>departmentRegionName}');
+  region   @(Common.Label: '{i18n>departmentRegionName}');
 };
 
 annotate schema.Contacts with {
@@ -36,7 +36,7 @@ annotate schema.Products with {
   supplierCatNo @title: '{i18n>catNo}';
 };
 
-annotate schema.OrdersItems with {
+annotate schema.OrderItems with {
   qty @title: '{i18n>qty}';
 };
 
@@ -44,11 +44,10 @@ annotate schema.Warehouses with {
   name @title: '{i18n>warehouseName}';
 };
 
-annotate schema.WarehousesProducts with {
-  stock @title : '{i18n>stock}';
+annotate schema.WarehouseProducts with {
+  stock @title: '{i18n>stock}';
 };
 
 annotate schema.Categories with {
   name @title: '{i18n>categoryName}';
 };
-

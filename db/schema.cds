@@ -19,7 +19,7 @@ entity Orders : cuid, managed {
     title      : String;
     contact    : Association to one Contacts
                      on contact.email = $self.createdBy;
-    items      : Composition of many OrdersItems
+    items      : Composition of many OrderItems
                      on items.order = $self;
     deliveryTo : Association to one Addresses;
     notes      : String;
@@ -53,14 +53,14 @@ entity Contacts {
         manager   : Association to one Contacts;
 }
 
-
-entity OrdersItems : cuid {
+@assert.unique.item: [item]
+entity OrderItems : cuid {
     order : Association to one Orders;
-    item  : Association to one WarehousesProducts;
+    item  : Association to one WarehouseProducts;
     qty   : Integer;
 }
 
-entity WarehousesProducts {
+entity WarehouseProducts {
     key warehouse : Association to one Warehouses;
     key product   : Association to one Products;
         stock     : Integer;
@@ -86,7 +86,7 @@ entity Suppliers : cuid {
 entity Warehouses : cuid {
     name     : String;
     region   : Association to one Regions;
-    products : Composition of many WarehousesProducts
+    products : Composition of many WarehouseProducts
                    on products.warehouse = $self;
 }
 

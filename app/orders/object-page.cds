@@ -64,7 +64,7 @@ annotate service.Orders with @(UI.Facets: [
     },
 ]);
 
-annotate AppService.OrdersItems with @(UI.LineItem #Items: [
+annotate AppService.OrderItems with @(UI.LineItem #Items: [
     {
         $Type: 'UI.DataField',
         Value: item_product_ID,
@@ -132,7 +132,7 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
             Value                   : deliveryTo.region.country.name,
             ![@Common.FieldControl] : #ReadOnly,
         },
-                {
+        {
             $Type                   : 'UI.DataField',
             Label                   : '{i18n>region}',
             Value                   : deliveryTo.region.name,
@@ -179,7 +179,7 @@ annotate service.Addresses with {
     title    @UI.HiddenFilter;
 }
 
-annotate service.OrdersItems with {
+annotate service.OrderItems with {
     item @mandatory;
     qty  @mandatory;
 }
@@ -188,7 +188,7 @@ annotate service.Warehouses with {
     ID @UI.HiddenFilter;
 }
 
-annotate AppService.OrdersItems with @(UI.PresentationVariant #Items: {
+annotate AppService.OrderItems with @(UI.PresentationVariant #Items: {
     $Type         : 'UI.PresentationVariantType',
     Visualizations: ['@UI.LineItem#Items', ],
     GroupBy       : [item.warehouse.name, ],

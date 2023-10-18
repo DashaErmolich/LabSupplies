@@ -20,7 +20,7 @@
                 </EntitySet>
                 <EntitySet Name="Orders" EntityType="AppService.Orders">
                     <NavigationPropertyBinding Path="contact" Target="Contacts"/>
-                    <NavigationPropertyBinding Path="items" Target="OrdersItems"/>
+                    <NavigationPropertyBinding Path="items" Target="OrderItems"/>
                     <NavigationPropertyBinding Path="deliveryTo" Target="Addresses"/>
                 </EntitySet>
                 <EntitySet Name="Products" EntityType="AppService.Products">
@@ -29,21 +29,21 @@
                 </EntitySet>
                 <EntitySet Name="Manufacturies" EntityType="AppService.Manufacturies"/>
                 <EntitySet Name="Categories" EntityType="AppService.Categories"/>
-                <EntitySet Name="WarehousesProducts" EntityType="AppService.WarehousesProducts">
+                <EntitySet Name="WarehouseProducts" EntityType="AppService.WarehouseProducts">
                     <NavigationPropertyBinding Path="warehouse" Target="Warehouses"/>
                     <NavigationPropertyBinding Path="product" Target="Products"/>
                 </EntitySet>
                 <EntitySet Name="Warehouses" EntityType="AppService.Warehouses">
                     <NavigationPropertyBinding Path="region" Target="Regions"/>
-                    <NavigationPropertyBinding Path="products" Target="WarehousesProducts"/>
+                    <NavigationPropertyBinding Path="products" Target="WarehouseProducts"/>
                 </EntitySet>
                 <EntitySet Name="Addresses" EntityType="AppService.Addresses">
                     <NavigationPropertyBinding Path="department" Target="Departments"/>
                     <NavigationPropertyBinding Path="region" Target="Regions"/>
                 </EntitySet>
-                <EntitySet Name="OrdersItems" EntityType="AppService.OrdersItems">
+                <EntitySet Name="OrderItems" EntityType="AppService.OrderItems">
                     <NavigationPropertyBinding Path="order" Target="Orders"/>
-                    <NavigationPropertyBinding Path="item" Target="WarehousesProducts"/>
+                    <NavigationPropertyBinding Path="item" Target="WarehouseProducts"/>
                 </EntitySet>
                 <EntitySet Name="Regions" EntityType="AppService.Regions">
                     <NavigationPropertyBinding Path="country" Target="Countries"/>
@@ -98,7 +98,7 @@
                     <ReferentialConstraint Property="contact_ID" ReferencedProperty="ID"/>
                 </NavigationProperty>
                 <Property Name="contact_ID" Type="Edm.Guid"/>
-                <NavigationProperty Name="items" Type="Collection(AppService.OrdersItems)" Partner="order">
+                <NavigationProperty Name="items" Type="Collection(AppService.OrderItems)" Partner="order">
                     <OnDelete Action="Cascade"/>
                 </NavigationProperty>
                 <NavigationProperty Name="deliveryTo" Type="AppService.Addresses">
@@ -137,7 +137,7 @@
                 <Property Name="ID" Type="Edm.Guid" Nullable="false"/>
                 <Property Name="name" Type="Edm.String"/>
             </EntityType>
-            <EntityType Name="WarehousesProducts">
+            <EntityType Name="WarehouseProducts">
                 <Key>
                     <PropertyRef Name="warehouse_ID"/>
                     <PropertyRef Name="product_ID"/>
@@ -163,7 +163,7 @@
                 </NavigationProperty>
                 <Property Name="region_code" Type="Edm.String" MaxLength="10"/>
                 <Property Name="region_country_code" Type="Edm.String" MaxLength="3"/>
-                <NavigationProperty Name="products" Type="Collection(AppService.WarehousesProducts)" Partner="warehouse">
+                <NavigationProperty Name="products" Type="Collection(AppService.WarehouseProducts)" Partner="warehouse">
                     <OnDelete Action="Cascade"/>
                 </NavigationProperty>
             </EntityType>
@@ -186,7 +186,7 @@
                 <Property Name="street" Type="Edm.String"/>
                 <Property Name="building" Type="Edm.String"/>
             </EntityType>
-            <EntityType Name="OrdersItems">
+            <EntityType Name="OrderItems">
                 <Key>
                     <PropertyRef Name="ID"/>
                 </Key>
@@ -195,7 +195,7 @@
                     <ReferentialConstraint Property="order_ID" ReferencedProperty="ID"/>
                 </NavigationProperty>
                 <Property Name="order_ID" Type="Edm.Guid"/>
-                <NavigationProperty Name="item" Type="AppService.WarehousesProducts">
+                <NavigationProperty Name="item" Type="AppService.WarehouseProducts">
                     <ReferentialConstraint Property="item_warehouse_ID" ReferencedProperty="warehouse_ID"/>
                     <ReferentialConstraint Property="item_product_ID" ReferencedProperty="product_ID"/>
                 </NavigationProperty>
