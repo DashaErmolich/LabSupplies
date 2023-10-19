@@ -119,45 +119,40 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
     Data : [
         {
             $Type: 'UI.DataField',
-            Label: 'Delivery Target',
+            Label: '{i18n>departmentTitle}',
             Value: deliveryTo_ID,
         },
         {
             $Type                   : 'UI.DataField',
-            Value                   : deliveryTo.department.name,
-            ![@Common.FieldControl] : #ReadOnly,
-        },
-        {
-            $Type                   : 'UI.DataField',
             Label                   : '{i18n>country}',
-            Value                   : deliveryTo.region.country.name,
+            Value                   : deliveryTo.address.region.country.name,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
             Label                   : '{i18n>region}',
-            Value                   : deliveryTo.region.name,
+            Value                   : deliveryTo.address.region.name,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
             Label                   : '{i18n>city}',
-            Value                   : deliveryTo.city,
+            Value                   : deliveryTo.address.city,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
-            Value                   : deliveryTo.postCode,
+            Value                   : deliveryTo.address.postCode,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
-            Value                   : deliveryTo.street,
+            Value                   : deliveryTo.address.street,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
-            Value                   : deliveryTo.building,
+            Value                   : deliveryTo.address.building,
             ![@Common.FieldControl] : #ReadOnly,
         },
         {
@@ -177,7 +172,6 @@ annotate service.Addresses with {
     building @UI.HiddenFilter;
     street   @UI.HiddenFilter;
     ID       @UI.Hidden;
-    title    @UI.HiddenFilter;
 }
 
 annotate service.OrderItems with {
@@ -201,14 +195,21 @@ annotate AppService.Catalogue with {
     description   @UI.HiddenFilter;
     supplierCatNo @UI.HiddenFilter;
     warehouseID   @UI.Hidden;
-    warehouseName @UI.HiddenFilter;
+    name @UI.HiddenFilter;
 }
 
 annotate AppService.Regions with {
-    name  @UI.HiddenFilter;
-    descr @UI.HiddenFilter;
-    code  @UI.HiddenFilter;
+    // name  @UI.HiddenFilter;
+    // descr @UI.HiddenFilter;
+    // code  @UI.HiddenFilter;
 };
+
+annotate AppService.DeliveryTargets with {
+    departmentID @UI.Hidden;
+    name @UI.HiddenFilter;
+    countryName @UI.HiddenFilter;
+    regionName @UI.HiddenFilter;
+}
 
 annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
     $Type      : 'UI.DataPointType',
@@ -236,34 +237,35 @@ annotate AppService.Orders with @(UI.Identification: [
     },
 ]);
 
-annotate AppService.Contacts with @(Communication.Contact: {
-    $Type: 'Communication.ContactType',
-    org: department.name,
-    email: [{
-        $Type  : 'Communication.EmailAddressType',
-        type   : #work,
-        address: email,
-    }, ],
-    fn   : fullName,
-    role : title,
-    tel  : [{
-        $Type: 'Communication.PhoneNumberType',
-        type : #work,
-        uri  : tel,
-    }, ],
-    adr : [
-            {
-                $Type : 'Communication.AddressType',
-                type : #work,
-                street : address.street,
-                locality : address.city,
-                region : address.region.name,
-                code : address.postCode,
-                country : address.region.country.name,
-            },
-        ],
-    photo: photoUrl,
-}, Common.IsNaturalPerson : true);
+annotate AppService.Contacts with @(
+    Communication.Contact : {
+        $Type: 'Communication.ContactType',
+        org  : department.name,
+        email: [{
+            $Type  : 'Communication.EmailAddressType',
+            type   : #work,
+            address: email,
+        }, ],
+        fn   : fullName,
+        role : title,
+        tel  : [{
+            $Type: 'Communication.PhoneNumberType',
+            type : #work,
+            uri  : tel,
+        }, ],
+        adr  : [{
+            $Type   : 'Communication.AddressType',
+            type    : #work,
+            street  : department.address.street,
+            locality: department.address.city,
+            region  : department.address.region.name,
+            code    : department.address.postCode,
+            country : department.address.region.country.name,
+        }, ],
+        photo: photoUrl,
+    },
+    Common.IsNaturalPerson: true
+);
 
 annotate AppService.Attachments with @(UI.LineItem #Attachments: [
     {
@@ -277,13 +279,13 @@ annotate AppService.Attachments with @(UI.LineItem #Attachments: [
 ]);
 
 annotate service.Attachments with {
-    content @mandatory;
-    notes   @UI.MultiLineText;
-    count @UI.Hidden;
-    fileName @UI.Hidden;
-    ID @UI.Hidden;
+    content   @mandatory;
+    notes     @UI.MultiLineText;
+    count     @UI.Hidden;
+    fileName  @UI.Hidden;
+    ID        @UI.Hidden;
     mediaType @UI.Hidden;
-    url @UI.Hidden;
-    order @UI.Hidden;
+    url       @UI.Hidden;
+    order     @UI.Hidden;
 
 };

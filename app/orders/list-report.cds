@@ -11,13 +11,16 @@ annotate service.Orders with @(
             Value : title,
         },{
             $Type : 'UI.DataField',
-            Value : contact.email,
+            Label: '{i18n>createdBy}',
+            Value : contact.fullName,
+        },
+        {
+            $Type : 'UI.DataField',
+            Label: '{i18n>processedBy}',
+            Value : contact.manager.fullName,
         },{
             $Type : 'UI.DataField',
-            Value : contact.title,
-        },{
-            $Type : 'UI.DataField',
-            Value : deliveryTo.department.name,
+            Value : deliveryTo.name,
         },
         {
             $Type : 'UI.DataField',
@@ -30,6 +33,15 @@ annotate service.Orders with @(
 
 annotate service.Orders with @(
     UI.SelectionFields : [
-        deliveryTo.region_code,
+        deliveryTo.address.region_code,
     ]
 );
+
+annotate service.Orders with {
+    ID @UI.Hidden;
+    isApproveHidden @UI.Hidden;
+    isRejectHidden @UI.Hidden;
+    processor @UI.Hidden;
+    deliveryTo @UI.Hidden;
+    status @UI.Hidden;
+}
