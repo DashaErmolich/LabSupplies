@@ -1,7 +1,8 @@
 const cds = require("@sap/cds");
+const { removeDuplicates } = require("./utils");
 
 module.exports = function (srv) {
-  const { Orders, OrderItems, WarehouseProducts, Contacts } = srv.entities;
+  const { Orders, OrderItems, WarehouseProducts, Contacts, Warehouses, WarehouseOrders } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
     req.data.status_ID = "OPENED";
@@ -277,17 +278,30 @@ module.exports = function (srv) {
     }
   });
 
-  this.after("approveOrder", async (req) => {
-    // const orderID = req._params[0].ID;
+  this.after("approveOrder", async (req, data) => {
+    const orderID = data.params[0].ID;
 
-    // try {
-    //   await UPDATE(Orders, {
-    //     ID: orderID,
-    //   }).with({
-    //     status_ID: "APPROVED",
-    //   });
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    const order = await SELECT.one.from(Orders, orderID, (order) => {
+      order.title, order.items((item) => {
+        item.item_product_ID, item.item_warehouse_ID, item.qty
+      });
+    });
+
+    const whIDs = removeDuplicates(order.items.map((item) => item.item_warehouse_ID));
+    const warehouses = await SELECT.from(Warehouses);
+
+    for (let i = 0; i < whIDs.length; i++) {
+      const whOrderItems = order.items.filter((item) => item.item_warehouse_ID === whIDs[i]).map((item) => ({ ...item, status_ID: 'WAITING_FOR_COLLECTION' }));
+      const whOrderTitle = `${order.title}-${warehouses.find((wh) => wh.ID === whIDs[i]).name.split(' ').join('/')}`;
+
+      const whOrder = {
+        title: whOrderTitle,
+        items: whOrderItems,
+        parentOrder_ID: orderID,
+        status_ID: 'PACKING',
+      }
+      
+      await INSERT.into(WarehouseOrders, whOrder)
+    }
   });
 };

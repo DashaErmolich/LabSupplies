@@ -17,12 +17,12 @@ namespace db;
 
 aspect Order : cuid, managed {
     title      : String;
-    deliveryTo : Association to one Departments;
     notes      : String;
     status     : Association to one OrderStatuses;
 }
 
 entity Orders : Order {
+    deliveryTo : Association to one Departments;
     contact                 : Association to one Contacts
                                   on contact.email = $self.createdBy;
     items                   : Composition of many OrderItems
@@ -39,7 +39,7 @@ entity Orders : Order {
 
 entity WarehouseOrders : Order {
     parentOrder : Association to one Orders;
-    items       : Composition of many warehouseOrderItems
+    items       : Composition of many WarehouseOrderItems
                       on items.order = $self;
     processor   : Association to one Contacts;
 }
@@ -123,7 +123,7 @@ entity OrderItems : OrderItem {
     order : Association to one Orders;
 }
 
-entity warehouseOrderItems : OrderItem {
+entity WarehouseOrderItems : OrderItem {
     order  : Association to one WarehouseOrders;
     status : Association to one OrderStatuses;
 }

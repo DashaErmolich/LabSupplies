@@ -36,12 +36,3 @@ annotate service.Orders with @(
         deliveryTo.address.region_code,
     ]
 );
-
-annotate service.Orders with {
-    ID @UI.Hidden;
-    isApproveHidden @UI.Hidden;
-    isRejectHidden @UI.Hidden;
-    processor @UI.Hidden;
-    deliveryTo @UI.Hidden;
-    status @UI.Hidden;
-}

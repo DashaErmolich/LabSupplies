@@ -198,12 +198,6 @@ annotate AppService.Catalogue with {
     name @UI.HiddenFilter;
 }
 
-annotate AppService.Regions with {
-    // name  @UI.HiddenFilter;
-    // descr @UI.HiddenFilter;
-    // code  @UI.HiddenFilter;
-};
-
 annotate AppService.DeliveryTargets with {
     departmentID @UI.Hidden;
     name @UI.HiddenFilter;

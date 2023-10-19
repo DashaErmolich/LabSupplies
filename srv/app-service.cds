@@ -23,7 +23,8 @@ service AppService @(requires: 'Manager') {
 
         @(
             cds.odata.bindingparameter.name: '_it',
-            Common.SideEffects             : {TargetEntities: ['_it']}
+            Common.SideEffects             : {TargetEntities: ['_it']},
+            Common.IsActionCritical : true
         )
         action approveOrder();
 
