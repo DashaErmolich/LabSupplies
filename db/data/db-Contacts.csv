@@ -1,0 +1,16 @@
+﻿firstName;lastName;fullName;email;title;manager_email;tel;department_ID;photoUrl
+Simon;Villarreal;Simon Villarreal;simon.villarreal.test@walgreens.com;Supplier manager;annika.milligan.test@instagram.com;4,95E+11;d96e0f26-2393-4858-b607-982065418ed9;https://media.istockphoto.com/id/1358280405/photo/confident-businessman-in-his-office.jpg?s=612x612&w=0&k=20&c=xOi9YkGz1C2O9zjwNla2eXU4BrCRU90Dk6RYU-jorys=
+Carter;Matthews;Carter Matthews;carter.matthews.test@united.com;Supplier manager;annika.milligan.test@instagram.com;49334427493;d96e0f26-2393-4858-b607-982065418ed9;https://www.jobs.ie/job-talk/wp-content/uploads/sales-manager-cv-advice-1.jpg
+Annika;Milligan;Annika Milligan;annika.milligan.test@instagram.com;Head of Suppliers Department;;4,98E+11;d96e0f26-2393-4858-b607-982065418ed9;https://zoets.b-cdn.net/wp-content/uploads/2020/09/office-manager-training-certification-program.jpg
+Everly;Pack;Everly Pack;everly.pack.test@ge.com;Packager;;4,95E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
+Edgar;Galloway;Edgar Galloway;edgar.galloway.test@deere.com;Packager;;49334427493;0f51fc48-03fd-44c9-91bc-532f8906d186;
+Elijah;Webb;Elijah Webb;elijah.webb.test@northropgrumman.com;Packager;;4,98E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
+Arthur;Crowley;Arthur Crowley;arthur.crowley.test@berkshirehathaway.com;Packager;;4,95E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
+Lance;Pagan;Lance Pagan;lance.pagan.test@wellsfargo.com;Packager;;49334427493;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
+Brooks;Patrick;Brooks Patrick;brooks.patrick.test@united.com;Packager;;4,98E+11;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
+Bradley;Castle;Bradley Castle;bradley.castle.test@meta.com;Packager;;4,95E+11;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
+Ray;Moyer;Ray Moyer;ray.moyer.test@cvs.com;Packager;;49334427493;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
+Sariah;Nava;Sariah Nava;sariah.nava.test@ford.com;Packager;;4,98E+11;5630947a-a15e-4a97-a3ac-11f6270f45b8;
+Roberto;Zapata;Roberto Zapata;roberto.zapata.test@united.com;Packager;;4,95E+11;5630947a-a15e-4a97-a3ac-11f6270f45b8;
+Emory;Mcgee;Emory Mcgee;emory.mcgee.test@cisco.com;Packager;;49334427493;5630947a-a15e-4a97-a3ac-11f6270f45b8;
+Anastasia;Khan;Anastasia Khan;anastasia.khan.test@ups.com;Packager;;4,98E+11;5630947a-a15e-4a97-a3ac-11f6270f45b8;

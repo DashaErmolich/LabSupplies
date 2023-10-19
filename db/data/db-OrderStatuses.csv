@@ -1,0 +1,8 @@
+﻿ID;name;criticalityCode
+OPENED;Opened;0
+WAITING_FOR_APPROVE;Waiting for Approve;2
+APPROVED;Approved;3
+REJECTED;Rejected and Closed;1
+WAITING_FOR_DELIVERY;Waiting for Delivery;2
+CLOSED;Closed;3
+WAITING_FOR_EDIT;Waiting for Edit;2

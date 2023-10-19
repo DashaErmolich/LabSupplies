@@ -1,0 +1,27 @@
+@server = http://localhost:4004
+
+
+### CREATE ORDER
+POST {{server}}/admin/Orders
+Content-Type: application/json
+
+{
+    "deliveryTo_ID": "ae3047da-0236-4b06-9a6a-62033647c5f6",
+    "notes": "NOTES",
+        "items": [
+            {
+                "item_warehouse_ID": "0f51fc48-03fd-44c9-91bc-532f8906d186",
+                "item_product_ID": "df87a252-5074-48cb-9417-997d3598d448",
+                "qty": 1
+            },
+            {
+                "item_warehouse_ID": "137ee1b8-dfa7-4c46-8aae-3c005a0b9676",
+                "item_product_ID": "55cffb60-1b17-4391-a17e-adc233d60ee6",
+                "qty": 2
+            }
+    ]
+}
+
+
+### DELETE ORDER
+DELETE  {{server}}/admin/Orders(d710c81b-aadf-4e5e-89b9-21d0ec9dcb2e)

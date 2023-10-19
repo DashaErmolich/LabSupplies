@@ -1,0 +1,11 @@
+﻿id;department_ID;region_code;postCode;street;building;city
+49ad946c-dc34-482d-a87c-9d58212ed7e6;63dda0ce-44db-42ed-b352-d4302fde3870;DE-HB;28195;Am Markt;13;Bremen
+78f96af7-e4c9-4b66-8654-3a3d68bad957;64958354-26d8-4610-aed5-058b36666ae0;DE-HH;20457;Brooktorkai;17;Hamburg
+808ecfc7-52e4-4ec8-a05d-ebc37ff1e6e6;c6d9441c-2e44-4b2c-98a3-0daa4b9d46bd;DE-HB;28307;Hans-Bredow-Straße;9;Bremen
+0f0d3d8c-4134-460d-b3bb-2a58837ac942;d69419f4-c171-474e-a93b-32e30ef0b2b7;FR-ARA;38142;Rond-point Marie Louise;385;Lyon
+7f82c368-7f86-4951-b9ef-bcba7dd87282;6985263d-cd9f-40ed-b83f-13677f84975b;FR-BRE;56470;Pont St Thomas en Argonne;419;Nantes
+7899f42f-c166-4c81-9666-80ce9cff8eb3;04a1040c-e34e-46d0-b551-a63f6ec4fe85;FR-GP;56160;Carrefour Nobel;25;Baie-Mahault
+b6888c62-908c-4628-9e44-cb3d075e14d6;d96e0f26-2393-4858-b607-982065418ed9;FR-RE;97425;Sent. des Ouvriers;17;Les Avirons
+767ca99a-6f34-4f39-844f-96f7e7e2924e;0f51fc48-03fd-44c9-91bc-532f8906d186;DE-HH;21129;Am Altenwerder Kirchtal;4;Hamburg
+1117e3b1-83af-4a9f-8dc9-cf819bc3859d;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;DE-HB;28237;Lindenhofstraße;15;Bremen
+a287c47e-7dd1-4d3a-8d43-8a38680437d1;5630947a-a15e-4a97-a3ac-11f6270f45b8;FR-BFC;89170;Rue Font Choison;385;Yonne

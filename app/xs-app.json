@@ -3,7 +3,7 @@
   "routes": [
     {
       "source": "^/app/(.*)$",
-      "target": "$1",
+      "target": "/app/$1",
       "localDir": ".",
       "cacheControl": "no-cache, no-store, must-revalidate"
     },
