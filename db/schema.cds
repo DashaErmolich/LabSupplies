@@ -57,6 +57,9 @@ entity Contacts {
         title     : String;
         tel       : String;
         manager   : Association to one Contacts;
+        department: Association to one Departments;
+        address: Association to one Addresses on address.department = $self.department;
+        photoUrl: String;
 }
 
 @assert.unique.item: [item]

@@ -238,20 +238,32 @@ annotate AppService.Orders with @(UI.Identification: [
 
 annotate AppService.Contacts with @(Communication.Contact: {
     $Type: 'Communication.ContactType',
+    org: department.name,
     email: [{
         $Type  : 'Communication.EmailAddressType',
         type   : #work,
         address: email,
     }, ],
     fn   : fullName,
-    photo: true,
     role : title,
     tel  : [{
         $Type: 'Communication.PhoneNumberType',
         type : #work,
         uri  : tel,
     }, ],
-});
+    adr : [
+            {
+                $Type : 'Communication.AddressType',
+                type : #work,
+                street : address.street,
+                locality : address.city,
+                region : address.region.name,
+                code : address.postCode,
+                country : address.region.country.name,
+            },
+        ],
+    photo: photoUrl,
+}, Common.IsNaturalPerson : true);
 
 annotate AppService.Attachments with @(UI.LineItem #Attachments: [
     {

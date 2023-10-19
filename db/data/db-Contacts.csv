@@ -1,4 +1,4 @@
-﻿firstName;lastName;fullName;email;title;manager_email;tel
-Simon;Villarreal;Simon Villarreal;simon.villarreal.test@walgreens.com;Supplier manager;annika.milligan.test@instagram.com;+495107897520
-Carter;Matthews;Carter Matthews;carter.matthews.test@united.com;Supplier manager;annika.milligan.test@instagram.com;+49334427493
-Annika;Milligan;Annika Milligan;annika.milligan.test@instagram.com;Head of Suppliers Department;;+497634615340
+﻿firstName;lastName;fullName;email;title;manager_email;tel;department_ID;photoUrl
+Simon;Villarreal;Simon Villarreal;simon.villarreal.test@walgreens.com;Supplier manager;annika.milligan.test@instagram.com;+495107897520;f919b807-cf1f-45c2-91fd-2f53171abbeb;https://media.istockphoto.com/id/1358280405/photo/confident-businessman-in-his-office.jpg?s=612x612&w=0&k=20&c=xOi9YkGz1C2O9zjwNla2eXU4BrCRU90Dk6RYU-jorys=
+Carter;Matthews;Carter Matthews;carter.matthews.test@united.com;Supplier manager;annika.milligan.test@instagram.com;+49334427493;f919b807-cf1f-45c2-91fd-2f53171abbeb;https://www.jobs.ie/job-talk/wp-content/uploads/sales-manager-cv-advice-1.jpg
+Annika;Milligan;Annika Milligan;annika.milligan.test@instagram.com;Head of Suppliers Department;;+497634615340;f919b807-cf1f-45c2-91fd-2f53171abbeb;https://zoets.b-cdn.net/wp-content/uploads/2020/09/office-manager-training-certification-program.jpg

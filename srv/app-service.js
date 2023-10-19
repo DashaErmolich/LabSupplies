@@ -215,6 +215,43 @@ module.exports = function (srv) {
         console.log(error);
       }
     }
+
+    if (req.data.statusID === 'REJECTED' || req.data.statusID === 'CLOSED') {
+      const prevOrderItems = await SELECT.from(OrderItems).where({
+        order_ID: orderID,
+      });
+
+      const final = [];
+
+      for (let i = 0; i < prevOrderItems.length; i++) {
+        const item = prevOrderItems[i];
+        const data = await SELECT(WarehouseProducts, {
+          warehouse_ID: item.item_warehouse_ID,
+          product_ID: item.item_product_ID,
+        });
+
+        final.push({
+          listItem: item,
+          whItem: data,
+        });
+      }
+  
+
+      for (let i = 0; i < final.length; i++) {
+        const item = final[i];
+        try {
+          await UPDATE(WarehouseProducts, {
+            warehouse_ID: item.listItem.item_warehouse_ID,
+            product_ID: item.listItem.item_product_ID,
+          }).with({
+            stock: item.whItem.stock + item.listItem.qty,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+    }
   });
 
   this.after("READ", Orders, (data, req) => {
