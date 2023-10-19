@@ -92,7 +92,7 @@ service AppService @(requires: 'Manager') {
             p.category                               as category,
             wp.stock                                 as stock,
             wp.warehouse.ID                          as warehouseID,
-            wp.warehouse.name                        as warehouseName,
+            wp.warehouse.name                        as name,
             wp.warehouse.address.region.country.code as warehouseCountryCode,
             wp.warehouse.address.region.code         as warehouseRegionCode,
         }

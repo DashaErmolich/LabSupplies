@@ -52,16 +52,17 @@ annotate schema.Categories with {
 };
 
 annotate schema.Orders with {
-  notes @title: '{i18n>orderNotes}';
-  reviewNotes @title: '{i18n>rewiewerNotes}';
+  notes       @title: '{i18n>orderNotes}';
+  reviewNotes @title: '{i18n>reviewNotes}';
+  title       @title: '{i18n>title}';
 }
 
 annotate schema.Attachments with {
-    content @title: '{i18n>attachmentContent}';
-    notes @title: '{i18n>notes}';
+  content @title: '{i18n>attachmentContent}';
+  notes   @title: '{i18n>notes}';
 };
 
 annotate AppService.DeliveryTargets with {
   countryName @title: '{i18n>country}';
-  regionName @title: '{i18n>region}';
+  regionName  @title: '{i18n>region}';
 }

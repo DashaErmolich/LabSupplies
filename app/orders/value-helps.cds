@@ -94,62 +94,11 @@ annotate AppService.DeliveryTargets with {
     }
 };
 
-
 annotate AppService.Orders with @(Common.SideEffects #delivery: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [deliveryTo_ID, ],
     TargetEntities  : [deliveryTo, ],
 });
-
-// annotate AppService.Addresses with {
-//     department @Common: {
-//         Text                    : department.title,
-//         TextArrangement         : #TextOnly,
-//         ValueListWithFixedValues: true,
-//         Label                   : '{i18n>departmentTitle}',
-//         ValueList               : {
-//             $Type          : 'Common.ValueListType',
-//             Parameters     : [
-//                 {
-//                     $Type            : 'Common.ValueListParameterDisplayOnly',
-//                     ValueListProperty: 'name',
-//                 },
-//                 {
-//                     $Type            : 'Common.ValueListParameterOut',
-//                     ValueListProperty: 'ID',
-//                     LocalDataProperty: department_ID,
-//                 },
-//             ],
-//             CollectionPath : 'Departments',
-//             SearchSupported: true,
-//         }
-//     };
-// };
-
-// annotate AppService.Regions with {
-// country @Common: {
-//     Text                    : country.name,
-//     TextArrangement         : #TextOnly,
-//     ValueListWithFixedValues: true,
-//     Label                   : '{i18n>country}',
-//     ValueList               : {
-//         $Type          : 'Common.ValueListType',
-//         Parameters     : [
-//             {
-//                 $Type            : 'Common.ValueListParameterDisplayOnly',
-//                 ValueListProperty: 'name',
-//             },
-//             {
-//                 $Type            : 'Common.ValueListParameterOut',
-//                 ValueListProperty: 'code',
-//                 LocalDataProperty: country_code,
-//             },
-//         ],
-//         CollectionPath : 'Countries',
-//         SearchSupported: true,
-//     }
-// };
-// };
 
 // ObjectPage - Items Info
 
@@ -178,7 +127,7 @@ annotate AppService.OrderItems with {
                 },
                 {
                     $Type            : 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'warehouseName',
+                    ValueListProperty: 'name',
                 },
                 {
                     $Type            : 'Common.ValueListParameterInOut',
@@ -246,7 +195,7 @@ annotate AppService.Catalogue with {
                 {
                     $Type            : 'Common.ValueListParameterOut',
                     ValueListProperty: 'name',
-                    LocalDataProperty: warehouseName,
+                    LocalDataProperty: name,
                 },
                 {
                     $Type            : 'Common.ValueListParameterFilterOnly',
@@ -254,8 +203,8 @@ annotate AppService.Catalogue with {
                 },
                 {
                     $Type            : 'Common.ValueListParameterIn', //Input parameter used for filtering
-                    LocalDataProperty: warehouseCountryCode,
                     ValueListProperty: 'country_code',
+                    LocalDataProperty: warehouseCountryCode,
                 },
             ],
             CollectionPath : 'Regions',

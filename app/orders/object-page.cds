@@ -119,13 +119,8 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
     Data : [
         {
             $Type: 'UI.DataField',
-            Label: 'Delivery Target',
+            Label: '{i18n>departmentTitle}',
             Value: deliveryTo_ID,
-        },
-        {
-            $Type                   : 'UI.DataField',
-            Value                   : deliveryTo.address.department.name,
-            ![@Common.FieldControl] : #ReadOnly,
         },
         {
             $Type                   : 'UI.DataField',
@@ -200,7 +195,7 @@ annotate AppService.Catalogue with {
     description   @UI.HiddenFilter;
     supplierCatNo @UI.HiddenFilter;
     warehouseID   @UI.Hidden;
-    warehouseName @UI.HiddenFilter;
+    name @UI.HiddenFilter;
 }
 
 annotate AppService.Regions with {
