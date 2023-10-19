@@ -7,44 +7,9 @@ using from '../../db/common';
 
 annotate AppService.Orders with {
     deliveryTo @Common: {
-        Text           : deliveryTo.title,
+        Text           : deliveryTo.name,
         TextArrangement: #TextOnly,
         ValueList      : {
-            $Type          : 'Common.ValueListType',
-            Parameters     : [
-                {
-                    $Type            : 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'title',
-                },
-                {
-                    $Type            : 'Common.ValueListParameterDisplayOnly',
-                    ValueListProperty: 'region_code',
-                },
-                {
-                    $Type            : 'Common.ValueListParameterOut',
-                    ValueListProperty: 'ID',
-                    LocalDataProperty: deliveryTo_ID,
-                },
-            ],
-            CollectionPath : 'Addresses',
-            SearchSupported: true,
-        }
-    }
-};
-
-annotate AppService.Orders with @(Common.SideEffects #delivery: {
-    $Type           : 'Common.SideEffectsType',
-    SourceProperties: [deliveryTo_ID, ],
-    TargetEntities  : [deliveryTo, ],
-});
-
-annotate AppService.Addresses with {
-    department @Common: {
-        Text                    : department.title,
-        TextArrangement         : #TextOnly,
-        ValueListWithFixedValues: true,
-        Label                   : '{i18n>departmentTitle}',
-        ValueList               : {
             $Type          : 'Common.ValueListType',
             Parameters     : [
                 {
@@ -52,21 +17,27 @@ annotate AppService.Addresses with {
                     ValueListProperty: 'name',
                 },
                 {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'countryName',
+                },
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'regionName',
+                },
+                {
                     $Type            : 'Common.ValueListParameterOut',
-                    ValueListProperty: 'ID',
-                    LocalDataProperty: department_ID,
+                    ValueListProperty: 'departmentID',
+                    LocalDataProperty: deliveryTo_ID,
                 },
             ],
-            CollectionPath : 'Departments',
+            CollectionPath : 'DeliveryTargets',
             SearchSupported: true,
         }
-    };
+    }
 };
 
-annotate AppService.Regions with {
-    country @Common: {
-        Text                    : country.name,
-        TextArrangement         : #TextOnly,
+annotate AppService.DeliveryTargets with {
+    countryCode @Common: {
         ValueListWithFixedValues: true,
         Label                   : '{i18n>country}',
         ValueList               : {
@@ -79,14 +50,106 @@ annotate AppService.Regions with {
                 {
                     $Type            : 'Common.ValueListParameterOut',
                     ValueListProperty: 'code',
-                    LocalDataProperty: country_code,
+                    LocalDataProperty: countryCode,
                 },
             ],
             CollectionPath : 'Countries',
             SearchSupported: true,
         }
     };
+
+    regionCode  @Common: {
+        ValueListWithFixedValues: true,
+        Label                   : '{i18n>region}',
+        ValueList               : {
+            $Type          : 'Common.ValueListType',
+            Parameters     : [
+                {
+                    $Type            : 'Common.ValueListParameterDisplayOnly',
+                    ValueListProperty: 'name',
+                },
+                {
+                    $Type            : 'Common.ValueListParameterInOut',
+                    ValueListProperty: 'code',
+                    LocalDataProperty: regionCode,
+                },
+                {
+                    $Type            : 'Common.ValueListParameterOut',
+                    ValueListProperty: 'name',
+                    LocalDataProperty: regionName,
+                },
+                {
+                    $Type            : 'Common.ValueListParameterFilterOnly',
+                    ValueListProperty: 'country_code',
+                },
+                {
+                    $Type            : 'Common.ValueListParameterIn', //Input parameter used for filtering
+                    LocalDataProperty: countryCode,
+                    ValueListProperty: 'country_code',
+                },
+            ],
+            CollectionPath : 'Regions',
+            SearchSupported: true,
+        }
+    }
 };
+
+
+annotate AppService.Orders with @(Common.SideEffects #delivery: {
+    $Type           : 'Common.SideEffectsType',
+    SourceProperties: [deliveryTo_ID, ],
+    TargetEntities  : [deliveryTo, ],
+});
+
+// annotate AppService.Addresses with {
+//     department @Common: {
+//         Text                    : department.title,
+//         TextArrangement         : #TextOnly,
+//         ValueListWithFixedValues: true,
+//         Label                   : '{i18n>departmentTitle}',
+//         ValueList               : {
+//             $Type          : 'Common.ValueListType',
+//             Parameters     : [
+//                 {
+//                     $Type            : 'Common.ValueListParameterDisplayOnly',
+//                     ValueListProperty: 'name',
+//                 },
+//                 {
+//                     $Type            : 'Common.ValueListParameterOut',
+//                     ValueListProperty: 'ID',
+//                     LocalDataProperty: department_ID,
+//                 },
+//             ],
+//             CollectionPath : 'Departments',
+//             SearchSupported: true,
+//         }
+//     };
+// };
+
+// annotate AppService.Regions with {
+// country @Common: {
+//     Text                    : country.name,
+//     TextArrangement         : #TextOnly,
+//     ValueListWithFixedValues: true,
+//     Label                   : '{i18n>country}',
+//     ValueList               : {
+//         $Type          : 'Common.ValueListType',
+//         Parameters     : [
+//             {
+//                 $Type            : 'Common.ValueListParameterDisplayOnly',
+//                 ValueListProperty: 'name',
+//             },
+//             {
+//                 $Type            : 'Common.ValueListParameterOut',
+//                 ValueListProperty: 'code',
+//                 LocalDataProperty: country_code,
+//             },
+//         ],
+//         CollectionPath : 'Countries',
+//         SearchSupported: true,
+//     }
+// };
+// };
 
 // ObjectPage - Items Info
 

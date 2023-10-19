@@ -11,7 +11,6 @@ annotate schema.OrderStatuses with {
 };
 
 annotate schema.Addresses with {
-  title    @title: '{i18n>addressTitle}';
   postCode @title: '{i18n>postCode}';
   street   @title: '{i18n>street}';
   building @title: '{i18n>building}';
@@ -62,3 +61,7 @@ annotate schema.Attachments with {
     notes @title: '{i18n>notes}';
 };
 
+annotate AppService.DeliveryTargets with {
+  countryName @title: '{i18n>country}';
+  regionName @title: '{i18n>region}';
+}

@@ -180,7 +180,7 @@ module.exports = function (srv) {
       await UPDATE(Orders, {
         ID: orderID,
       }).with({
-        status_ID: "APPROVED",
+        status_ID: "WAITING_FOR_DELIVERY",
       });
     } catch (error) {
       console.log(error);
@@ -256,14 +256,14 @@ module.exports = function (srv) {
 
   this.after("READ", Orders, (data, req) => {
     if (data.length) {
-      console.log(1);
+  
     
       let isReviewerRole = req.user.is('Reviewer');
       let isApproveButtonHidden = true;
       let isRejectButtonHidden = true;
 
       if (isReviewerRole) {
-        if (data[0]?.status?.ID !== "REJECTED" || data[0]?.status?.ID !== "APPROVED") {
+        if (data[0]?.status?.ID !== "REJECTED" || data[0]?.status?.ID !== "WAITING_FOR_DELIVERY") {
           data[0].isRejectHidden = false;
           data[0].isApproveHidden = false;
         } else {
@@ -275,5 +275,19 @@ module.exports = function (srv) {
         data[0].isApproveHidden = true;
       }
     }
+  });
+
+  this.after("approveOrder", async (req) => {
+    // const orderID = req._params[0].ID;
+
+    // try {
+    //   await UPDATE(Orders, {
+    //     ID: orderID,
+    //   }).with({
+    //     status_ID: "APPROVED",
+    //   });
+    // } catch (error) {
+    //   console.log(error);
+    // }
   });
 };
