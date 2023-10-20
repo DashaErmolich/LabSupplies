@@ -1,8 +1,20 @@
 const cds = require("@sap/cds");
 const { removeDuplicates } = require("./utils");
+const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
+  fs = require("fs");
+const { Readable, Writable, PassThrough } = require("stream");
+path = require("path");
 
 module.exports = function (srv) {
-  const { Orders, OrderItems, WarehouseProducts, Contacts, Warehouses, WarehouseOrders } = srv.entities;
+  const {
+    Orders,
+    OrderItems,
+    WarehouseProducts,
+    Contacts,
+    Warehouses,
+    WarehouseOrders,
+    WarehouseOrderItems,
+  } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
     req.data.status_ID = "OPENED";
@@ -118,7 +130,7 @@ module.exports = function (srv) {
     const userContact = await SELECT.one
       .from(Contacts)
       .where({ email: userID });
-  
+
     req.data.processor_email = userContact.manager_email;
   });
 
@@ -202,7 +214,7 @@ module.exports = function (srv) {
       console.log(error);
     }
 
-    if (req.data.statusID === 'WAITING_FOR_EDIT') {
+    if (req.data.statusID === "WAITING_FOR_EDIT") {
       try {
         const order = await SELECT.one.from(Orders).where({
           ID: orderID,
@@ -217,7 +229,7 @@ module.exports = function (srv) {
       }
     }
 
-    if (req.data.statusID === 'REJECTED' || req.data.statusID === 'CLOSED') {
+    if (req.data.statusID === "REJECTED" || req.data.statusID === "CLOSED") {
       const prevOrderItems = await SELECT.from(OrderItems).where({
         order_ID: orderID,
       });
@@ -236,7 +248,6 @@ module.exports = function (srv) {
           whItem: data,
         });
       }
-  
 
       for (let i = 0; i < final.length; i++) {
         const item = final[i];
@@ -251,20 +262,20 @@ module.exports = function (srv) {
           console.log(error);
         }
       }
-
     }
   });
 
   this.after("READ", Orders, (data, req) => {
     if (data.length) {
-  
-    
-      let isReviewerRole = req.user.is('Reviewer');
+      let isReviewerRole = req.user.is("Reviewer");
       let isApproveButtonHidden = true;
       let isRejectButtonHidden = true;
 
       if (isReviewerRole) {
-        if (data[0]?.status?.ID !== "REJECTED" || data[0]?.status?.ID !== "WAITING_FOR_DELIVERY") {
+        if (
+          data[0]?.status?.ID !== "REJECTED" ||
+          data[0]?.status?.ID !== "WAITING_FOR_DELIVERY"
+        ) {
           data[0].isRejectHidden = false;
           data[0].isApproveHidden = false;
         } else {
@@ -282,26 +293,156 @@ module.exports = function (srv) {
     const orderID = data.params[0].ID;
 
     const order = await SELECT.one.from(Orders, orderID, (order) => {
-      order.title, order.items((item) => {
-        item.item_product_ID, item.item_warehouse_ID, item.qty
-      });
+      order.title,
+        order.items((item) => {
+          item.item_product_ID, item.item_warehouse_ID, item.qty;
+        });
     });
 
-    const whIDs = removeDuplicates(order.items.map((item) => item.item_warehouse_ID));
-    const warehouses = await SELECT.from(Warehouses);
+    const whIDs = removeDuplicates(
+      order.items.map((item) => item.item_warehouse_ID)
+    );
+    const warehouses = await SELECT.from(Warehouses, (wh) => {
+      wh`.*`,
+        wh.contacts((contact) => {
+          contact`.*`,
+            contact.orders((order) => {
+              order`.*`;
+            });
+        });
+    });
 
     for (let i = 0; i < whIDs.length; i++) {
-      const whOrderItems = order.items.filter((item) => item.item_warehouse_ID === whIDs[i]).map((item) => ({ ...item, status_ID: 'WAITING_FOR_COLLECTION' }));
-      const whOrderTitle = `${order.title}-${warehouses.find((wh) => wh.ID === whIDs[i]).name.split(' ').join('/')}`;
+      const whOrderItems = order.items
+        .filter((item) => item.item_warehouse_ID === whIDs[i])
+        .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
+      const whOrderTitle = `${order.title}-${warehouses
+        .find((wh) => wh.ID === whIDs[i])
+        .name.split(" ")
+        .join("/")}`;
+      const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
 
       const whOrder = {
         title: whOrderTitle,
         items: whOrderItems,
         parentOrder_ID: orderID,
-        status_ID: 'PACKING',
+        status_ID: "PACKING",
+        processor_email: contacts.sort(
+          (a, b) => a.orders.length - b.orders.length
+        )[0].email,
+      };
+
+      await INSERT.into(WarehouseOrders, whOrder);
+    }
+  });
+
+  this.on("READ", "WarehouseOrderItems", async (req, next) => {
+    console.log(req.req.originalUrl);
+
+    if (!req.data.ID || !req.req.originalUrl.includes("content")) {
+      return next();
+    }
+
+    try {
+      // Initial setup, create credentials instance.
+      const credentials =
+        PDFServicesSdk.Credentials.servicePrincipalCredentialsBuilder()
+          .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
+          .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
+          .build();
+
+      // Setup input data for the document merge process
+      const jsonString = fs.readFileSync(
+          path.resolve(__dirname, "salesOrder.json")
+        ),
+        jsonDataForMerge = JSON.parse(jsonString);
+
+      // Create an ExecutionContext using credentials
+      const executionContext =
+        PDFServicesSdk.ExecutionContext.create(credentials);
+
+      // Create a new DocumentMerge options instance
+      const documentMerge = PDFServicesSdk.DocumentMerge,
+        documentMergeOptions = documentMerge.options,
+        options = new documentMergeOptions.DocumentMergeOptions(
+          jsonDataForMerge,
+          documentMergeOptions.OutputFormat.PDF
+        );
+
+      // Create a new operation instance using the options instance
+      const documentMergeOperation = documentMerge.Operation.createNew(options);
+
+      // Set operation input document template from a source file.
+      const input = PDFServicesSdk.FileRef.createFromLocalFile(
+        path.resolve(__dirname, "salesOrderTemplate.docx")
+      );
+      documentMergeOperation.setInput(input);
+
+      //Generating a file name
+      // let outputFilePath = createOutputFilePath();
+
+      // Execute the operation and Save the result to the specified location.
+      const result = await documentMergeOperation.execute(executionContext);
+      // await result.saveAsFile(outputFilePath);
+
+      const stream = new Readable();
+
+      await _streamToData(stream, result);
+
+      const resultOutput = new Array();
+      resultOutput.push({
+        value: stream,
+      });
+      return resultOutput;
+
+      async function _streamToData(outStream, result) {
+        return new Promise((resolve) => {
+          const str = new PassThrough();
+          result.writeToStream(str);
+
+          str.on("data", (chunk) => {
+            outStream.push(chunk);
+          });
+          str.on("end", () => {
+            outStream.push(null);
+            resolve(true);
+          });
+          // content.pipe(stream)
+        });
       }
-      
-      await INSERT.into(WarehouseOrders, whOrder)
+
+      console.log(1);
+      // .then((result) => result.saveAsFile(outputFilePath))
+      // .catch((err) => {
+      //   if (
+      //     err instanceof PDFServicesSdk.Error.ServiceApiError ||
+      //     err instanceof PDFServicesSdk.Error.ServiceUsageError
+      //   ) {
+      //     console.log("Exception encountered while executing operation", err);
+      //   } else {
+      //     console.log("Exception encountered while executing operation", err);
+      //   }
+      // });
+
+      //Generates a string containing a directory structure and file name for the output file.
+      // function createOutputFilePath() {
+      //   let date = new Date();
+      //   let dateString =
+      //     date.getFullYear() +
+      //     "-" +
+      //     ("0" + (date.getMonth() + 1)).slice(-2) +
+      //     "-" +
+      //     ("0" + date.getDate()).slice(-2) +
+      //     "T" +
+      //     ("0" + date.getHours()).slice(-2) +
+      //     "-" +
+      //     ("0" + date.getMinutes()).slice(-2) +
+      //     "-" +
+      //     ("0" + date.getSeconds()).slice(-2);
+      //   return "output/MergeDocumentToPDF/merge" + dateString + ".pdf";
+      // }
+    } catch (err) {
+      console.log("Exception encountered while executing operation", err);
     }
   });
 };

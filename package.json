@@ -6,6 +6,7 @@
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
+        "@adobe/pdfservices-node-sdk": "^3.4.2",
         "@sap/cds": "^7",
         "@sap/cds-hana": "^2",
         "@sap/xssec": "^3",
@@ -14,10 +15,10 @@
     },
     "devDependencies": {
         "@cap-js/sqlite": "^1",
+        "@sap/approuter": "^14.3.2",
         "@sap/cds-dk": "^7",
         "@sap/ux-specification": "^1.108.15",
-        "rimraf": "^3.0.2",
-        "@sap/approuter": "^14.3.2"
+        "rimraf": "^3.0.2"
     },
     "scripts": {
         "start": "cds-serve",

@@ -2,8 +2,8 @@ using db from '../db/schema';
 
 @path: '/app'
 service AppService @(requires: 'Manager') {
-    entity Contacts          as projection on db.Contacts;
-    entity Departments       as projection on db.Departments;
+    entity Contacts            as projection on db.Contacts;
+    entity Departments         as projection on db.Departments;
 
     @odata.draft.enabled
     // @(restrict: [
@@ -19,12 +19,12 @@ service AppService @(requires: 'Manager') {
     //         to   : ['Reviewer', 'Manager'],
     //     },
     // ])
-    entity Orders            as projection on db.Orders actions {
+    entity Orders              as projection on db.Orders actions {
 
         @(
             cds.odata.bindingparameter.name: '_it',
             Common.SideEffects             : {TargetEntities: ['_it']},
-            Common.IsActionCritical : true
+            Common.IsActionCritical        : true
         )
         action approveOrder();
 
@@ -58,27 +58,27 @@ service AppService @(requires: 'Manager') {
     }
 
     @readonly
-    entity Products          as projection on db.Products;
+    entity Products            as projection on db.Products;
 
     @readonly
-    entity Suppliers         as projection on db.Suppliers;
+    entity Suppliers           as projection on db.Suppliers;
 
     @readonly
-    entity Categories        as projection on db.Categories;
+    entity Categories          as projection on db.Categories;
 
     @readonly
-    entity WarehouseProducts as projection on db.WarehouseProducts;
+    entity WarehouseProducts   as projection on db.WarehouseProducts;
 
     @readonly
-    entity Warehouses        as projection on db.Warehouses;
+    entity Warehouses          as projection on db.Warehouses;
 
     @readonly
-    entity Addresses         as projection on db.Addresses;
+    entity Addresses           as projection on db.Addresses;
 
     @readonly
-    entity OrderStatuses     as projection on db.OrderStatuses;
+    entity OrderStatuses       as projection on db.OrderStatuses;
 
-    entity OrderItems        as projection on db.OrderItems;
+    entity OrderItems          as projection on db.OrderItems;
 
     view Catalogue as
         select from WarehouseProducts as wp
@@ -106,34 +106,41 @@ service AppService @(requires: 'Manager') {
                os.ID = 'WAITING_FOR_EDIT'
             or os.ID = 'REJECTED';
 
-    entity WarehouseOrders   as projection on db.WarehouseOrders;
+    entity WarehouseOrders     as projection on db.WarehouseOrders;
 
     view DeliveryTargets as
         select from Departments as d
         inner join Addresses as a
-            on d.address.ID = a.ID {
-                d.ID as departmentID,
-                d.name as name,
-                a.region.code as regionCode,
-                a.region.name as regionName,
-                a.region.country.code as countryCode,
-                a.region.country.name as countryName,
-            }
-        where d.name <> 'Supplies'
+            on d.address.ID = a.ID
+        {
+            d.ID                  as departmentID,
+            d.name                as name,
+            a.region.code         as regionCode,
+            a.region.name         as regionName,
+            a.region.country.code as countryCode,
+            a.region.country.name as countryName,
+        }
+        where
+            d.name <> 'Supplies';
+
+    entity WarehouseContacts   as projection on db.WarehouseContacts;
+    entity Attachments         as projection on db.Attachments;
+    entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
 }
 
 @path: '/admin'
 service AdminService {
     //entity Contacts          as projection on db.Contacts;
     //entity Departments       as projection on db.Departments;
-    entity Orders            as projection on db.Orders;
-    entity Products          as projection on db.Products;
-    entity Suppliers         as projection on db.Suppliers;
-    entity Categories        as projection on db.Categories;
-    entity WarehouseProducts as projection on db.WarehouseProducts;
+    entity Orders              as projection on db.Orders;
+    entity Products            as projection on db.Products;
+    entity Suppliers           as projection on db.Suppliers;
+    entity Categories          as projection on db.Categories;
+    entity WarehouseProducts   as projection on db.WarehouseProducts;
     //entity Warehouses        as projection on db.Warehouses;
-    entity Addresses         as projection on db.Addresses;
-    entity OrderStatuses     as projection on db.OrderStatuses;
-    entity OrderItems        as projection on db.OrderItems;
-//entity Organisation as projection on db.Organisation;
+    entity Addresses           as projection on db.Addresses;
+    entity OrderStatuses       as projection on db.OrderStatuses;
+    entity OrderItems          as projection on db.OrderItems;
+    //entity Organisation as projection on db.Organisation;
+    entity Attachments         as projection on db.Attachments;
 }

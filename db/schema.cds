@@ -16,13 +16,13 @@ using {
 namespace db;
 
 aspect Order : cuid, managed {
-    title      : String;
-    notes      : String;
-    status     : Association to one OrderStatuses;
+    title  : String;
+    notes  : String;
+    status : Association to one OrderStatuses;
 }
 
 entity Orders : Order {
-    deliveryTo : Association to one Departments;
+    deliveryTo              : Association to one Departments;
     contact                 : Association to one Contacts
                                   on contact.email = $self.createdBy;
     items                   : Composition of many OrderItems
@@ -41,7 +41,7 @@ entity WarehouseOrders : Order {
     parentOrder : Association to one Orders;
     items       : Composition of many WarehouseOrderItems
                       on items.order = $self;
-    processor   : Association to one Contacts;
+    processor   : Association to one WarehouseContacts;
 }
 
 entity OrderStatuses {
@@ -58,8 +58,6 @@ entity Attachments : cuid {
     @Core.IsMediaType                : true
     mediaType : String;
     fileName  : String;
-    url       : String;
-    count     : Int64 default 0;
     order     : Association to one Orders;
     notes     : String;
 }
@@ -82,8 +80,10 @@ aspect StructuralUnit {
 entity Departments : StructuralUnit {}
 
 entity Warehouses : StructuralUnit {
-    products     : Composition of many WarehouseProducts
-                       on products.warehouse = $self;
+    products : Composition of many WarehouseProducts
+                   on products.warehouse = $self;
+    contacts : Composition of many WarehouseContacts
+                   on contacts.warehouse = $self;
 }
 
 // -----------------------------------
@@ -99,16 +99,25 @@ entity Addresses : cuid {
 
 // -----------------------------------
 
-entity Contacts {
-    key email  : User;
-    firstName  : String;
-    lastName   : String;
-    fullName   : String;
-    title      : String;
-    tel        : String;
-    photoUrl   : String;
+aspect Contact {
+    key email : User;
+    firstName : String;
+    lastName  : String;
+    fullName  : String;
+    title     : String;
+    tel       : String;
+    photoUrl  : String;
+}
+
+entity Contacts : Contact {
     department : Association to one Departments;
-    manager : Association to one Contacts;
+    manager    : Association to one Contacts;
+}
+
+entity WarehouseContacts : Contact {
+    warehouse : Association to one Warehouses;
+    orders    : Association to many WarehouseOrders
+                    on orders.processor = $self;
 }
 
 // -----------------------------------
@@ -124,8 +133,15 @@ entity OrderItems : OrderItem {
 }
 
 entity WarehouseOrderItems : OrderItem {
-    order  : Association to one WarehouseOrders;
-    status : Association to one OrderStatuses;
+    order    : Association to one WarehouseOrders;
+    status   : Association to one OrderStatuses;
+
+    @Core.MediaType                  : 'application/pdf'
+    @Core.ContentDisposition.Filename: fileName
+    virtual content  : LargeBinary;
+
+    @Core.IsMediaType                : true
+    virtual fileName : String default 'PrintProfile.pdf';
 }
 
 // -----------------------------------
