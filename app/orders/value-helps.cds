@@ -278,5 +278,10 @@ annotate AppService.WarehouseOrderItems with @(
         },{
             $Type : 'UI.DataField',
             Value : status.name,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : content,
+            Label : 'content',
         },]
 );
