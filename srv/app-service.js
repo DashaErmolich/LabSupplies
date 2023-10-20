@@ -4,7 +4,9 @@ const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
 path = require("path");
-const QRCode = require('qrcode')
+const QRCode = require('qrcode');
+
+const { sendMail, MailConfig } = require('@sap-cloud-sdk/mail-client');
 
 module.exports = function (srv) {
   const {
@@ -124,6 +126,17 @@ module.exports = function (srv) {
 
     return next();
   });
+
+  this.after("SAVE", Orders, async (order) => {
+    const mailConfig = {
+      from: 'from@example.com',
+      to: 'dasha.ermolich@gmail.com',
+      subject: 'e-mail subject',
+      text: `<h1>${order.ID}</h1>`
+    };
+
+    await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
+  })
 
   this.before("SAVE", Orders, async (req) => {
     const userID = req.user.id;
