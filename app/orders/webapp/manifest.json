@@ -171,7 +171,7 @@
                                     "sections": {
                                         "myCustomSection": {
                                             "template": "orders.custom.fragment.WarehouseOrdersSection",
-                                            "title": "{i18n>relatedOrdersInfo}",
+                                            "title": "Related Orders",
                                             "position": {
                                                 "placement": "Before",
                                                 "anchor": "Items"
