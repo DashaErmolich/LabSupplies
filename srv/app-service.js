@@ -4,6 +4,7 @@ const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
 path = require("path");
+const QRCode = require('qrcode')
 
 module.exports = function (srv) {
   const {
@@ -356,6 +357,8 @@ module.exports = function (srv) {
           path.resolve(__dirname, "salesOrder.json")
         ),
         jsonDataForMerge = JSON.parse(jsonString);
+
+      jsonDataForMerge.logo = await QRCode.toDataURL(`${req.data.id}`, { errorCorrectionLevel: 'H' });
 
       // Create an ExecutionContext using credentials
       const executionContext =
