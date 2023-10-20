@@ -94,6 +94,11 @@
                     "pattern": "Orders({key}):?query:",
                     "name": "OrdersObjectPage",
                     "target": "OrdersObjectPage"
+                },
+                {
+                    "pattern": "Orders({key})/warehouseOrders({key2}):?query:",
+                    "name": "Orders_warehouseOrdersObjectPage",
+                    "target": "Orders_warehouseOrdersObjectPage"
                 }
             ],
             "targets": {
@@ -124,7 +129,13 @@
                         "settings": {
                             "editableHeaderContent": false,
                             "entitySet": "Orders",
-                            "navigation": {},
+                            "navigation": {
+                                "warehouseOrders": {
+                                    "detail": {
+                                        "route": "Orders_warehouseOrdersObjectPage"
+                                    }
+                                }
+                            },
                             "controlConfiguration": {
                                 "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
                                     "tableSettings": {
@@ -155,8 +166,32 @@
                                             }
                                         }
                                     }
+                                },
+                                "body": {
+                                    "sections": {
+                                        "myCustomSection": {
+                                            "template": "orders.custom.fragment.WarehouseOrdersSection",
+                                            "title": "{i18n>relatedOrdersInfo}",
+                                            "position": {
+                                                "placement": "Before",
+                                                "anchor": "Items"
+                                            },
+                                            "type": "XMLFragment"
+                                        }
+                                    }
                                 }
                             }
+                        }
+                    }
+                },
+                "Orders_warehouseOrdersObjectPage": {
+                    "type": "Component",
+                    "id": "Orders_warehouseOrdersObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/Orders/warehouseOrders",
+                            "navigation": {}
                         }
                     }
                 }

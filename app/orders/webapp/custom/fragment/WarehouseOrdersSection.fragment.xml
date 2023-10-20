@@ -1,0 +1,18 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core" xmlns="sap.m" 	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:l="sap.ui.layout"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:macros="sap.fe.macros">
+    <Text id="_IDGenText1" text="HKLVKLJHGLKVJKHV"/>
+                    <l:HorizontalLayout id="TileContainerExpanded" allowWrapping="true" content="{warehouseOrders}" class="sapUiMediumMarginBegin">
+					<GenericTile id="_IDGenGenericTile1"
+						header="{title}"
+						subheader="{status.name}"
+						press="onPressed"
+						class="sapUiTinyMarginEnd sapUiTinyMarginTop tileLayout"
+					>
+						<TileContent id="_IDGenTileContent1" unit="unit" footer="footer">
+							<Text id="_IDGenText2" text="{modifiedBy}"/>
+						</TileContent>
+					</GenericTile>
+				</l:HorizontalLayout>
+</core:FragmentDefinition>

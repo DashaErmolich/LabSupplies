@@ -145,7 +145,7 @@ module.exports = function (srv) {
       .from(Contacts)
       .where({ email: userID });
 
-    req.data.processor_email = userContact.manager_email;
+    // req.data.processor_email = userContact.manager_email;
   });
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
