@@ -327,11 +327,12 @@ module.exports = function (srv) {
     });
 
     for (let i = 0; i < whIDs.length; i++) {
+      const wh = warehouses.find((wh) => wh.ID === whIDs[i]);
+
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
         .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
-      const whOrderTitle = `${order.title}-${warehouses
-        .find((wh) => wh.ID === whIDs[i])
+      const whOrderTitle = `${order.title}-${wh
         .name.split(" ")
         .join("/")}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
@@ -344,6 +345,7 @@ module.exports = function (srv) {
         processor_email: contacts.sort(
           (a, b) => a.orders.length - b.orders.length
         )[0].email,
+        warehouse_ID: wh.ID,
       };
 
       await INSERT.into(WarehouseOrders, whOrder);

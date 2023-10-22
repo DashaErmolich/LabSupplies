@@ -1,11 +1,11 @@
-﻿ID;name;criticalityCode
-OPENED;Opened;0
-WAITING_FOR_APPROVE;Waiting for Approve;2
-APPROVED;Approved;3
-REJECTED;Rejected and Closed;1
-WAITING_FOR_DELIVERY;Waiting for Delivery;2
-CLOSED;Closed;3
-WAITING_FOR_EDIT;Waiting for Edit;2
-PACKING;Waiting for Packing;0
-WAITING_FOR_COLLECTION;Waiting for Collection;2
-COLLECTED;Collected;3
+﻿ID;name;criticalityCode;ctiticalityName
+OPENED;Opened;0;Neutral
+WAITING_FOR_APPROVE;Waiting for Approve;2;Critical
+APPROVED;Approved;3;Good
+REJECTED;Rejected and Closed;1;Error
+WAITING_FOR_DELIVERY;Waiting for Delivery;2;Critical
+CLOSED;Closed;3;Good
+WAITING_FOR_EDIT;Waiting for Edit;2;Critical
+PACKING;Waiting for Packing;0;Neutral
+WAITING_FOR_COLLECTION;Waiting for Collection;2;Critical
+COLLECTED;Collected;3;Good

@@ -195,14 +195,14 @@ annotate AppService.Catalogue with {
     description   @UI.HiddenFilter;
     supplierCatNo @UI.HiddenFilter;
     warehouseID   @UI.Hidden;
-    name @UI.HiddenFilter;
+    name          @UI.HiddenFilter;
 }
 
 annotate AppService.DeliveryTargets with {
     departmentID @UI.Hidden;
-    name @UI.HiddenFilter;
-    countryName @UI.HiddenFilter;
-    regionName @UI.HiddenFilter;
+    name         @UI.HiddenFilter;
+    countryName  @UI.HiddenFilter;
+    regionName   @UI.HiddenFilter;
 }
 
 annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
@@ -275,74 +275,108 @@ annotate AppService.Attachments with @(UI.LineItem #Attachments: [
 annotate service.Attachments with {
     content   @mandatory;
     notes     @UI.MultiLineText;
-    count     @UI.Hidden;
     fileName  @UI.Hidden;
     ID        @UI.Hidden;
     mediaType @UI.Hidden;
-    url       @UI.Hidden;
     order     @UI.Hidden;
-
 };
 
 // WH ORDERS
 
 annotate AppService.WarehouseOrders with @(
-    UI.Facets : [
+    UI.HeaderInfo           : {Title: {
+        $Type: 'UI.DataField',
+        Value: title,
+    }, },
+
+    UI.HeaderFacets         : [
         {
             $Type : 'UI.ReferenceFacet',
-            Label : 'items',
-            ID : 'items',
-            Target : 'items/@UI.LineItem#items',
+            ID    : 'WhContact',
+            Target: '@UI.FieldGroup#WhContact',
         },
-    ]
-);
-annotate AppService.WarehouseOrderItems with @(
-    UI.LineItem #items : [
-        {
-            $Type : 'UI.DataField',
-            Value : item.product.title,
-        },{
-            $Type : 'UI.DataField',
-            Value : qty,
-            Label : 'qty',
-        },{
-            $Type : 'UI.DataField',
-            Value : item.product.supplier.name,
-        },{
-            $Type : 'UI.DataField',
-            Value : status.name,
-            Criticality : status.criticalityCode,
-        },
-        {
-            $Type : 'UI.DataField',
-            Value : content,
-            Label : 'content',
-        },]
-);
-annotate AppService.WarehouseOrders with @(
-    UI.HeaderInfo : {
-        TypeName : '',
-        TypeNamePlural : '',
-        Title : {
-            $Type : 'UI.DataField',
-            Value : title,
-        },
-    }
-);
-annotate AppService.OrderStatuses with @(
-    UI.DataPoint #name : {
-        $Type : 'UI.DataPointType',
-        Value : name,
-        Title : 'name',
-        Criticality : criticalityCode,
-    }
-);
-annotate AppService.WarehouseOrders with @(
-    UI.HeaderFacets : [
         {
             $Type : 'UI.ReferenceFacet',
-            ID : 'name',
-            Target : 'status/@UI.DataPoint#name',
+            ID    : 'name',
+            Target: 'status/@UI.DataPoint#name',
         },
-    ]
+    ],
+
+    UI.Facets               : [{
+        $Type : 'UI.ReferenceFacet',
+        Label : 'items',
+        ID    : 'WhOrderItems',
+        Target: 'items/@UI.LineItem#WhOrderItems',
+    }],
+    UI.FieldGroup #WhContact: {
+        $Type: 'UI.FieldGroupType',
+        Data : [{
+            $Type : 'UI.DataFieldForAnnotation',
+            Target: 'processor/@Communication.Contact',
+            Label : '{i18n>processedBy}',
+        }, ],
+    }
+);
+
+
+annotate AppService.OrderStatuses with @(UI.DataPoint #name: {
+    $Type      : 'UI.DataPointType',
+    Value      : name,
+    Title      : '{i18n>status}',
+    Criticality: criticalityCode,
+});
+
+
+annotate AppService.WarehouseOrderItems with @(UI.LineItem #WhOrderItems: [
+    {
+        $Type: 'UI.DataField',
+        Value: item.product.supplierCatNo,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: item.product.title,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: qty,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: item.product.supplier.name,
+    },
+    {
+        $Type      : 'UI.DataField',
+        Value      : status.name,
+        Criticality: status.criticalityCode,
+    },
+]);
+
+annotate AppService.WarehouseContacts with @(
+    Communication.Contact : {
+        $Type: 'Communication.ContactType',
+        org  : warehouse.name,
+        email: [{
+            $Type  : 'Communication.EmailAddressType',
+            type   : #work,
+            address: email,
+        }, ],
+        fn   : fullName,
+        role : title,
+        tel  : [{
+            $Type: 'Communication.PhoneNumberType',
+            type : #work,
+            uri  : tel,
+        }, ],
+        adr  : [{
+            $Type   : 'Communication.AddressType',
+            type    : #work,
+            street  : warehouse.address.street,
+            locality: warehouse.address.city,
+            region  : warehouse.address.region.name,
+            code    : warehouse.address.postCode,
+            country : warehouse.address.region.country.name,
+        }, ],
+        photo: photoUrl,
+    },
+    Common.IsNaturalPerson: true
 );

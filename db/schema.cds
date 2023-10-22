@@ -42,12 +42,14 @@ entity WarehouseOrders : Order {
     items       : Composition of many WarehouseOrderItems
                       on items.order = $self;
     processor   : Association to one WarehouseContacts;
+    warehouse: Association to one Warehouses;
 }
 
 entity OrderStatuses {
     key ID              : String  @Common.Text: name  @Common.TextArrangement: #TextOnly;
         name            : String;
         criticalityCode : Int16;
+        ctiticalityName: String;
 }
 
 entity Attachments : cuid {

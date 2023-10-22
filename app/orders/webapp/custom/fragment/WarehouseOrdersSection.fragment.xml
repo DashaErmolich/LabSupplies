@@ -8,15 +8,16 @@
 		core:require="{handler: 'orders/custom/fragment/WarehouseOrdersSection'}"
 	>
     <Text id="_IDGenText1" text="HKLVKLJHGLKVJKHV"/>
-                    <l:HorizontalLayout id="TileContainerExpanded" allowWrapping="true" content="{warehouseOrders}" class="sapUiMediumMarginBegin">
+          <l:HorizontalLayout id="TileContainerExpanded" allowWrapping="true" content="{warehouseOrders}" class="sapUiMediumMarginBegin">
+					
 					<GenericTile id="_IDGenGenericTile1"
 						header="{title}"
-						subheader="{status.name}"
+						subheader="{warehouse/name}"
 						press="handler.onPress"
 						class="sapUiTinyMarginEnd sapUiTinyMarginTop tileLayout"
 					>
-						<TileContent id="_IDGenTileContent1" unit="unit" footer="footer">
-							<Text id="_IDGenText2" text="{modifiedBy}"/>
+						<TileContent id="_IDGenTileContent1" footer="{status/name}" footerColor="{status/ctiticalityName}">
+
 						</TileContent>
 					</GenericTile>
 				</l:HorizontalLayout>

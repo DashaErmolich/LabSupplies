@@ -193,12 +193,12 @@
                             "contextPath": "/Orders/warehouseOrders",
                             "navigation": {},
                             "controlConfiguration": {
-                                "items/@com.sap.vocabularies.UI.v1.LineItem#items": {
+                                "items/@com.sap.vocabularies.UI.v1.LineItem#WhOrderItems": {
                                     "columns": {
                                         "WarehouseProductLabel": {
-                                            "header": "Packaging Label",
+                                            "header": "Label",
                                             "position": {
-                                                "anchor": "DataField::content",
+                                                "anchor": "DataField::status::name",
                                                 "placement": "After"
                                             },
                                             "template": "orders.ext.fragment.WarehouseProductLabel"

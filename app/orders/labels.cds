@@ -39,6 +39,10 @@ annotate schema.OrderItems with {
   qty @title: '{i18n>qty}';
 };
 
+annotate schema.WarehouseOrderItems with {
+  qty @title: '{i18n>qty}';
+};
+
 annotate schema.Warehouses with {
   name @title: '{i18n>warehouseName}';
 };
