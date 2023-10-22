@@ -5,7 +5,7 @@
     {
       "source": "^/app/(.*)$",
       "target": "/app/$1",
-      "destination": "srv-api",
+      "destination": "LabSupplies-srv",
       "csrfProtection": true,
       "authenticationType": "xsuaa",
       "cacheControl": "no-cache, no-store, must-revalidate"

@@ -6,19 +6,6 @@ service AppService @(requires: 'Manager') {
     entity Departments         as projection on db.Departments;
 
     @odata.draft.enabled
-    // @(restrict: [
-    //     {
-    //         grant: [
-    //             'READ',
-    //             'WRITE'
-    //         ],
-    //         to   : ['Manager']
-    //     },
-    //     {
-    //         grant: ['UPDATE'],
-    //         to   : ['Reviewer', 'Manager'],
-    //     },
-    // ])
     entity Orders              as projection on db.Orders actions {
 
         @(

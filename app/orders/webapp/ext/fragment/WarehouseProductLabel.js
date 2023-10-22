@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 sap.ui.define(["sap/m/PDFViewer"], function (PDFViewer) {
 	"use strict";
 

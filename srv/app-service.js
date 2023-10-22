@@ -1,10 +1,12 @@
 const cds = require("@sap/cds");
-const { removeDuplicates } = require("./utils");
+const { removeDuplicates, postNotification, createNotification } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
 path = require("path");
 const QRCode = require('qrcode');
+
+const TEST_EMAIL = 'dasha.ermolich@gmail.com'
 
 const { sendMail, MailConfig } = require('@sap-cloud-sdk/mail-client');
 
@@ -26,7 +28,7 @@ module.exports = function (srv) {
 
   this.before("CREATE", Orders, async (req) => {
     const data = new Date();
-    req.data.title = `Order ${data.getDate()}/${data.getMinutes()}`;
+    req.data.title = `${data.getDate()}/${data.getMinutes()}`;
   });
 
   this.before("SAVE", Orders, async (req) => {
@@ -136,6 +138,9 @@ module.exports = function (srv) {
     };
 
     await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
+    await postNotification(createNotification(order.title, TEST_EMAIL));
+
+    console.log();
   })
 
   this.before("SAVE", Orders, async (req) => {
