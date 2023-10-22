@@ -11,6 +11,7 @@
         "@sap/cds": "^7",
         "@sap/cds-hana": "^2",
         "@sap/xssec": "^3",
+        "cors": "^2.8.5",
         "express": "^4",
         "passport": "^0",
         "qrcode": "^1.5.3"
