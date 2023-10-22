@@ -283,3 +283,66 @@ annotate service.Attachments with {
     order     @UI.Hidden;
 
 };
+
+// WH ORDERS
+
+annotate AppService.WarehouseOrders with @(
+    UI.Facets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'items',
+            ID : 'items',
+            Target : 'items/@UI.LineItem#items',
+        },
+    ]
+);
+annotate AppService.WarehouseOrderItems with @(
+    UI.LineItem #items : [
+        {
+            $Type : 'UI.DataField',
+            Value : item.product.title,
+        },{
+            $Type : 'UI.DataField',
+            Value : qty,
+            Label : 'qty',
+        },{
+            $Type : 'UI.DataField',
+            Value : item.product.supplier.name,
+        },{
+            $Type : 'UI.DataField',
+            Value : status.name,
+            Criticality : status.criticalityCode,
+        },
+        {
+            $Type : 'UI.DataField',
+            Value : content,
+            Label : 'content',
+        },]
+);
+annotate AppService.WarehouseOrders with @(
+    UI.HeaderInfo : {
+        TypeName : '',
+        TypeNamePlural : '',
+        Title : {
+            $Type : 'UI.DataField',
+            Value : title,
+        },
+    }
+);
+annotate AppService.OrderStatuses with @(
+    UI.DataPoint #name : {
+        $Type : 'UI.DataPointType',
+        Value : name,
+        Title : 'name',
+        Criticality : criticalityCode,
+    }
+);
+annotate AppService.WarehouseOrders with @(
+    UI.HeaderFacets : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID : 'name',
+            Target : 'status/@UI.DataPoint#name',
+        },
+    ]
+);

@@ -253,35 +253,3 @@ annotate AppService.Catalogue with {
         }
     };
 };
-annotate AppService.WarehouseOrders with @(
-    UI.Facets : [
-        {
-            $Type : 'UI.ReferenceFacet',
-            Label : 'items',
-            ID : 'items',
-            Target : 'items/@UI.LineItem#items',
-        },
-    ]
-);
-annotate AppService.WarehouseOrderItems with @(
-    UI.LineItem #items : [
-        {
-            $Type : 'UI.DataField',
-            Value : item.product.title,
-        },{
-            $Type : 'UI.DataField',
-            Value : qty,
-            Label : 'qty',
-        },{
-            $Type : 'UI.DataField',
-            Value : item.product.supplier.name,
-        },{
-            $Type : 'UI.DataField',
-            Value : status.name,
-        },
-        {
-            $Type : 'UI.DataField',
-            Value : content,
-            Label : 'content',
-        },]
-);

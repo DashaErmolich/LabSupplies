@@ -191,7 +191,21 @@
                     "options": {
                         "settings": {
                             "contextPath": "/Orders/warehouseOrders",
-                            "navigation": {}
+                            "navigation": {},
+                            "controlConfiguration": {
+                                "items/@com.sap.vocabularies.UI.v1.LineItem#items": {
+                                    "columns": {
+                                        "WarehouseProductLabel": {
+                                            "header": "Packaging Label",
+                                            "position": {
+                                                "anchor": "DataField::content",
+                                                "placement": "After"
+                                            },
+                                            "template": "orders.ext.fragment.WarehouseProductLabel"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

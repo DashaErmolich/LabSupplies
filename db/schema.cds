@@ -133,15 +133,16 @@ entity OrderItems : OrderItem {
 }
 
 entity WarehouseOrderItems : OrderItem {
-    order    : Association to one WarehouseOrders;
-    status   : Association to one OrderStatuses;
+    order            : Association to one WarehouseOrders;
+    status           : Association to one OrderStatuses;
 
     @Core.MediaType                  : 'application/pdf'
     @Core.ContentDisposition.Filename: fileName
+    @Core.ContentDisposition.Type    : 'inline'
     virtual content  : LargeBinary;
 
     @Core.IsMediaType                : true
-    virtual fileName : String default 'PrintProfile.pdf';
+    virtual fileName : String default 'Label.pdf';
 }
 
 // -----------------------------------
