@@ -1,4 +1,4 @@
-const { getDestination, executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
+const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
 
 function removeDuplicates(array) {
   return [... new Set(array)];
@@ -6,7 +6,6 @@ function removeDuplicates(array) {
 
 async function postNotification(notification) {
   const notificationEndpoint = "v2/Notification.svc";
-  // const notifServiceDest = await getDestination(destinationName);
   const csrfHeaders = await buildCsrfHeaders({ destinationName:  'FLP-notification-service'}, { url: notificationEndpoint });
   const response = await executeHttpRequest({ destinationName:  'FLP-notification-service'}, {
       url: `${notificationEndpoint}/Notifications`,

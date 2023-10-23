@@ -1,4 +1,7 @@
 const cds = require("@sap/cds");
+const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
+  fs = require("fs");
+const { Readable, Writable, PassThrough } = require("stream");
 
 module.exports = function (srv) {
   const { WarehouseOrderItems, WarehouseOrders } = srv.entities;

@@ -28,7 +28,7 @@ module.exports = function (srv) {
 
   this.before("CREATE", Orders, async (req) => {
     const data = new Date();
-    req.data.title = `${data.getDate()}/${data.getMinutes()}`;
+    req.data.title = `SO${data.getDate()}/${data.getMinutes()}`;
   });
 
   this.before("SAVE", Orders, async (req) => {
@@ -117,7 +117,9 @@ module.exports = function (srv) {
             stock: item.whItem.stock - item.listItem.qty,
           });
         } catch (error) {
-          console.log(error);
+          req.error({
+            message: 'Something bad happened. Check order products.'
+          })
         }
       }
     } else {
@@ -130,11 +132,15 @@ module.exports = function (srv) {
   });
 
   this.after("SAVE", Orders, async (order) => {
+    const managerContact = await SELECT.one
+    .from(Contacts)
+    .where({ email: order.processor_email });
+
     const mailConfig = {
-      from: 'from@example.com',
-      to: TEST_EMAIL,
-      subject: 'e-mail subject',
-      text: `<h1>${order.ID}</h1>`
+      from: order.modifiedBy,
+      to: order.processor_email,
+      subject: `Order ${order.title} review`,
+      text: `<p><b>Order ${order.title}</b> requires review by ${managerContact.fullName}}</p>`
     };
 
     await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
@@ -204,7 +210,7 @@ module.exports = function (srv) {
   });
 
   this.on("approveOrder", async (req) => {
-    const orderID = req._params[0].ID;
+    const orderID = req.params[0].ID;
 
     try {
       await UPDATE(Orders, {
@@ -213,7 +219,9 @@ module.exports = function (srv) {
         status_ID: "WAITING_FOR_DELIVERY",
       });
     } catch (error) {
-      console.log(error);
+      req.error({
+        message: 'Something bad happened. Check order.'
+      })
     }
   });
 
@@ -228,7 +236,9 @@ module.exports = function (srv) {
         reviewNotes: req.data.notes,
       });
     } catch (error) {
-      console.log(error);
+      req.error({
+        message: 'Something bad happened. Check order.'
+      })
     }
 
     if (req.data.statusID === "WAITING_FOR_EDIT") {
@@ -242,7 +252,9 @@ module.exports = function (srv) {
           processor_email: order.createdBy,
         });
       } catch (error) {
-        console.log(error);
+        req.error({
+          message: 'Something bad happened. Check order.'
+        })
       }
     }
 
@@ -280,7 +292,9 @@ module.exports = function (srv) {
             stock: item.whItem.stock + item.listItem.qty,
           });
         } catch (error) {
-          console.log(error);
+          req.error({
+            message: 'Something bad happened. Check order.'
+          })
         }
       }
     }
@@ -359,9 +373,7 @@ module.exports = function (srv) {
     }
   });
 
-  this.on("READ", "WarehouseOrderItems", async (req, next) => {
-    console.log(req.req.originalUrl);
-
+  this.on("READ", WarehouseOrderItems, async (req, next) => {
     if (!req.data.ID || !req.req.originalUrl.includes("content")) {
       return next();
     }
@@ -373,14 +385,34 @@ module.exports = function (srv) {
           .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
           .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
           .build();
+      
+      const labelData = await SELECT.one.from(WarehouseOrderItems, req.data.ID, (whItem) => {
+        whItem.qty, whItem.item((item) => {
+          item.warehouse((wh) => {
+            wh.name, wh.address((whAddress) => {
+              whAddress`.*`
+            })
+          }),
+          item.product((product) => {
+            product`.*`, product.category((cat) => {
+              cat.name
+            })
+          })
+        }),
+        whItem.order((order) => {
+          order.title, order.createdAt, order.parentOrder((pOrder) => {
+            pOrder.processor_email, pOrder.title, pOrder.createdAt, pOrder.deliveryTo((dTo) => {
+              dTo.name, dTo.address((address) => {
+                address`.*`
+              })
+            })
+          })
+        })
+      })
 
-      // Setup input data for the document merge process
-      const jsonString = fs.readFileSync(
-          path.resolve(__dirname, "salesOrder.json")
-        ),
-        jsonDataForMerge = JSON.parse(jsonString);
 
-      jsonDataForMerge.logo = await QRCode.toDataURL(`${req.data.ID}`, { errorCorrectionLevel: 'H' });
+      labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, { errorCorrectionLevel: 'H' });
+      labelData.timestamp = (new Date()).toString()
 
       // Create an ExecutionContext using credentials
       const executionContext =
@@ -390,7 +422,7 @@ module.exports = function (srv) {
       const documentMerge = PDFServicesSdk.DocumentMerge,
         documentMergeOptions = documentMerge.options,
         options = new documentMergeOptions.DocumentMergeOptions(
-          jsonDataForMerge,
+          labelData,
           documentMergeOptions.OutputFormat.PDF
         );
 
@@ -399,19 +431,13 @@ module.exports = function (srv) {
 
       // Set operation input document template from a source file.
       const input = PDFServicesSdk.FileRef.createFromLocalFile(
-        path.resolve(__dirname, "salesOrderTemplate.docx")
+        path.resolve(__dirname, "WhOrderItemPackingLabel.docx")
       );
       documentMergeOperation.setInput(input);
 
-      //Generating a file name
-      // let outputFilePath = createOutputFilePath();
-
       // Execute the operation and Save the result to the specified location.
       const result = await documentMergeOperation.execute(executionContext);
-      // await result.saveAsFile(outputFilePath);
-
       const stream = new Readable();
-
       await _streamToData(stream, result);
 
       const resultOutput = new Array();
@@ -432,42 +458,12 @@ module.exports = function (srv) {
             outStream.push(null);
             resolve(true);
           });
-          // content.pipe(stream)
         });
       }
-
-      console.log(1);
-      // .then((result) => result.saveAsFile(outputFilePath))
-      // .catch((err) => {
-      //   if (
-      //     err instanceof PDFServicesSdk.Error.ServiceApiError ||
-      //     err instanceof PDFServicesSdk.Error.ServiceUsageError
-      //   ) {
-      //     console.log("Exception encountered while executing operation", err);
-      //   } else {
-      //     console.log("Exception encountered while executing operation", err);
-      //   }
-      // });
-
-      //Generates a string containing a directory structure and file name for the output file.
-      // function createOutputFilePath() {
-      //   let date = new Date();
-      //   let dateString =
-      //     date.getFullYear() +
-      //     "-" +
-      //     ("0" + (date.getMonth() + 1)).slice(-2) +
-      //     "-" +
-      //     ("0" + date.getDate()).slice(-2) +
-      //     "T" +
-      //     ("0" + date.getHours()).slice(-2) +
-      //     "-" +
-      //     ("0" + date.getMinutes()).slice(-2) +
-      //     "-" +
-      //     ("0" + date.getSeconds()).slice(-2);
-      //   return "output/MergeDocumentToPDF/merge" + dateString + ".pdf";
-      // }
     } catch (err) {
-      console.log("Exception encountered while executing operation", err);
+      req.err({
+        message: 'Something bad happened. Unable to load label.'
+      })
     }
   });
 };
