@@ -86,7 +86,6 @@ function getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, revie
   let message = '';
   let status = '';
 
-
   switch(orderStatusID) {
     case 'WAITING_FOR_APPROVE':
       message = `<p>${contactFrom.fullName} (${contactFrom.email}) requested approve for <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>`;
@@ -105,97 +104,49 @@ function getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, revie
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || 'none'}.</p>`;
       status = 'Edit Request';
       break;
-    case 'CLOSED': {
+    case 'CLOSED':
       message = ` <b>Order ${orderTitle}</b> is delivered.</p>`;
       status = 'Close';
+      break;
+    case 'WAITING_FOR_DELIVERY':
+      message = `
+      <p>${contactFrom.fullName} (${contactFrom.email}) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || 'none'}.</p>`;
+      status = 'In delivery';
+      break;
     }
-  }
 
   const mailConfig = {
     from: 'labsupplies.notification@example.com',
     to: `${contactTo.email}`,
     subject: `Order ${orderTitle} ${status}`,
     text: `
-    <div>
-      ${message}
-    <p>This mail was send automatically by LabSupplies application, do not reply on it.</p>
-  </div>
-  `
-  };
-  return mailConfig;
-}
-
-function getEditOrderEmailConfig(from, to, orderTitle, reviewerNotes) {
-  const mailConfig = {
-    from: 'labsupplies.notification@example.com',
-    to: `${to.email}`,
-    subject: `Order ${orderTitle} review`,
-    text: `
-    <div>
-      <p>${from.fullName} (${from.email}) requested edit of <b>Order ${orderTitle}</b> by ${to.fullName}.</p>
-      <br>
-      <p>Notes by ${from.fullName}: ${reviewerNotes || '-'}.</p>
-
-      This mail was send automatically by LabSupplies application, do not reply on it.
+      <div>
+        ${message}
+      <p>This mail was send automatically by LabSupplies application, do not reply on it.</p>
     </div>
     `
-  };
+  }
   return mailConfig;
 }
 
-function getRejectOrderEmailConfig(from, to, orderTitle, reviewerNotes) {
-  const mailConfig = {
-    from: 'labsupplies.notification@example.com',
-    to: `${to.email}`,
-    subject: `Order ${orderTitle} review`,
-    text: `
-    <div>
-      <p>${from.fullName} (${from.email}) has rejected and closed <b>Order ${orderTitle}</b> created by ${to.fullName}.</p>
-      <br>
-      <p>Notes by ${from.fullName}: ${reviewerNotes || 'none'}.</p>
-
-      This mail was send automatically by LabSupplies application, do not reply on it.
-    </div>
-    `
-  };
-  return mailConfig;
-}
-
-async function sendEmail(mailConfig) {
-  try {
-    await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
-  } catch (error) {
-    req.warn({
-      message: `Sorry, email was not been sent to ${mailConfig.to}.`
-    })
-  }
-}
-
-async function sentNotificationToFLP(notification) {
-  try {
-    await postNotification(notification);
-  } catch (error) {
-    req.warn({
-      message: `Sorry, notification was not been sent to ${processorContact.email}.`
-    })
-  }
-}
 
 async function sendNotifications(orderStatusID, orderTitle, contactFrom, contactTo, reviewNotes) {
   let mailConfig = getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, reviewNotes);
   let notification = createNotification(orderTitle, contactTo.email);
 
   try {
-    await sendEmail(mailConfig);
+    await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
   } catch (error) {
     throw new Error(`Sorry, email was not been sent to ${user.manager.email}.`)
   }
 
   try {
-    await sentNotificationToFLP(notification);
+    await postNotification(notification);
   } catch (error) {
     throw new Error(`Sorry, notification was not been sent to ${user.manager.email}.`);
   }
 }
 
-module.exports = { sendNotifications, getRejectOrderEmailConfig, sentNotificationToFLP, sendEmail, getEditOrderEmailConfig, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
+module.exports = { sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };

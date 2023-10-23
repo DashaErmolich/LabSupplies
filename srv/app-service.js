@@ -1,5 +1,5 @@
 const cds = require("@sap/cds");
-const { removeDuplicates, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact, getEditOrderEmailConfig, sendEmail, sentNotificationToFLP, getRejectOrderEmailConfig, sendNotifications } = require("./utils");
+const { removeDuplicates, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact, sendNotifications } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
@@ -204,15 +204,31 @@ module.exports = function (srv) {
   this.on("approveOrder", async (req) => {
     const orderID = req.params[0].ID;
 
+    const order = await SELECT.one.from(Orders, orderID, (order) => {
+      order`.*`,
+      order.contact((c) => {
+        c`.*`, c.manager((m) => m`.*`)
+      })
+    });
+
     try {
       await UPDATE(Orders, {
         ID: orderID,
       }).with({
         status_ID: "WAITING_FOR_DELIVERY",
+        processor_email: order.contact.email
       });
     } catch (error) {
       req.error({
         message: 'Something bad happened. Check order.'
+      })
+    }
+
+    try {
+      await sendNotifications(order.status_ID, order.title, order.contact.manager, order.contact, order.reviewNotes);
+    } catch (error) {
+      req.warn({
+        message: error.message,
       })
     }
   });
