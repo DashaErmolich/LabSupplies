@@ -25,7 +25,21 @@
                     "odataVersion": "4.0"
                 }
             }
-        }
+        },
+        "crossNavigation": {
+            "inbounds": {
+              "laborder-manage": {
+                "semanticObject": "laborder",
+                "action": "manage",
+                "title": "{{flpTitle}}",
+                "subTitle": "{{flpSubtitle}}",
+                "signature": {
+                  "parameters": {},
+                  "additionalParameters": "allowed"
+                }
+              }
+            }
+          }
     },
     "sap.ui": {
         "technology": "UI5",

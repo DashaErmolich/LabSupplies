@@ -21,7 +21,7 @@
         "@cap-js/sqlite": "^1",
         "@sap/approuter": "^14.3.2",
         "@sap/cds-dk": "^7",
-        "@sap/ux-specification": "^1.108.15",
+        "@sap/ux-specification": "^1.108.16",
         "rimraf": "^3.0.2"
     },
     "scripts": {
@@ -33,10 +33,11 @@
         "clean": "npx rimraf mta_archives resources",
         "clean:gen": "npx rimraf gen",
         "build": "rimraf resources mta_archives && mbt build --mtar archive",
-        "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+        "deploy": "cf deploy mta_archives/LabSupplies_1.0.0.mtar --retries 1",
         "undeploy": "cf undeploy LabSupplies --delete-services --delete-service-keys --delete-service-brokers",
         "watch-orders": "cds watch --open orders/webapp/index.html?sap-ui-xx-viewCache=false",
-        "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false"
+        "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false",
+        "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false"
     },
     "cds": {
         "requires": {
@@ -49,6 +50,7 @@
     },
     "sapux": [
         "app/orders",
-        "app/test"
+        "app/test",
+        "app/project1"
     ]
 }

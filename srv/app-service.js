@@ -386,6 +386,7 @@ module.exports = function (srv) {
   });
 
   this.on("READ", WarehouseOrderItems, async (req, next) => {
+
     if (!req.data.ID || !req.req.originalUrl.includes("content")) {
       return next();
     }
@@ -424,7 +425,6 @@ module.exports = function (srv) {
 
 
       labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, { errorCorrectionLevel: 'H' });
-      labelData.timestamp = (new Date()).toString()
 
       // Create an ExecutionContext using credentials
       const executionContext =
