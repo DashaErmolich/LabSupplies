@@ -28,9 +28,9 @@ entity Orders : Order {
     items                   : Composition of many OrderItems
                                   on items.order = $self;
     processor               : Association to one Contacts;
-    virtual isApproveHidden : Boolean default true;
-    virtual isRejectHidden  : Boolean default true;
-    virtual isEditable  : Boolean default true;
+    virtual isNotApprovable : Boolean default true;
+    virtual isNotRejectable : Boolean default true;
+    virtual isNotEditable   : Boolean default true;
     reviewNotes             : String;
     warehouseOrders         : Composition of many WarehouseOrders
                                   on warehouseOrders.parentOrder = $self;
@@ -43,14 +43,14 @@ entity WarehouseOrders : Order {
     items       : Composition of many WarehouseOrderItems
                       on items.order = $self;
     processor   : Association to one WarehouseContacts;
-    warehouse: Association to one Warehouses;
+    warehouse   : Association to one Warehouses;
 }
 
 entity OrderStatuses {
     key ID              : String  @Common.Text: name  @Common.TextArrangement: #TextOnly;
         name            : String;
         criticalityCode : Int16;
-        ctiticalityName: String;
+        ctiticalityName : String;
 }
 
 entity Attachments : cuid {

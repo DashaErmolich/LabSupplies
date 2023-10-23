@@ -4,5 +4,5 @@ annotate AppService.Orders with @(
     Capabilities.DeleteRestrictions : {
         Deletable : false,
     },
-    UI.UpdateHidden : isEditable,
+    UI.UpdateHidden : isNotEditable,
 );

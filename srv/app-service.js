@@ -259,10 +259,6 @@ module.exports = function (srv) {
     }
 
       if (req.data.statusID === "REJECTED") {
-        await UPDATE(Orders, orderID).with({
-          isEditable: false,
-        })
-
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         try {
@@ -297,10 +293,39 @@ module.exports = function (srv) {
   })
 
   this.after("READ", Orders, (data, req) => {
-    if (data.length) {
+    if (req.data.ID) {
+      const order = data.find((order) => order.ID === req.data.ID);
+
+      const [ isNotApprovable, isNotRejectable, isNotEditable ] = order;
+
+      if (isNotApprovable !== undefined || isNotRejectable !== undefined || isNotEditable !== undefined ) {
+        let isReviewerRole = req.user.is("Reviewer");
+
+        if (isReviewerRole) {
+          switch (order.status.ID) {
+            case 'WAITING_FOR_APPROVE':
+              isNotApprovable = false;
+              isNotRejectable = false;
+              break;
+          }
+        } else {
+          isNotApprovable = true;
+          isNotRejectable = true;
+
+          if (order.status_ID === 'WAITING_FOR_EDIT' || order.status_ID === 'OPEN') {
+            isNotEditable = false;
+          }
+        }
+      }
+  
+        switch (order.status.ID) {
+          case 'WAITING_FOR_APPROVE':
+            order.isEditable = false;
+            break;
+        }
+
+
       let isReviewerRole = req.user.is("Reviewer");
-      let isApproveButtonHidden = true;
-      let isRejectButtonHidden = true;
 
       if (isReviewerRole) {
         if (

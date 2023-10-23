@@ -218,7 +218,7 @@ annotate AppService.Orders with @(UI.Identification: [
         Action            : 'AppService.approveOrder',
         Label             : '{i18n>approveOrder}',
         Criticality       : 3,
-        ![@UI.Hidden]     : isApproveHidden,
+        ![@UI.Hidden]     : isNotApprovable,
         ![@UI.Importance] : #High,
     },
     {
@@ -226,7 +226,7 @@ annotate AppService.Orders with @(UI.Identification: [
         Action            : 'AppService.rejectOrder',
         Label             : '{i18n>rejectOrder}',
         Criticality       : 1,
-        ![@UI.Hidden]     : isRejectHidden,
+        ![@UI.Hidden]     : isNotRejectable,
         ![@UI.Importance] : #High,
     },
 ]);
