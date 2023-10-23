@@ -1,5 +1,5 @@
 const cds = require("@sap/cds");
-const { removeDuplicates, postNotification, createNotification } = require("./utils");
+const { removeDuplicates, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact, getEditOrderEmailConfig, sendEmail, sentNotificationToFLP, getRejectOrderEmailConfig, sendNotifications } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
@@ -22,13 +22,13 @@ module.exports = function (srv) {
   } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
-    req.data.status_ID = "OPENED";
-    req.data.processor_email = req.user.id;
+    setOrderStatus(req.data, 'OPENED');
+    setOrderProcessor(req.data, req.user.id)
   });
 
   this.before("CREATE", Orders, async (req) => {
-    const data = new Date();
-    req.data.title = `SO${data.getDate()}/${data.getMinutes()}`;
+    const newOrderTitle = await getOrderTitle(Orders, 'SO');
+    setOrderTitle(req.data, newOrderTitle);
   });
 
   this.before("SAVE", Orders, async (req) => {
@@ -37,7 +37,9 @@ module.exports = function (srv) {
         message: "Add at least one item to order",
       });
     } else {
-      req.data.status_ID = "WAITING_FOR_APPROVE";
+      setOrderStatus(req.data, 'WAITING_FOR_APPROVE');
+      const userContact = await getContact(Contacts, req.user.id);
+      setOrderProcessor(req.data, userContact.manager_email);
     }
   });
 
@@ -132,42 +134,20 @@ module.exports = function (srv) {
   });
 
   this.after("SAVE", Orders, async (order, req) => {
-    const managerContact = await SELECT.one
-    .from(Contacts)
-    .where({ email: order.processor_email });
+    const user = await SELECT.from(Contacts, req.user.id, (contact) => {
+      contact`.*`, contact.manager((manager) => {
+        manager`.*`
+      })
+    });
 
-
-    const userContact = await SELECT.one
-    .from(Contacts)
-    .where({ email: req.user.id });
-
-    const mailConfig = {
-      from: 'labsupplies.notification@example.com',
-      to: `${managerContact.email}`,
-      //to: 'viachaslav.rutkovskiy@gmail.com',
-      subject: `Order ${order.title} review`,
-      text: `
-      <div>
-        <p>${userContact.fullName} (${userContact.email}) requested approve for <b>Order ${order.title}</b> by ${managerContact.fullName}.</p>
-
-        This mail was send automatically by LabSupplies application, do not reply on it.
-      </div>
-      `
-    };
-
-    await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
-    await postNotification(createNotification(order.title, TEST_EMAIL));
+    try {
+      await sendNotifications(order.status_ID, order.title, user, user.manager);
+    } catch (error) {
+      req.warn({
+        message: error.message,
+      })
+    }
   })
-
-  this.before("SAVE", Orders, async (req) => {
-    const userID = req.user.id;
-
-    const userContact = await SELECT.one
-      .from(Contacts)
-      .where({ email: userID });
-
-    req.data.processor_email = userContact.manager_email;
-  });
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
     if (!req.data.item_product_ID && !req.data.item_product_ID) {
@@ -215,7 +195,7 @@ module.exports = function (srv) {
 
     if (a) {
       req.error({
-        message: "this Item already exists in list",
+        message: `Item already exists in list`,
         target: 'item_product_ID',
       })
     }
@@ -240,6 +220,15 @@ module.exports = function (srv) {
   this.on("rejectOrder", async (req) => {
     const orderID = req.params[0].ID;
 
+    const order = await SELECT.one.from(Orders, orderID, (order) => {
+      order`.*`,
+      order.processor((pr) => pr`.*`),
+      order.contact((c) => c`.*`),
+      order.items((items) => {
+        items`.*`, items.item((itm) => itm`.*`)
+      });
+    });
+
     try {
       await UPDATE(Orders, {
         ID: orderID,
@@ -249,59 +238,23 @@ module.exports = function (srv) {
       });
     } catch (error) {
       req.error({
-        message: 'Something bad happened. Check order.'
+        message: error.message,
       })
     }
 
-    if (req.data.statusID === "WAITING_FOR_EDIT") {
-      try {
-        const order = await SELECT.one.from(Orders).where({
-          ID: orderID,
-        });
-        await UPDATE(Orders, {
-          ID: orderID,
-        }).with({
-          processor_email: order.createdBy,
-        });
-      } catch (error) {
-        req.error({
-          message: 'Something bad happened. Check order.'
+      if (req.data.statusID === "REJECTED") {
+        await UPDATE(Orders, orderID).with({
+          isEditable: false,
         })
-      }
-    }
 
-    if (req.data.statusID === "REJECTED" || req.data.statusID === "CLOSED") {
-      const prevOrderItems = await SELECT.from(OrderItems).where({
-        order_ID: orderID,
-      });
-
-      await UPDATE(Orders, orderID).with({
-        isEditable: false,
-      })
-
-      const final = [];
-
-      for (let i = 0; i < prevOrderItems.length; i++) {
-        const item = prevOrderItems[i];
-        const data = await SELECT(WarehouseProducts, {
-          warehouse_ID: item.item_warehouse_ID,
-          product_ID: item.item_product_ID,
-        });
-
-        final.push({
-          listItem: item,
-          whItem: data,
-        });
-      }
-
-      for (let i = 0; i < final.length; i++) {
-        const item = final[i];
+      for (let i = 0; i < order.items.length; i++) {
+        const item = order.items[i];
         try {
           await UPDATE(WarehouseProducts, {
-            warehouse_ID: item.listItem.item_warehouse_ID,
-            product_ID: item.listItem.item_product_ID,
+            warehouse_ID: item.item_warehouse_ID,
+            product_ID: item.item_product_ID,
           }).with({
-            stock: item.whItem.stock + item.listItem.qty,
+            stock: item.item.stock + item.qty,
           });
         } catch (error) {
           req.error({
@@ -311,6 +264,21 @@ module.exports = function (srv) {
       }
     }
   });
+
+  this.after('rejectOrder', async (data, req) => {
+    const orderID = req.params[0].ID;
+    const order = await SELECT.one.from(Orders, orderID, (order) => {
+      order`.*`, order.processor((pr) => pr`.*`), order.contact((c) => c`.*`), order.items((items) => items`.*`);
+    });
+
+    try {
+      await sendNotifications(order.status_ID, order.title, order.processor, order.contact, order.reviewNotes);
+    } catch (error) {
+      req.warn({
+        message: error.message,
+      })
+    }
+  })
 
   this.after("READ", Orders, (data, req) => {
     if (data.length) {
@@ -356,7 +324,10 @@ module.exports = function (srv) {
             contact.orders((order) => {
               order`.*`;
             });
-        });
+        }),
+        wh.address((address) => {
+          address`.*`
+        })
     });
 
     for (let i = 0; i < whIDs.length; i++) {
@@ -365,9 +336,7 @@ module.exports = function (srv) {
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
         .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
-      const whOrderTitle = `${order.title}-${wh
-        .name.split(" ")
-        .join("/")}`;
+      const whOrderTitle = `${order.title}/${await getOrderTitle(WarehouseOrders, `WHO-${wh.address.region_code}`)}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
 
       const whOrder = {
