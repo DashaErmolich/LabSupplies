@@ -2,16 +2,12 @@ _schema-version: "3.1"
 ID: LabSupplies
 description: A simple CAP project.
 version: 1.0.0
-
 modules:
-
 - name: LabSupplies-srv
   type: nodejs
   path: gen/srv
   requires:
   - name: LabSupplies-db
-  - name: LabSupplies-uaa
-  - name: LabSupplies-destination-service
   provides:
   - name: srv-api
     properties:
@@ -20,126 +16,72 @@ modules:
     buildpack: nodejs_buildpack
   build-parameters:
     builder: npm
-
 - name: LabSupplies-db-deployer
   type: hdb
   path: gen/db
   requires:
   - name: LabSupplies-db
-  - name: LabSupplies-uaa
   parameters:
     buildpack: nodejs_buildpack
-
-
-- name: LabSupplies-app-content
-  type: com.sap.application.content
-  path: .
-  requires:
-  - name: LabSupplies-repo-host
-    parameters:
-      content-target: true
-  build-parameters:
-    build-result: resources
-    requires:
-    - artifacts:
-      - orders.zip
-      name: orders
-      target-path: resources/
-
-- name: orders
-  type: html5
-  path: app/orders
-  build-parameters:
-    build-result: dist
-    builder: custom
-    commands:
-    - npm install
-    - npm run build:cf
-    supported-platforms: []
-
-- name: LabSupplies-app-destination-content
+- name: LabSupplies-destination-content
   type: com.sap.application.content
   requires:
-  - name: LabSupplies-uaa
-    parameters:
-      service-key:
-        name: LabSupplies-uaa-key
-  - name: LabSupplies-repo-host
-    parameters:
-      service-key:
-        name: LabSupplies-repo-host-key
-  - name: srv-api
   - name: LabSupplies-destination-service
     parameters:
       content-target: true
+  - name: LabSupplies_html_repo_host
+    parameters:
+      service-key:
+        name: LabSupplies_html_repo_host-key
+  - name: uaa_LabSupplies
+    parameters:
+      service-key:
+        name: uaa_LabSupplies-key
   parameters:
     content:
       instance:
         destinations:
+        - Name: laborders_LabSupplies_html_repo_host
+          ServiceInstanceName: LabSupplies-html5-app-host-service
+          ServiceKeyName: LabSupplies_html_repo_host-key
+          sap.cloud.service: laborders
         - Authentication: OAuth2UserTokenExchange
-          Name: LabSupplies-srv
-          TokenServiceInstanceName: LabSupplies-uaa
-          TokenServiceKeyName: LabSupplies-uaa-key
-          URL: ~{srv-api/srv-url}
-          sap.cloud.service: LabSupplies
-        - Name: LabSupplies-repo-host
-          ServiceInstanceName: LabSupplies-repo-host
-          ServiceKeyName: LabSupplies-repo-host-key
-          sap.cloud.service: LabSupplies
-        - Authentication: OAuth2UserTokenExchange
-          Name: LabSupplies-uaa
-          ServiceInstanceName: LabSupplies-uaa
-          ServiceKeyName: LabSupplies-uaa-key
-          sap.cloud.service: LabSupplies
-        existing_destinations_policy: update
+          Name: laborders_uaa_LabSupplies
+          ServiceInstanceName: LabSupplies-xsuaa-service
+          ServiceKeyName: uaa_LabSupplies-key
+          sap.cloud.service: laborders
+        existing_destinations_policy: ignore
   build-parameters:
     no-source: true
-
 resources:
-
 - name: LabSupplies-db
   type: com.sap.xs.hdi-container
   parameters:
     service: hana
     service-plan: hdi-shared
-
-- name: LabSupplies-uaa
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      tenant-mode: dedicated
-      xsappname: LabSupplies-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
-
-- name: LabSupplies-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-name: LabSupplies-repo-host
-    service-plan: app-host
-
 - name: LabSupplies-destination-service
   type: org.cloudfoundry.managed-service
   parameters:
     config:
-      HTML5Runtime_enabled: false
-      init_data:
-        instance:
-          destinations:
-          - Authentication: NoAuthentication
-            Name: ui5
-            ProxyType: Internet
-            Type: HTTP
-            URL: https://ui5.sap.com
-          existing_destinations_policy: update
+      HTML5Runtime_enabled: true
       version: 1.0.0
     service: destination
     service-name: LabSupplies-destination-service
     service-plan: lite
+- name: LabSupplies_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: LabSupplies-html5-app-host-service
+    service-plan: app-host
+- name: uaa_LabSupplies
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: LabSupplies-xsuaa-service
+    service-plan: application
 parameters:
-  deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:

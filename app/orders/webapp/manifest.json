@@ -223,6 +223,6 @@
     },
     "sap.cloud": {
         "public": true,
-        "service": "LabSupplies"
+        "service": "laborders"
     }
 }

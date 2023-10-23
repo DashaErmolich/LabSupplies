@@ -1,38 +1,20 @@
 {
+  "xsappname": "labsupplies",
+  "tenant-mode": "dedicated",
+  "description": "Security profile of called application",
   "scopes": [
     {
-      "name": "$XSAPPNAME.Manager",
-      "description": "Manager"
-    },
-    {
-      "name": "$XSAPPNAME.Reviewer",
-      "description": "Reviewer"
+      "name": "uaa.user",
+      "description": "UAA"
     }
   ],
-  "attributes": [],
   "role-templates": [
     {
-      "name": "Manager",
-      "description": "generated",
+      "name": "Token_Exchange",
+      "description": "UAA",
       "scope-references": [
-        "$XSAPPNAME.Manager"
-      ],
-      "attribute-references": []
-    },
-    {
-      "name": "Reviewer",
-      "description": "generated",
-      "scope-references": [
-        "$XSAPPNAME.Reviewer"
-      ],
-      "attribute-references": []
+        "uaa.user"
+      ]
     }
-  ],
-  "authorities-inheritance": false,
-  "oauth2-configuration": {
-    "redirect-uris": [
-      "https://*.cfapps.us10-001.hana.ondemand.com/**"
-    ]
-  }
+  ]
 }
-
