@@ -1,12 +1,26 @@
 using db from '../db/schema';
 
 @path: '/app'
-service AppService @(requires: 'Manager') {
+service AppService @(requires: 'authenticated-user') {
     entity Contacts            as projection on db.Contacts;
     entity Departments         as projection on db.Departments;
 
     @odata.draft.enabled
-    entity Orders              as projection on db.Orders actions {
+    entity Orders @(restrict: [
+        {grant: 'READ'},
+        {
+            grant: 'WRITE',
+            to   : ['Manager'],
+            where: 'processor_email = $user'
+        },
+        {
+            grant: [
+                'approveOrder',
+                'rejectOrder'
+            ],
+            to   : 'Reviewer',
+        },
+    ])                         as projection on db.Orders actions {
 
         @(
             cds.odata.bindingparameter.name: '_it',

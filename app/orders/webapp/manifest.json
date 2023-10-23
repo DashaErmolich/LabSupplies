@@ -28,18 +28,18 @@
         },
         "crossNavigation": {
             "inbounds": {
-              "laborder-manage": {
-                "semanticObject": "laborder",
-                "action": "manage",
-                "title": "{{flpTitle}}",
-                "subTitle": "{{flpSubtitle}}",
-                "signature": {
-                  "parameters": {},
-                  "additionalParameters": "allowed"
+                "laborder-manage": {
+                    "semanticObject": "laborder",
+                    "action": "manage",
+                    "title": "{{flpTitle}}",
+                    "subTitle": "{{flpSubtitle}}",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
                 }
-              }
             }
-          }
+        }
     },
     "sap.ui": {
         "technology": "UI5",
@@ -172,13 +172,18 @@
                                             "afterExecution": {
                                                 "navigateToInstance": true,
                                                 "enableAutoScroll": true
-                                            }
+                                            },
+                                            "enabled": "{= ${isNotApprovable} === false }"
+
                                         },
                                         "DataFieldForAction::AppService.rejectOrder": {
                                             "afterExecution": {
                                                 "navigateToInstance": true
-                                            }
+                                            },
+                                            "enabled": "{= ${isNotRejectable} === false }"
+
                                         }
+                                       
                                     }
                                 },
                                 "body": {
@@ -186,6 +191,7 @@
                                         "myCustomSection": {
                                             "template": "orders.custom.fragment.WarehouseOrdersSection",
                                             "title": "Related Orders",
+                                            "visible": "{= ${isRelatedOrdersVisible} === true }",
                                             "position": {
                                                 "placement": "Before",
                                                 "anchor": "Items"

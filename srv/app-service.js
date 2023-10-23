@@ -17,6 +17,7 @@ const QRCode = require("qrcode");
 const TEST_EMAIL = "dasha.ermolich@gmail.com";
 
 const { sendMail, MailConfig } = require("@sap-cloud-sdk/mail-client");
+const { Order } = require("@sap-cloud-sdk/core");
 
 module.exports = function (srv) {
   const {
@@ -331,7 +332,7 @@ module.exports = function (srv) {
       if (
         order.isNotApprovable !== undefined ||
         order.isNotRejectable !== undefined ||
-        order.isNotEditable !== undefined
+        order.isNotEditable !== undefined || order.isNotActionable !== undefined
       ) {
         let isReviewerRole = req.user.is("Reviewer");
         let orderStatusID = order.status_ID;
@@ -343,6 +344,7 @@ module.exports = function (srv) {
         }
 
         if (isReviewerRole) {
+          order.isNotActionable = false;
           switch (orderStatusID) {
             case "WAITING_FOR_APPROVE":
               order.isNotApprovable = false;
@@ -360,6 +362,12 @@ module.exports = function (srv) {
             order.isNotEditable = false;
           }
         }
+      }
+
+      const whOrder = await SELECT.one.from(WarehouseOrders, {parentOrder_ID: req.data.ID});
+
+      if (whOrder?.ID) {
+        order.isRelatedOrdersVisible = true;
       }
     }
   });
@@ -523,4 +531,19 @@ module.exports = function (srv) {
       });
     }
   });
+
+  this.before(['approveOrder', 'rejectOrder'], async (req) => {
+    console.log(1);
+
+    if (req.params[0].ID) {
+      const order = await SELECT.one.from(Orders, req.params[0].ID);
+
+      if (order.processor_email !== req.user.id) {
+        req.error({
+          code: '403',
+          message: 'Forbidden'
+        })
+      }
+    }
+  })
 };

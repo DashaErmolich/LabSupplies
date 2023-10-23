@@ -22,20 +22,22 @@ aspect Order : cuid, managed {
 }
 
 entity Orders : Order {
-    deliveryTo              : Association to one Departments;
-    contact                 : Association to one Contacts
-                                  on contact.email = $self.createdBy;
-    items                   : Composition of many OrderItems
-                                  on items.order = $self;
-    processor               : Association to one Contacts;
-    virtual isNotApprovable : Boolean default true;
-    virtual isNotRejectable : Boolean default true;
-    virtual isNotEditable   : Boolean default true;
-    reviewNotes             : String;
-    warehouseOrders         : Composition of many WarehouseOrders
-                                  on warehouseOrders.parentOrder = $self;
-    attachments             : Composition of many Attachments
-                                  on attachments.order = $self;
+    deliveryTo                     : Association to one Departments;
+    contact                        : Association to one Contacts
+                                         on contact.email = $self.createdBy;
+    items                          : Composition of many OrderItems
+                                         on items.order = $self;
+    processor                      : Association to one Contacts;
+    virtual isNotApprovable        : Boolean default true;
+    virtual isNotRejectable        : Boolean default true;
+    virtual isNotEditable          : Boolean default true;
+    virtual isNotActionable        : Boolean default true;
+    virtual isRelatedOrdersVisible : Boolean default false;
+    reviewNotes                    : String;
+    warehouseOrders                : Composition of many WarehouseOrders
+                                         on warehouseOrders.parentOrder = $self;
+    attachments                    : Composition of many Attachments
+                                         on attachments.order = $self;
 }
 
 entity WarehouseOrders : Order {
