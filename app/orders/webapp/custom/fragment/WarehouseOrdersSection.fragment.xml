@@ -7,7 +7,6 @@
 		class="sapUiContentPadding"
 		core:require="{handler: 'orders/custom/fragment/WarehouseOrdersSection'}"
 	>
-    <Text id="_IDGenText1" text="HKLVKLJHGLKVJKHV"/>
           <l:HorizontalLayout id="TileContainerExpanded" allowWrapping="true" content="{warehouseOrders}" class="sapUiMediumMarginBegin">
 					
 					<GenericTile id="_IDGenGenericTile1"

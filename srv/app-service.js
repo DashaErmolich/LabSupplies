@@ -131,16 +131,28 @@ module.exports = function (srv) {
     return next();
   });
 
-  this.after("SAVE", Orders, async (order) => {
+  this.after("SAVE", Orders, async (order, req) => {
     const managerContact = await SELECT.one
     .from(Contacts)
     .where({ email: order.processor_email });
 
+
+    const userContact = await SELECT.one
+    .from(Contacts)
+    .where({ email: req.user.id });
+
     const mailConfig = {
-      from: order.modifiedBy,
-      to: order.processor_email,
+      from: 'labsupplies.notification@example.com',
+      to: `${managerContact.email}`,
+      //to: 'viachaslav.rutkovskiy@gmail.com',
       subject: `Order ${order.title} review`,
-      text: `<p><b>Order ${order.title}</b> requires review by ${managerContact.fullName}}</p>`
+      text: `
+      <div>
+        <p>${userContact.fullName} (${userContact.email}) requested approve for <b>Order ${order.title}</b> by ${managerContact.fullName}.</p>
+
+        This mail was send automatically by LabSupplies application, do not reply on it.
+      </div>
+      `
     };
 
     await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
