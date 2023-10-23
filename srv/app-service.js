@@ -1,14 +1,22 @@
 const cds = require("@sap/cds");
-const { removeDuplicates, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact, sendNotifications } = require("./utils");
+const {
+  removeDuplicates,
+  setOrderStatus,
+  setOrderProcessor,
+  setOrderTitle,
+  getOrderTitle,
+  getContact,
+  sendNotifications,
+} = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
 const { Readable, Writable, PassThrough } = require("stream");
 path = require("path");
-const QRCode = require('qrcode');
+const QRCode = require("qrcode");
 
-const TEST_EMAIL = 'dasha.ermolich@gmail.com'
+const TEST_EMAIL = "dasha.ermolich@gmail.com";
 
-const { sendMail, MailConfig } = require('@sap-cloud-sdk/mail-client');
+const { sendMail, MailConfig } = require("@sap-cloud-sdk/mail-client");
 
 module.exports = function (srv) {
   const {
@@ -22,12 +30,12 @@ module.exports = function (srv) {
   } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
-    setOrderStatus(req.data, 'OPENED');
-    setOrderProcessor(req.data, req.user.id)
+    setOrderStatus(req.data, "OPENED");
+    setOrderProcessor(req.data, req.user.id);
   });
 
   this.before("CREATE", Orders, async (req) => {
-    const newOrderTitle = await getOrderTitle(Orders, 'SO');
+    const newOrderTitle = await getOrderTitle(Orders, "SO");
     setOrderTitle(req.data, newOrderTitle);
   });
 
@@ -37,7 +45,7 @@ module.exports = function (srv) {
         message: "Add at least one item to order",
       });
     } else {
-      setOrderStatus(req.data, 'WAITING_FOR_APPROVE');
+      setOrderStatus(req.data, "WAITING_FOR_APPROVE");
       const userContact = await getContact(Contacts, req.user.id);
       setOrderProcessor(req.data, userContact.manager_email);
     }
@@ -120,8 +128,8 @@ module.exports = function (srv) {
           });
         } catch (error) {
           req.error({
-            message: 'Something bad happened. Check order products.'
-          })
+            message: "Something bad happened. Check order products.",
+          });
         }
       }
     } else {
@@ -135,9 +143,10 @@ module.exports = function (srv) {
 
   this.after("SAVE", Orders, async (order, req) => {
     const user = await SELECT.from(Contacts, req.user.id, (contact) => {
-      contact`.*`, contact.manager((manager) => {
-        manager`.*`
-      })
+      contact`.*`,
+        contact.manager((manager) => {
+          manager`.*`;
+        });
     });
 
     try {
@@ -145,9 +154,9 @@ module.exports = function (srv) {
     } catch (error) {
       req.warn({
         message: error.message,
-      })
+      });
     }
-  })
+  });
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
     if (!req.data.item_product_ID && !req.data.item_product_ID) {
@@ -190,14 +199,22 @@ module.exports = function (srv) {
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
     const item = await SELECT.from(OrderItems.drafts, req.data.ID);
-    const items = await SELECT.from(OrderItems.drafts).where({order_ID: item.order_ID});
-    const a =  items.filter((v) => v.item_product_ID !== item.item_product_ID && v.item_warehouse_ID !== item.item_warehouse_ID).length < items.length - 1;
+    const items = await SELECT.from(OrderItems.drafts).where({
+      order_ID: item.order_ID,
+    });
+    const a =
+      items.filter(
+        (v) =>
+          v.item_product_ID !== item.item_product_ID &&
+          v.item_warehouse_ID !== item.item_warehouse_ID
+      ).length <
+      items.length - 1;
 
     if (a) {
       req.error({
         message: `Item already exists in list`,
-        target: 'item_product_ID',
-      })
+        target: "item_product_ID",
+      });
     }
   });
 
@@ -206,9 +223,9 @@ module.exports = function (srv) {
 
     const order = await SELECT.one.from(Orders, orderID, (order) => {
       order`.*`,
-      order.contact((c) => {
-        c`.*`, c.manager((m) => m`.*`)
-      })
+        order.contact((c) => {
+          c`.*`, c.manager((m) => m`.*`);
+        });
     });
 
     try {
@@ -216,20 +233,26 @@ module.exports = function (srv) {
         ID: orderID,
       }).with({
         status_ID: "WAITING_FOR_DELIVERY",
-        processor_email: order.contact.email
+        processor_email: order.contact.email,
       });
     } catch (error) {
       req.error({
-        message: 'Something bad happened. Check order.'
-      })
+        message: "Something bad happened. Check order.",
+      });
     }
 
     try {
-      await sendNotifications(order.status_ID, order.title, order.contact.manager, order.contact, order.reviewNotes);
+      await sendNotifications(
+        order.status_ID,
+        order.title,
+        order.contact.manager,
+        order.contact,
+        order.reviewNotes
+      );
     } catch (error) {
       req.warn({
         message: error.message,
-      })
+      });
     }
   });
 
@@ -238,11 +261,11 @@ module.exports = function (srv) {
 
     const order = await SELECT.one.from(Orders, orderID, (order) => {
       order`.*`,
-      order.processor((pr) => pr`.*`),
-      order.contact((c) => c`.*`),
-      order.items((items) => {
-        items`.*`, items.item((itm) => itm`.*`)
-      });
+        order.processor((pr) => pr`.*`),
+        order.contact((c) => c`.*`),
+        order.items((items) => {
+          items`.*`, items.item((itm) => itm`.*`);
+        });
     });
 
     try {
@@ -255,10 +278,10 @@ module.exports = function (srv) {
     } catch (error) {
       req.error({
         message: error.message,
-      })
+      });
     }
 
-      if (req.data.statusID === "REJECTED") {
+    if (req.data.statusID === "REJECTED") {
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         try {
@@ -270,77 +293,73 @@ module.exports = function (srv) {
           });
         } catch (error) {
           req.error({
-            message: 'Something bad happened. Check order.'
-          })
+            message: "Something bad happened. Check order.",
+          });
         }
       }
     }
   });
 
-  this.after('rejectOrder', async (data, req) => {
+  this.after("rejectOrder", async (data, req) => {
     const orderID = req.params[0].ID;
     const order = await SELECT.one.from(Orders, orderID, (order) => {
-      order`.*`, order.processor((pr) => pr`.*`), order.contact((c) => c`.*`), order.items((items) => items`.*`);
+      order`.*`,
+        order.processor((pr) => pr`.*`),
+        order.contact((c) => c`.*`),
+        order.items((items) => items`.*`);
     });
 
     try {
-      await sendNotifications(order.status_ID, order.title, order.processor, order.contact, order.reviewNotes);
+      await sendNotifications(
+        order.status_ID,
+        order.title,
+        order.processor,
+        order.contact,
+        order.reviewNotes
+      );
     } catch (error) {
       req.warn({
         message: error.message,
-      })
+      });
     }
-  })
+  });
 
-  this.after("READ", Orders, (data, req) => {
+  this.after("READ", Orders, async (data, req) => {
     if (req.data.ID) {
       const order = data.find((order) => order.ID === req.data.ID);
 
-      const [ isNotApprovable, isNotRejectable, isNotEditable ] = order;
-
-      if (isNotApprovable !== undefined || isNotRejectable !== undefined || isNotEditable !== undefined ) {
+      if (
+        order.isNotApprovable !== undefined ||
+        order.isNotRejectable !== undefined ||
+        order.isNotEditable !== undefined
+      ) {
         let isReviewerRole = req.user.is("Reviewer");
+        let orderStatusID = order.status_ID;
+        
+        if (!orderStatusID) {
+          const orderStatus = await SELECT.one.from(Orders, req.data.ID).columns('status_ID');
+          orderStatusID = orderStatus.status_ID;
+
+        }
 
         if (isReviewerRole) {
-          switch (order.status.ID) {
-            case 'WAITING_FOR_APPROVE':
-              isNotApprovable = false;
-              isNotRejectable = false;
+          switch (orderStatusID) {
+            case "WAITING_FOR_APPROVE":
+              order.isNotApprovable = false;
+              order.isNotRejectable = false;
               break;
           }
         } else {
-          isNotApprovable = true;
-          isNotRejectable = true;
+          order.isNotApprovable = true;
+          order.isNotRejectable = true;
 
-          if (order.status_ID === 'WAITING_FOR_EDIT' || order.status_ID === 'OPEN') {
-            isNotEditable = false;
+          if (
+            order.status.ID === "WAITING_FOR_EDIT" ||
+            order.status.ID === "OPEN"
+          ) {
+            order.isNotEditable = false;
           }
         }
-      }
-  
-        switch (order.status.ID) {
-          case 'WAITING_FOR_APPROVE':
-            order.isEditable = false;
-            break;
-        }
-
-
-      let isReviewerRole = req.user.is("Reviewer");
-
-      if (isReviewerRole) {
-        if (
-          data[0]?.status?.ID !== "REJECTED" ||
-          data[0]?.status?.ID !== "WAITING_FOR_DELIVERY"
-        ) {
-          data[0].isRejectHidden = false;
-          data[0].isApproveHidden = false;
-        } else {
-          data[0].isRejectHidden = true;
-          data[0].isApproveHidden = true;
-        }
-      } else {
-        data[0].isRejectHidden = true;
-        data[0].isApproveHidden = true;
       }
     }
   });
@@ -367,8 +386,8 @@ module.exports = function (srv) {
             });
         }),
         wh.address((address) => {
-          address`.*`
-        })
+          address`.*`;
+        });
     });
 
     for (let i = 0; i < whIDs.length; i++) {
@@ -377,7 +396,10 @@ module.exports = function (srv) {
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
         .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
-      const whOrderTitle = `${order.title}/${await getOrderTitle(WarehouseOrders, `WHO-${wh.address.region_code}`)}`;
+      const whOrderTitle = `${order.title}/${await getOrderTitle(
+        WarehouseOrders,
+        `WHO-${wh.address.region_code}`
+      )}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
 
       const whOrder = {
@@ -396,7 +418,6 @@ module.exports = function (srv) {
   });
 
   this.on("READ", WarehouseOrderItems, async (req, next) => {
-
     if (!req.data.ID || !req.req.originalUrl.includes("content")) {
       return next();
     }
@@ -408,33 +429,47 @@ module.exports = function (srv) {
           .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
           .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
           .build();
-      
-      const labelData = await SELECT.one.from(WarehouseOrderItems, req.data.ID, (whItem) => {
-        whItem.qty, whItem.item((item) => {
-          item.warehouse((wh) => {
-            wh.name, wh.address((whAddress) => {
-              whAddress`.*`
-            })
-          }),
-          item.product((product) => {
-            product`.*`, product.category((cat) => {
-              cat.name
-            })
-          })
-        }),
-        whItem.order((order) => {
-          order.title, order.createdAt, order.parentOrder((pOrder) => {
-            pOrder.processor_email, pOrder.title, pOrder.createdAt, pOrder.deliveryTo((dTo) => {
-              dTo.name, dTo.address((address) => {
-                address`.*`
-              })
-            })
-          })
-        })
-      })
 
+      const labelData = await SELECT.one.from(
+        WarehouseOrderItems,
+        req.data.ID,
+        (whItem) => {
+          whItem.qty,
+            whItem.item((item) => {
+              item.warehouse((wh) => {
+                wh.name,
+                  wh.address((whAddress) => {
+                    whAddress`.*`;
+                  });
+              }),
+                item.product((product) => {
+                  product`.*`,
+                    product.category((cat) => {
+                      cat.name;
+                    });
+                });
+            }),
+            whItem.order((order) => {
+              order.title,
+                order.createdAt,
+                order.parentOrder((pOrder) => {
+                  pOrder.processor_email,
+                    pOrder.title,
+                    pOrder.createdAt,
+                    pOrder.deliveryTo((dTo) => {
+                      dTo.name,
+                        dTo.address((address) => {
+                          address`.*`;
+                        });
+                    });
+                });
+            });
+        }
+      );
 
-      labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, { errorCorrectionLevel: 'H' });
+      labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, {
+        errorCorrectionLevel: "H",
+      });
 
       // Create an ExecutionContext using credentials
       const executionContext =
@@ -484,8 +519,8 @@ module.exports = function (srv) {
       }
     } catch (err) {
       req.err({
-        message: 'Something bad happened. Unable to load label.'
-      })
+        message: "Something bad happened. Unable to load label.",
+      });
     }
   });
 };
