@@ -30,6 +30,7 @@ entity Orders : Order {
     processor               : Association to one Contacts;
     virtual isApproveHidden : Boolean default true;
     virtual isRejectHidden  : Boolean default true;
+    virtual isEditable  : Boolean default true;
     reviewNotes             : String;
     warehouseOrders         : Composition of many WarehouseOrders
                                   on warehouseOrders.parentOrder = $self;

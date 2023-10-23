@@ -132,15 +132,13 @@ module.exports = function (srv) {
   this.after("SAVE", Orders, async (order) => {
     const mailConfig = {
       from: 'from@example.com',
-      to: 'dasha.ermolich@gmail.com',
+      to: TEST_EMAIL,
       subject: 'e-mail subject',
       text: `<h1>${order.ID}</h1>`
     };
 
     await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
     await postNotification(createNotification(order.title, TEST_EMAIL));
-
-    console.log();
   })
 
   this.before("SAVE", Orders, async (req) => {
@@ -150,7 +148,7 @@ module.exports = function (srv) {
       .from(Contacts)
       .where({ email: userID });
 
-    // req.data.processor_email = userContact.manager_email;
+    req.data.processor_email = userContact.manager_email;
   });
 
   this.before("UPDATE", OrderItems.drafts, async (req) => {
@@ -192,18 +190,18 @@ module.exports = function (srv) {
     }
   });
 
-  // this.before("UPDATE", OrderItems.drafts, async (req) => {
-  //   const item = await SELECT.from(OrderItems.drafts, req.data.ID);
-  //   const items = await SELECT.from(OrderItems.drafts).where({order_ID: item.order_ID});
-  //   const a =  items.filter((v) => v.item_product_ID !== item.item_product_ID && v.item_warehouse_ID !== item.item_warehouse_ID).length < items.length - 1;
+  this.before("UPDATE", OrderItems.drafts, async (req) => {
+    const item = await SELECT.from(OrderItems.drafts, req.data.ID);
+    const items = await SELECT.from(OrderItems.drafts).where({order_ID: item.order_ID});
+    const a =  items.filter((v) => v.item_product_ID !== item.item_product_ID && v.item_warehouse_ID !== item.item_warehouse_ID).length < items.length - 1;
 
-  //   if (a) {
-  //     req.error({
-  //       message: "this Item already exists in list",
-  //       target: 'item_product_ID',
-  //     })
-  //   }
-  // });
+    if (a) {
+      req.error({
+        message: "this Item already exists in list",
+        target: 'item_product_ID',
+      })
+    }
+  });
 
   this.on("approveOrder", async (req) => {
     const orderID = req._params[0].ID;
@@ -252,6 +250,10 @@ module.exports = function (srv) {
       const prevOrderItems = await SELECT.from(OrderItems).where({
         order_ID: orderID,
       });
+
+      await UPDATE(Orders, orderID).with({
+        isEditable: false,
+      })
 
       const final = [];
 
@@ -378,7 +380,7 @@ module.exports = function (srv) {
         ),
         jsonDataForMerge = JSON.parse(jsonString);
 
-      jsonDataForMerge.logo = await QRCode.toDataURL(`${req.data.id}`, { errorCorrectionLevel: 'H' });
+      jsonDataForMerge.logo = await QRCode.toDataURL(`${req.data.ID}`, { errorCorrectionLevel: 'H' });
 
       // Create an ExecutionContext using credentials
       const executionContext =

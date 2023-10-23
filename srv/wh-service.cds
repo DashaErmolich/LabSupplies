@@ -33,4 +33,5 @@ service WarehouseService {
   entity WarehouseContacts   as projection on db.WarehouseContacts;
   entity Attachments         as projection on db.Attachments;
   entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
+  function collectItem(id: String, userEmail: String) returns Boolean;
 }

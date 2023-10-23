@@ -1,8 +1,5 @@
 ﻿firstName;lastName;fullName;email;title;tel;warehouse_ID;photoUrl
-Everly;Pack;Everly Pack;everly.pack.test@ge.com;Packager;4,95E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
-Edgar;Galloway;Edgar Galloway;edgar.galloway.test@deere.com;Packager;49334427493;0f51fc48-03fd-44c9-91bc-532f8906d186;
-Elijah;Webb;Elijah Webb;elijah.webb.test@northropgrumman.com;Packager;4,98E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
-Arthur;Crowley;Arthur Crowley;arthur.crowley.test@berkshirehathaway.com;Packager;4,95E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
+Everly;Pack;Everly Pack;dasha.ermolich@gmail.com;Packager;4,95E+11;0f51fc48-03fd-44c9-91bc-532f8906d186;
 Lance;Pagan;Lance Pagan;lance.pagan.test@wellsfargo.com;Packager;49334427493;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
 Brooks;Patrick;Brooks Patrick;brooks.patrick.test@united.com;Packager;4,98E+11;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
 Bradley;Castle;Bradley Castle;bradley.castle.test@meta.com;Packager;4,95E+11;137ee1b8-dfa7-4c46-8aae-3c005a0b9676;
