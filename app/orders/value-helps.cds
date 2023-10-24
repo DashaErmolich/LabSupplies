@@ -254,3 +254,62 @@ annotate AppService.Catalogue with {
     };
 };
 
+annotate AppService.WarehouseOrders with @(
+    UI.FieldGroup #WhContact : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'parentOrder/contact/@Communication.Contact',
+                Label : '{i18n>deliveryRequestor}',
+            },
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'processor/@Communication.Contact',
+                Label : '{i18n>processedBy}',
+            },
+        ],
+    }
+);
+annotate AppService.WarehouseOrders with @(
+    UI.FieldGroup #delivery : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.name,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.region.country.name,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.region.name,
+                Label : '{i18n>region}',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.city,
+                Label : '{i18n>city}',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.postCode,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.street,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.deliveryTo.address.building,
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : parentOrder.notes,
+                Label : '{i18n>orderRequestorNotes}',
+            },
+        ],
+    }
+);

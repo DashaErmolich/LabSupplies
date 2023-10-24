@@ -47,6 +47,8 @@ entity DeliveryForecasts : cuid {
     virtual daysCounter        : Integer;
     virtual residualPercentage : Integer;
     virtual isCritical        : Boolean default false;
+    virtual bulletChartTargetValue: Integer;
+    virtual bulletChartForecastValue: Integer;
 }
 
 entity WarehouseOrders : Order {
