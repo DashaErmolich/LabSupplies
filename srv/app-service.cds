@@ -127,6 +127,7 @@ service AppService @(requires: 'authenticated-user') {
     entity WarehouseContacts   as projection on db.WarehouseContacts;
     entity Attachments         as projection on db.Attachments;
     entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
+    entity DeliveryForecasts as projection on db.DeliveryForecasts;
 }
 
 @path: '/admin'
@@ -144,4 +145,5 @@ service AdminService {
     entity OrderItems          as projection on db.OrderItems;
     //entity Organisation as projection on db.Organisation;
     entity Attachments         as projection on db.Attachments;
+    entity DeliveryForecasts         as projection on db.DeliveryForecasts;
 }

@@ -11,3 +11,4 @@ WAITING_FOR_COLLECTION;Waiting for Collection;2;Critical
 COLLECTED;Collected;3;Good
 PACKING_IN_PROGRESS;Packing in Progress;2;Critical
 DELIVERY_IN_PROGRESS;Delivery in Progress;2;Critical
+DELIVERED;Delivered;3;Good

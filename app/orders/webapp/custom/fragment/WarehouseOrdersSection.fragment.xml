@@ -17,15 +17,17 @@
 					>
 						<TileContent
 							id="_IDGenTileContent1"
-							footerColor="{status/ctiticalityName}"
-							unit="DAYS" footer="{= ${isDeliveryExpired} === true ? 'Earli' : 'Overdue' }"
+							footerColor="{= ${deliveryForecast/isCritical} ? 'Error' : 'Good' }"
+							unit="DAYS"
+							footer="{deliveryForecast/daysCounter}"
 							>
 								<NumericContent
 								id="_IDGenNumericContent1"
-								value="{deliveryDelay}"
+								value="{deliveryForecast/residualPercentage}"
+								scale="%"
 								icon="sap-icon://line-charts"
 								withMargin="false"
-								valueColor="{= ${isDeliveryExpired} === true ? 'Good' : 'Error' }"/>
+								valueColor="{= ${deliveryForecast/isCritical} ? 'Error' : 'Good' }"/>
 						</TileContent>
 					</GenericTile>
 				</l:HorizontalLayout>

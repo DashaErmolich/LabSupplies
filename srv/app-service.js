@@ -8,6 +8,7 @@ const {
   getContact,
   sendNotifications,
   getRandomInt,
+  getDays,
 } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
@@ -29,6 +30,7 @@ module.exports = function (srv) {
     Warehouses,
     WarehouseOrders,
     WarehouseOrderItems,
+    DeliveryForecasts,
   } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
@@ -414,10 +416,11 @@ module.exports = function (srv) {
         `WHO-${wh.address.region_code}`
       )}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
-
-      const deadline = getRandomInt(5, 20) * 60000 + Date.now();
+      
+      const whOrderGUID = cds.utils.uuid();
 
       const whOrder = {
+        ID: whOrderGUID,
         title: whOrderTitle,
         items: whOrderItems,
         parentOrder_ID: orderID,
@@ -426,10 +429,15 @@ module.exports = function (srv) {
           (a, b) => a.orders.length - b.orders.length
         )[0].email,
         warehouse_ID: wh.ID,
-        deliveryDeadline: deadline,
       };
 
+      const deliveryForecast = {
+        order_ID: whOrderGUID,
+        predictedDate: getRandomInt(5, 20) * 60000 + Date.now(),
+      }
+
       await INSERT.into(WarehouseOrders, whOrder);
+      await INSERT.into(DeliveryForecasts, deliveryForecast);
     }
   });
 
@@ -554,31 +562,34 @@ module.exports = function (srv) {
   });
 
   this.after("READ", Orders, async (data, req) => {
-    console.log(1);
-
     if (
       data[0]?.warehouseOrders?.length &&
-      data[0].warehouseOrders[0].deliveryDelay !== undefined
+      data[0]?.warehouseOrders[0]?.deliveryForecast?.ID !== undefined
     ) {
-      const whOrders = await SELECT.from(WarehouseOrders).where({
-        parentOrder_ID: data[0].ID,
-      });
+      const whOrders = await SELECT.from(WarehouseOrders, (whOrder) => {
+        whOrder`.*`, whOrder.deliveryForecast((v) => v`.*`)
+      }).where({ parentOrder_ID: data[0].ID });
+      console.log()
+
 
       const dataWhOrders = data[0].warehouseOrders;
 
       for (let i = 0; i < dataWhOrders.length; i++) {
         const whOrder = dataWhOrders[i];
 
-        const delay = Math.floor(
-          (new Date(
-            whOrders.find((whO) => whO.ID === whOrder.ID).deliveryDeadline
-          ).getTime() -
-            new Date(whOrder.deliveryDate || new Date()).getTime()) /
-            60000
-        );
+        const order = whOrders.find((whO) => whO.ID === whOrder.ID);
 
-        whOrder.isDeliveryExpired = delay < 0;
-        whOrder.deliveryDelay = Math.abs(delay);
+        const creationDate = new Date(order.createdAt).getTime();
+
+        const actualDate = (new Date(order.deliveryForecast.actualDate).getTime() || new Date().getTime()) - creationDate;
+        const predictedDate = new Date(order.deliveryForecast.predictedDate).getTime() - creationDate;
+        const daysCounter = Math.floor((predictedDate - actualDate) / 60000);
+        const residualPercentage = Math.floor((predictedDate - actualDate) / actualDate * 100);
+        const isCritical = daysCounter < 0;
+
+        whOrder.deliveryForecast.daysCounter = Math.abs(daysCounter);
+        whOrder.deliveryForecast.residualPercentage = Math.abs(residualPercentage);
+        whOrder.deliveryForecast.isCritical = isCritical;
       }
     }
   });

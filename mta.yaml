@@ -10,6 +10,7 @@ modules:
   - name: LabSupplies-db
   - name: uaa_LabSupplies
   - name: LabSupplies-destination-service
+  - name: jobscheduler-srv
   provides:
   - name: srv-api
     properties:
@@ -125,6 +126,14 @@ resources:
     service: xsuaa
     service-name: LabSupplies-xsuaa-service
     service-plan: application
+- name: jobscheduler-srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: jobscheduler
+    service-plan: lite
+    service-name: jobscheduler-srv
+    config:
+      enable-xsuaa-support: true
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true

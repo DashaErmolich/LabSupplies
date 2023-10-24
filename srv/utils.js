@@ -155,4 +155,12 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
 }
 
-module.exports = { getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
+function getRandomBoolean(probability) {
+  return Math.random() < probability;
+}
+
+function getDays(dateString) {
+  return dateString ? Math.floor(new Date(dateString).getTime() / 60000) : Math.floor(new Date().getTime() / 60000)
+}
+
+module.exports = { getDays, getRandomBoolean, getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };

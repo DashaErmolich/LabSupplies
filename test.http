@@ -1,4 +1,4 @@
-@server = http://localhost:4004
+@server = http://localhost:4038
 
 
 ### CREATE ORDER
@@ -23,5 +23,12 @@ Content-Type: application/json
 }
 
 
-### DELETE ORDER
-DELETE  {{server}}/admin/Orders(d710c81b-aadf-4e5e-89b9-21d0ec9dcb2e)
+### UPDATE DELIVERY
+POST  {{server}}/wh/updateDelivery
+Content-Type: application/json
+
+
+{}
+
+### UPDATE ITEM COLLECT
+GET  {{server}}/wh/collectItem(id='3154b693-f5ae-47b2-a5e3-d21f4c879118',userEmail='ray.moyer.test@cvs.com')
