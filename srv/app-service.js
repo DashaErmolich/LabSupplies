@@ -7,6 +7,7 @@ const {
   getOrderTitle,
   getContact,
   sendNotifications,
+  getRandomInt,
 } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
@@ -332,15 +333,17 @@ module.exports = function (srv) {
       if (
         order.isNotApprovable !== undefined ||
         order.isNotRejectable !== undefined ||
-        order.isNotEditable !== undefined || order.isNotActionable !== undefined
+        order.isNotEditable !== undefined ||
+        order.isNotActionable !== undefined
       ) {
         let isReviewerRole = req.user.is("Reviewer");
         let orderStatusID = order.status_ID;
-        
-        if (!orderStatusID) {
-          const orderStatus = await SELECT.one.from(Orders, req.data.ID).columns('status_ID');
-          orderStatusID = orderStatus.status_ID;
 
+        if (!orderStatusID) {
+          const orderStatus = await SELECT.one
+            .from(Orders, req.data.ID)
+            .columns("status_ID");
+          orderStatusID = orderStatus.status_ID;
         }
 
         if (isReviewerRole) {
@@ -356,15 +359,17 @@ module.exports = function (srv) {
           order.isNotRejectable = true;
 
           if (
-            order.status.ID === "WAITING_FOR_EDIT" ||
-            order.status.ID === "OPEN"
+            orderStatusID === "WAITING_FOR_EDIT" ||
+            orderStatusID === "OPEN"
           ) {
             order.isNotEditable = false;
           }
         }
       }
 
-      const whOrder = await SELECT.one.from(WarehouseOrders, {parentOrder_ID: req.data.ID});
+      const whOrder = await SELECT.one.from(WarehouseOrders, {
+        parentOrder_ID: req.data.ID,
+      });
 
       if (whOrder?.ID) {
         order.isRelatedOrdersVisible = true;
@@ -410,6 +415,8 @@ module.exports = function (srv) {
       )}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
 
+      const deadline = getRandomInt(5, 20) * 60000 + Date.now();
+
       const whOrder = {
         title: whOrderTitle,
         items: whOrderItems,
@@ -419,6 +426,7 @@ module.exports = function (srv) {
           (a, b) => a.orders.length - b.orders.length
         )[0].email,
         warehouse_ID: wh.ID,
+        deliveryDeadline: deadline,
       };
 
       await INSERT.into(WarehouseOrders, whOrder);
@@ -532,18 +540,46 @@ module.exports = function (srv) {
     }
   });
 
-  this.before(['approveOrder', 'rejectOrder'], async (req) => {
-    console.log(1);
-
+  this.before(["approveOrder", "rejectOrder"], async (req) => {
     if (req.params[0].ID) {
       const order = await SELECT.one.from(Orders, req.params[0].ID);
 
       if (order.processor_email !== req.user.id) {
         req.error({
-          code: '403',
-          message: 'Forbidden'
-        })
+          code: "403",
+          message: "Forbidden",
+        });
       }
     }
-  })
+  });
+
+  this.after("READ", Orders, async (data, req) => {
+    console.log(1);
+
+    if (
+      data[0]?.warehouseOrders?.length &&
+      data[0].warehouseOrders[0].deliveryDelay !== undefined
+    ) {
+      const whOrders = await SELECT.from(WarehouseOrders).where({
+        parentOrder_ID: data[0].ID,
+      });
+
+      const dataWhOrders = data[0].warehouseOrders;
+
+      for (let i = 0; i < dataWhOrders.length; i++) {
+        const whOrder = dataWhOrders[i];
+
+        const delay = Math.floor(
+          (new Date(
+            whOrders.find((whO) => whO.ID === whOrder.ID).deliveryDeadline
+          ).getTime() -
+            new Date(whOrder.deliveryDate || new Date()).getTime()) /
+            60000
+        );
+
+        whOrder.isDeliveryExpired = delay < 0;
+        whOrder.deliveryDelay = Math.abs(delay);
+      }
+    }
+  });
 };

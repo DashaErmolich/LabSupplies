@@ -55,7 +55,7 @@ service AppService @(requires: 'authenticated-user') {
                                }
                            })
                            statusID : String @mandatory,
-                           notes : String);
+                           notes : String @UI.MultiLineText @title: '{i18n>notes}');
     }
 
     @readonly

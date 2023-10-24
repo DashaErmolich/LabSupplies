@@ -40,12 +40,25 @@ entity Orders : Order {
                                          on attachments.order = $self;
 }
 
+type DeliveryForecast {
+    estimatedDate           : Timestamp;
+    actualDate              : Timestamp;
+    virtual daysCounter     : Integer;
+    virtual errorPercentage : Integer;
+    virtual isCrititial     : Boolean default false;
+}
+
 entity WarehouseOrders : Order {
-    parentOrder : Association to one Orders;
-    items       : Composition of many WarehouseOrderItems
-                      on items.order = $self;
-    processor   : Association to one WarehouseContacts;
-    warehouse   : Association to one Warehouses;
+    parentOrder      : Association to one Orders;
+    items            : Composition of many WarehouseOrderItems
+                           on items.order = $self;
+    processor        : Association to one WarehouseContacts;
+    warehouse        : Association to one Warehouses;
+    // deliveryForecast : DeliveryForecast
+    deliveryDeadline          : Timestamp;
+    deliveryDate              : Timestamp;
+    virtual deliveryDelay     : Integer;
+    virtual isDeliveryExpired : Boolean default false;
 }
 
 entity OrderStatuses {

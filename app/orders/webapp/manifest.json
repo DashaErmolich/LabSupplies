@@ -131,7 +131,32 @@
                                     }
                                 }
                             },
-                            "initialLoad": "Enabled"
+                            "initialLoad": "Enabled",
+                            "views": {
+                                "paths": [
+                                    {
+                                        "key": "tab0",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#all"
+                                    },
+                                    {
+                                        "key": "tab1",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingApprove"
+                                    },
+                                    {
+                                        "key": "tab2",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
+                                    },
+                                    {
+                                        "key": "tab3",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
+                                    },
+                                    {
+                                        "key": "tab4",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#completed"
+                                    }
+                                ],
+                                "showCounts": false
+                            }
                         }
                     }
                 },
@@ -174,16 +199,13 @@
                                                 "enableAutoScroll": true
                                             },
                                             "enabled": "{= ${isNotApprovable} === false }"
-
                                         },
                                         "DataFieldForAction::AppService.rejectOrder": {
                                             "afterExecution": {
                                                 "navigateToInstance": true
                                             },
                                             "enabled": "{= ${isNotRejectable} === false }"
-
                                         }
-                                       
                                     }
                                 },
                                 "body": {

@@ -163,8 +163,13 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
 });
 
 annotate service.Orders with {
-    notes      @UI.MultiLineText;
-    deliveryTo @mandatory;
+    notes                  @UI.MultiLineText;
+    deliveryTo             @mandatory;
+    isNotActionable        @UI.Hidden;
+    isNotApprovable        @UI.Hidden;
+    isNotEditable          @UI.Hidden;
+    isNotRejectable        @UI.Hidden;
+    isRelatedOrdersVisible @UI.Hidden;
 };
 
 annotate service.Addresses with {

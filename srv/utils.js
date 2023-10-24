@@ -149,4 +149,10 @@ async function sendNotifications(orderStatusID, orderTitle, contactFrom, contact
   }
 }
 
-module.exports = { sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
+module.exports = { getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };

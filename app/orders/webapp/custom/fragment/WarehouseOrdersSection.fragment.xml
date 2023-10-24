@@ -11,12 +11,21 @@
 					
 					<GenericTile id="_IDGenGenericTile1"
 						header="{title}"
-						subheader="{warehouse/name}"
+						subheader="{status/name}"
 						press="handler.onPress"
 						class="sapUiTinyMarginEnd sapUiTinyMarginTop tileLayout"
 					>
-						<TileContent id="_IDGenTileContent1" footer="{status/name}" footerColor="{status/ctiticalityName}">
-
+						<TileContent
+							id="_IDGenTileContent1"
+							footerColor="{status/ctiticalityName}"
+							unit="DAYS" footer="{= ${isDeliveryExpired} === true ? 'Earli' : 'Overdue' }"
+							>
+								<NumericContent
+								id="_IDGenNumericContent1"
+								value="{deliveryDelay}"
+								icon="sap-icon://line-charts"
+								withMargin="false"
+								valueColor="{= ${isDeliveryExpired} === true ? 'Good' : 'Error' }"/>
 						</TileContent>
 					</GenericTile>
 				</l:HorizontalLayout>
