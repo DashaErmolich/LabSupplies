@@ -56,6 +56,13 @@ entity WarehouseOrders : Order {
     processor        : Association to one WarehouseContacts;
     warehouse        : Association to one Warehouses;
     deliveryForecast : Association to one DeliveryForecasts on deliveryForecast.order = $self;
+    @Core.MediaType                  : 'application/pdf'
+    @Core.ContentDisposition.Filename: fileName
+    @Core.ContentDisposition.Type    : 'inline'
+    virtual content  : LargeBinary;
+
+    @Core.IsMediaType                : true
+    virtual fileName : String;
 }
 
 entity OrderStatuses {

@@ -201,26 +201,34 @@ module.exports = function (srv) {
     }
   });
 
-  this.before("UPDATE", OrderItems.drafts, async (req) => {
-    const item = await SELECT.from(OrderItems.drafts, req.data.ID);
-    const items = await SELECT.from(OrderItems.drafts).where({
-      order_ID: item.order_ID,
-    });
-    const a =
-      items.filter(
-        (v) =>
-          v.item_product_ID !== item.item_product_ID &&
-          v.item_warehouse_ID !== item.item_warehouse_ID
-      ).length <
-      items.length - 1;
+  // this.before("UPDATE", OrderItems.drafts, async (req) => {
+  //   console.log(1);
 
-    if (a) {
-      req.error({
-        message: `Item already exists in list`,
-        target: "item_product_ID",
-      });
-    }
-  });
+  //   const items = await SELECT.from(OrderItems.drafts).where({
+  //     item_product_ID: req.data.item_product_ID,
+  //     item_warehouse_ID: req.data.item_warehouse_ID
+  //   });
+
+  //   console.log(1);
+  //   const item = await SELECT.from(OrderItems.drafts, req.data.ID);
+  //   const items = await SELECT.from(OrderItems.drafts).where({
+  //     order_ID: item.order_ID,
+  //   });
+  //   const a =
+  //     items.filter(
+  //       (v) =>
+  //         v.item_product_ID !== item.item_product_ID &&
+  //         v.item_warehouse_ID !== item.item_warehouse_ID
+  //     ).length <
+  //     items.length - 1;
+
+  //   if (a) {
+  //     req.error({
+  //       message: `Item already exists in list`,
+  //       target: "item_product_ID",
+  //     });
+  //   }
+  // });
 
   this.on("approveOrder", async (req) => {
     const orderID = req.params[0].ID;
@@ -416,7 +424,7 @@ module.exports = function (srv) {
         `WHO-${wh.address.region_code}`
       )}`;
       const contacts = warehouses.find((wh) => wh.ID === whIDs[i]).contacts;
-      
+
       const whOrderGUID = cds.utils.uuid();
 
       const whOrder = {
@@ -434,7 +442,7 @@ module.exports = function (srv) {
       const deliveryForecast = {
         order_ID: whOrderGUID,
         predictedDate: getRandomInt(5, 20) * 60000 + Date.now(),
-      }
+      };
 
       await INSERT.into(WarehouseOrders, whOrder);
       await INSERT.into(DeliveryForecasts, deliveryForecast);
@@ -548,6 +556,142 @@ module.exports = function (srv) {
     }
   });
 
+  this.on("READ", WarehouseOrders, async (req, next) => {
+    if (!req.data.ID || !req.req.originalUrl.includes("content")) {
+      return next();
+    }
+
+    try {
+      // Initial setup, create credentials instance.
+      const credentials =
+        PDFServicesSdk.Credentials.servicePrincipalCredentialsBuilder()
+          .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
+          .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
+          .build();
+
+      const reportData = await SELECT.one.from(
+        WarehouseOrders,
+        req.data.ID,
+        (whOrder) => {
+          whOrder`.*`,
+            whOrder.items((whItem) => {
+              whItem.qty,
+                whItem.item((item) => {
+                  item.warehouse((wh) => {
+                    wh.name,
+                      wh.address((whAddress) => {
+                        whAddress`.*`;
+                      });
+                  }),
+                    item.product((product) => {
+                      product`.*`,
+                        product.category((cat) => {
+                          cat.name;
+                        }),
+                        product.supplier((s) => {
+                          s.name;
+                        })
+                    });
+                }),
+                whItem.order((order) => {
+                  order.title,
+                    order.createdAt,
+                    order.parentOrder((pOrder) => {
+                      pOrder.processor_email,
+                        pOrder.title,
+                        pOrder.createdAt,
+                        pOrder.deliveryTo((dTo) => {
+                          dTo.name,
+                            dTo.address((address) => {
+                              address`.*`;
+                            });
+                        });
+                    });
+                });
+            }),
+            whOrder.parentOrder((pOrder) => {
+              pOrder.processor_email,
+                pOrder.title,
+                pOrder.createdAt,
+                pOrder.deliveryTo((dTo) => {
+                  dTo.name,
+                    dTo.address((address) => {
+                      address`.*`;
+                    });
+                });
+            }),
+            whOrder.warehouse((wh) => {
+              wh`.*`,
+                wh.address((whA) => {
+                  whA`.*`;
+                });
+            });
+        }
+      );
+
+      for (let i = 0; i < reportData.items.length; i++) {
+        reportData.items[i].logo = await QRCode.toDataURL(
+          `${reportData.items[i].ID}`,
+          {
+            errorCorrectionLevel: "H",
+          }
+        );
+      }
+
+      // Create an ExecutionContext using credentials
+      const executionContext =
+        PDFServicesSdk.ExecutionContext.create(credentials);
+
+      // Create a new DocumentMerge options instance
+      const documentMerge = PDFServicesSdk.DocumentMerge,
+        documentMergeOptions = documentMerge.options,
+        options = new documentMergeOptions.DocumentMergeOptions(
+          reportData,
+          documentMergeOptions.OutputFormat.PDF
+        );
+
+      // Create a new operation instance using the options instance
+      const documentMergeOperation = documentMerge.Operation.createNew(options);
+
+      // Set operation input document template from a source file.
+      const input = PDFServicesSdk.FileRef.createFromLocalFile(
+        path.resolve(__dirname, "WhOrderReport.docx")
+      );
+      documentMergeOperation.setInput(input);
+
+      // Execute the operation and Save the result to the specified location.
+      const result = await documentMergeOperation.execute(executionContext);
+      const stream = new Readable();
+      await _streamToData(stream, result);
+
+      const resultOutput = new Array();
+      resultOutput.push({
+        value: stream,
+      });
+      return resultOutput;
+
+      async function _streamToData(outStream, result) {
+        return new Promise((resolve) => {
+          const str = new PassThrough();
+          result.writeToStream(str);
+
+          str.on("data", (chunk) => {
+            outStream.push(chunk);
+          });
+          str.on("end", () => {
+            outStream.push(null);
+            resolve(true);
+          });
+        });
+      }
+    } catch (err) {
+      req.err({
+        message: "Something bad happened. Unable to load label.",
+      });
+    }
+  });
+
+
   this.before(["approveOrder", "rejectOrder"], async (req) => {
     if (req.params[0].ID) {
       const order = await SELECT.one.from(Orders, req.params[0].ID);
@@ -567,10 +711,9 @@ module.exports = function (srv) {
       data[0]?.warehouseOrders[0]?.deliveryForecast?.ID !== undefined
     ) {
       const whOrders = await SELECT.from(WarehouseOrders, (whOrder) => {
-        whOrder`.*`, whOrder.deliveryForecast((v) => v`.*`)
+        whOrder`.*`, whOrder.deliveryForecast((v) => v`.*`);
       }).where({ parentOrder_ID: data[0].ID });
-      console.log()
-
+      console.log();
 
       const dataWhOrders = data[0].warehouseOrders;
 
@@ -581,14 +724,21 @@ module.exports = function (srv) {
 
         const creationDate = new Date(order.createdAt).getTime();
 
-        const actualDate = (new Date(order.deliveryForecast.actualDate).getTime() || new Date().getTime()) - creationDate;
-        const predictedDate = new Date(order.deliveryForecast.predictedDate).getTime() - creationDate;
+        const actualDate =
+          (new Date(order.deliveryForecast.actualDate).getTime() ||
+            new Date().getTime()) - creationDate;
+        const predictedDate =
+          new Date(order.deliveryForecast.predictedDate).getTime() -
+          creationDate;
         const daysCounter = Math.floor((predictedDate - actualDate) / 60000);
-        const residualPercentage = Math.floor((predictedDate - actualDate) / actualDate * 100);
+        const residualPercentage = Math.floor(
+          ((predictedDate - actualDate) / actualDate) * 100
+        );
         const isCritical = daysCounter < 0;
 
         whOrder.deliveryForecast.daysCounter = Math.abs(daysCounter);
-        whOrder.deliveryForecast.residualPercentage = Math.abs(residualPercentage);
+        whOrder.deliveryForecast.residualPercentage =
+          Math.abs(residualPercentage);
         whOrder.deliveryForecast.isCritical = isCritical;
       }
     }

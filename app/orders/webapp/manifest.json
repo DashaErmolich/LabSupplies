@@ -247,6 +247,26 @@
                                         }
                                     }
                                 }
+                            },
+                            "content": {
+                                "header": {
+                                    "facets": {
+                                        "WarehouseReportButton": {
+                                            "template": "orders.ext.fragment.WarehouseReportButton",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "name"
+                                            },
+                                            "title": "Report",
+                                            "subTitle": "WhOrder report",
+                                            "stashed": false,
+                                            "requestGroupId": "Heroes",
+                                            "flexSettings": {
+                                                "designtime": "Default"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
