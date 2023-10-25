@@ -21,14 +21,15 @@ annotate service.Orders with @(UI.LineItem: {
             Value: processor.fullName,
         },
         {
-            $Type: 'UI.DataField',
-            Value: deliveryTo.name,
-        },
-        {
             $Type                    : 'UI.DataField',
             Value                    : status.name,
             Criticality              : status.criticalityCode,
             CriticalityRepresentation: #WithIcon,
+        },
+        {
+            $Type                 : 'UI.DataField',
+            Value                 : deliveryTo.name,
+            ![@HTML5.CssDefaults] : {width: 'auto'}
         },
         {
             $Type: 'UI.DataField',
@@ -69,7 +70,7 @@ annotate service.Orders with @(
             }, ],
         }, ],
     },
-    UI.SelectionVariant #waitingEdit: {
+    UI.SelectionVariant #waitingEdit    : {
         $Type        : 'UI.SelectionVariantType',
         Text         : '{i18n>waitingEditOrders}',
         SelectOptions: [{
@@ -130,10 +131,9 @@ annotate service.Orders with @(
         }, ],
     },
 );
-annotate service.Orders with @(
-    UI.SelectionFields : [
-        warehouseOrders.ID,
-        deliveryTo.ID,
-        processor.email,
-    ]
-);
+
+annotate service.Orders with @(UI.SelectionFields: [
+    warehouseOrders.ID,
+    deliveryTo.ID,
+    processor.email,
+]);

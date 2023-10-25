@@ -75,6 +75,7 @@ annotate AppService.OrderItems with @(UI.LineItem #Items: [
         $Type                   : 'UI.DataField',
         Value                   : item.product.title,
         ![@Common.FieldControl] : #ReadOnly,
+        ![@HTML5.CssDefaults]   : {width: 'auto'}
     },
     {
         $Type                   : 'UI.DataField',
@@ -342,8 +343,9 @@ annotate AppService.WarehouseOrderItems with @(UI.LineItem #WhOrderItems: [
         Value: item.product.supplierCatNo,
     },
     {
-        $Type: 'UI.DataField',
-        Value: item.product.title,
+        $Type                 : 'UI.DataField',
+        Value                 : item.product.title,
+        ![@HTML5.CssDefaults] : {width: 'auto'}
     },
     {
         $Type: 'UI.DataField',

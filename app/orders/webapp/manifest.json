@@ -185,14 +185,8 @@
                                         "creationMode": {}
                                     },
                                     "columns": {
-                                        "DataField::item::product::title": {
-                                            "width": "auto"
-                                        },
                                         "DataField::ID": {
                                             "availability": "Hidden"
-                                        },
-                                        "DataField::item::warehouse::name": {
-                                            "width": "auto"
                                         }
                                     }
                                 },
@@ -200,11 +194,6 @@
                                     "tableSettings": {
                                         "creationMode": {
                                             "createAtEnd": true
-                                        }
-                                    },
-                                    "columns": {
-                                        "DataField::content": {
-                                            "width": "auto"
                                         }
                                     }
                                 }
