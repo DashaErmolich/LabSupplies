@@ -263,7 +263,6 @@
                                                 "anchor": "name"
                                             },
                                             "title": "Report",
-                                            "subTitle": "WhOrder report",
                                             "stashed": false,
                                             "requestGroupId": "Heroes",
                                             "flexSettings": {

@@ -276,7 +276,7 @@ annotate AppService.WarehouseOrders with @(
             {
                 $Type : 'UI.DataFieldForAnnotation',
                 Target: 'parentOrder/contact/@Communication.Contact',
-                Label : '{i18n>suppliersContact}',
+                Label : '{i18n>deliveryRequestor}',
             },
             {
                 $Type : 'UI.DataFieldForAnnotation',
@@ -321,6 +321,7 @@ annotate AppService.WarehouseOrders with @(
             {
                 $Type: 'UI.DataField',
                 Value: parentOrder.notes,
+                Label: '{i18n>orderRequestorNotes}',
             },
         ],
     }

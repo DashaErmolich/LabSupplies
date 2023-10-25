@@ -1,13 +1,13 @@
 using AppService as service from '../../srv/app-service';
 
-annotate service.Orders with @(
-    UI.SelectionFields : [
-        deliveryTo_ID,
-        processor_email,
-        status_ID,
-        warehouseOrders.ID,
-    ]
-);
+// annotate service.Orders with @(
+//     UI.SelectionFields : [
+//         deliveryTo_ID,
+//         processor_email,
+//         status_ID,
+//         warehouseOrders.ID,
+//     ]
+// );
 
 annotate service.Orders with @(UI.LineItem: {
     $value             : [
@@ -138,4 +138,11 @@ annotate service.Orders with @(
             }, ],
         }, ],
     },
+);
+annotate service.Orders with @(
+    UI.SelectionFields : [
+        warehouseOrders.ID,
+        deliveryTo.ID,
+        processor.email,
+    ]
 );

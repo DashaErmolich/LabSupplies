@@ -33,54 +33,8 @@ annotate service.Orders with {
             CollectionPath : 'DeliveryTargets',
             SearchSupported: true,
         }
-    };
-    // processor  @Common: {
-    //     Text           : processor.fullName,
-    //     TextArrangement: #TextOnly,
-    //     ValueList      : {
-    //         $Type          : 'Common.ValueListType',
-    //         Parameters     : [
-    //             {
-    //                 $Type            : 'Common.ValueListParameterDisplayOnly',
-    //                 ValueListProperty: 'fullName',
-    //             },
-    //             {
-    //                 $Type            : 'Common.ValueListParameterDisplayOnly',
-    //                 ValueListProperty: 'title',
-    //             },
-    //             {
-    //                 $Type            : 'Common.ValueListParameterOut',
-    //                 ValueListProperty: 'email',
-    //                 LocalDataProperty: processor_email,
-    //             },
-    //         ],
-    //         CollectionPath : 'Contacts',
-    //         SearchSupported: true,
-    //     }
-    // };
+    }
 };
-
-// annotate service.WarehouseOrders with {
-//     ID @(
-//         Common.ValueList               : {
-//                     Text           : wa.fullName,
-//             $Type         : 'Common.ValueListType',
-//             CollectionPath: 'OrdersCatalogue',
-//             Parameters    : [
-//                 {
-//                     $Type            : 'Common.ValueListParameterDisplayOnly',
-//                     ValueListProperty: 'orderTitle',
-//                 },
-//                 {
-//                     $Type            : 'Common.ValueListParameterOut',
-//                     ValueListProperty: 'whOrderID',
-//                     LocalDataProperty: ID,
-//                 },
-//             ],
-//         },
-//     )
-// };
-
 
 annotate service.DeliveryTargets with {
     countryCode @Common: {
@@ -298,4 +252,68 @@ annotate service.Catalogue with {
             SearchSupported: true,
         }
     };
+};
+
+
+// List Report
+
+
+annotate service.WarehouseOrders with {
+    ID @(Common.ValueList : {
+            $Type : 'Common.ValueListType',
+            CollectionPath : 'WarehouseOrders',
+            Parameters : [
+                    {
+                        $Type : 'Common.ValueListParameterInOut',
+                        LocalDataProperty : ID,
+                        ValueListProperty : 'ID',
+                    },
+                ],
+            Label : 'GGGGG',
+        },
+        Common.ValueListWithFixedValues : true
+)};
+annotate service.WarehouseOrders with {
+    ID @Common.Text : {
+        $value : title,
+        ![@UI.TextArrangement] : #TextOnly,
+    }
+};
+
+annotate service.WarehouseOrders with {
+    ID @Common.Label : '{i18n>relatedOrdersTitles}'
+};
+annotate service.Contacts with {
+    email @(Common.ValueList : {
+            $Type : 'Common.ValueListType',
+            CollectionPath : 'Contacts',
+            Parameters : [
+                {
+                    $Type : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : email,
+                    ValueListProperty : 'email',
+                },
+            ],
+        },
+        Common.ValueListWithFixedValues : true,
+        Common.Text : {
+            $value : fullName,
+            ![@UI.TextArrangement] : #TextFirst,
+        }
+)};
+
+annotate service.Orders with @(
+    UI.SelectionFields : [
+        processor.email,
+        warehouseOrders.ID,
+        deliveryTo_ID,
+    ]
+);
+annotate service.Orders with {
+    deliveryTo @Common.Label : '{i18n>departmentTitle}';
+    ID @Common.Label : '{i18n>orderID}';
+};
+
+annotate service.Contacts with {
+    email @Common.Label : '{i18n>processorFullName}'
 };

@@ -70,3 +70,7 @@ annotate AppService.DeliveryTargets with {
   countryName @title: '{i18n>country}';
   regionName  @title: '{i18n>region}';
 }
+
+annotate AppService.WarehouseOrders with {
+  ID @title: '{i18n>whOrderTitle}';
+}
