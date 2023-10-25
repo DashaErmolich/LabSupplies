@@ -309,3 +309,26 @@ annotate service.Orders with @(
         deliveryTo_ID,
     ]
 );
+
+annotate service.WarehouseOrders with @(
+    UI.FieldGroup #WhContact : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'parentOrder/contact/@Communication.Contact',
+                Label : '{i18n>deliveryRequestor}',
+            },
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'processor/@Communication.Contact',
+                Label : '{i18n>processedBy}',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : deliveryForecast.predictedDate,
+                Label : '{i18n>predictedDeliveryDate}',
+            },
+        ],
+    }
+);

@@ -260,12 +260,12 @@ annotate AppService.Attachments with @(UI.LineItem #Attachments: [
 // WH ORDERS
 
 annotate AppService.WarehouseOrders with @(
-    UI.HeaderInfo           : {Title: {
+    UI.HeaderInfo            : {Title: {
         $Type: 'UI.DataField',
         Value: title,
     }, },
 
-    UI.HeaderFacets         : [
+    UI.HeaderFacets          : [
         {
             $Type : 'UI.ReferenceFacet',
             ID    : 'WhContact',
@@ -276,14 +276,24 @@ annotate AppService.WarehouseOrders with @(
             ID    : 'name',
             Target: 'status/@UI.DataPoint#name',
         },
-                {
+        {
             $Type : 'UI.ReferenceFacet',
             ID    : 'radialChart',
             Target: '@UI.Chart#radialChart',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'daysCounter',
+            Target: 'deliveryForecast/@UI.DataPoint#daysCounter',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'residualPercentage',
+            Target: 'deliveryForecast/@UI.DataPoint#residualPercentage',
+        },
     ],
 
-    UI.Facets               : [
+    UI.Facets                : [
         {
             $Type : 'UI.ReferenceFacet',
             Label : '{i18n>productsInfo}',
@@ -297,7 +307,7 @@ annotate AppService.WarehouseOrders with @(
             Target: '@UI.FieldGroup#delivery',
         },
     ],
-    UI.FieldGroup #WhContact: {
+    UI.FieldGroup #WhContact : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -310,9 +320,13 @@ annotate AppService.WarehouseOrders with @(
                 Target: 'processor/@Communication.Contact',
                 Label : '{i18n>processedBy}',
             },
+            {
+                $Type: 'UI.DataField',
+                Value: deliveryForecast.predictedDate,
+            },
         ],
     },
-    UI.FieldGroup #delivery : {
+    UI.FieldGroup #delivery  : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -367,6 +381,42 @@ annotate AppService.WarehouseOrders with @(
         Value      : progress,
         TargetValue: 100,
         Criticality: status.criticalityCode,
+    },
+);
+
+annotate service.DeliveryForecasts with @(
+    UI.DataPoint #residualPercentage: {
+        $Type      : 'UI.DataPointType',
+        Value      : residualPercentage,
+        Title      : '{i18n>deliveryForecastResiduals}',
+        Criticality: {$edmJson: {$If: [
+            {$Eq: [
+                {$Path: 'isCritical'},
+                true
+            ]},
+            1,
+            3
+        ]}},
+    },
+    UI.DataPoint #daysCounter       : {
+        $Type      : 'UI.DataPointType',
+        Value      : daysCounter,
+        Title      : {$edmJson: {$If: [
+            {$Eq: [
+                {$Path: 'isCritical'},
+                true
+            ]},
+            '{i18n>deliveryForecastDaysLeft}',
+            '{i18n>deliveryForecastDaysPast}'
+        ]}},
+        Criticality: {$edmJson: {$If: [
+            {$Eq: [
+                {$Path: 'isCritical'},
+                true
+            ]},
+            1,
+            3
+        ]}},
     },
 );
 

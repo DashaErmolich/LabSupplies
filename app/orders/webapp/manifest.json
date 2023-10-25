@@ -265,7 +265,7 @@
                                             "template": "orders.ext.fragment.WarehouseReportButton",
                                             "position": {
                                                 "placement": "After",
-                                                "anchor": "progress"
+                                                "anchor": "residualPercentage"
                                             },
                                             "title": "Report",
                                             "stashed": false,

@@ -87,3 +87,7 @@ annotate service.Contacts with {
 annotate service.Warehouses with {
   ID @Common.Label: '{i18n>warehouseID}'
 };
+
+annotate schema.DeliveryForecasts with {
+  residualPercentage @(Measures.Unit: '%');
+};

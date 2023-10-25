@@ -9,6 +9,7 @@ const {
   sendNotifications,
   getRandomInt,
   getDays,
+  getDeliveryStatistics,
 } = require("./utils");
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
   fs = require("fs");
@@ -343,10 +344,10 @@ module.exports = function (srv) {
         order.items((items) => items`.*`);
     });
 
-    if (order.status_ID === 'WAITING_FOR_EDIT') {
+    if (order.status_ID === "WAITING_FOR_EDIT") {
       await UPDATE(Orders, orderID).with({
         processor_email: order.contact.email,
-      })
+      });
     }
 
     try {
@@ -469,7 +470,7 @@ module.exports = function (srv) {
 
       const deliveryForecast = {
         order_ID: whOrderGUID,
-        predictedDate: getRandomInt(5, 20) * 60000 + Date.now(),
+        predictedDate: getRandomInt(7, 25) * 60000 + Date.now(),
       };
 
       await INSERT.into(WarehouseOrders, whOrder);
@@ -606,12 +607,12 @@ module.exports = function (srv) {
               whItem.qty,
                 whItem.item((item) => {
                   whItem.ID,
-                  item.warehouse((wh) => {
-                    wh.name,
-                      wh.address((whAddress) => {
-                        whAddress`.*`;
-                      });
-                  }),
+                    item.warehouse((wh) => {
+                      wh.name,
+                        wh.address((whAddress) => {
+                          whAddress`.*`;
+                        });
+                    }),
                     item.product((product) => {
                       product`.*`,
                         product.category((cat) => {
@@ -750,79 +751,88 @@ module.exports = function (srv) {
 
         const order = whOrders.find((whO) => whO.ID === whOrder.ID);
 
-        const creationDate = new Date(order.createdAt).getTime();
-
-        const actualDate =
-          (new Date(order.deliveryForecast.actualDate).getTime() ||
-            new Date().getTime()) - creationDate;
-        const predictedDate =
-          new Date(order.deliveryForecast.predictedDate).getTime() -
-          creationDate;
-        const daysCounter = Math.floor((predictedDate - actualDate) / 60000);
-        const residualPercentage = Math.floor(
-          ((predictedDate - actualDate) / actualDate) * 100
+        const deliveryStatistics = getDeliveryStatistics(
+          order.createdAt,
+          order.deliveryForecast.predictedDate,
+          order.deliveryForecast.actualDate
         );
-        const isCritical = daysCounter < 0;
 
-        whOrder.deliveryForecast.daysCounter = Math.abs(daysCounter);
+        whOrder.deliveryForecast.daysCounter = deliveryStatistics.daysCounter;
         whOrder.deliveryForecast.residualPercentage =
-          Math.abs(residualPercentage);
-        whOrder.deliveryForecast.isCritical = isCritical;
+          deliveryStatistics.residualPercentage;
+        whOrder.deliveryForecast.isCritical = deliveryStatistics.isCritical;
       }
     }
   });
 
   this.after("READ", Orders, async (data, req) => {
-    console.log()
+    console.log();
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
       const STEPS_COUNT = 4;
 
       data.forEach((item) => {
         let currentStep;
-    
+
         switch (item.status.ID) {
-          case 'WAITING_FOR_EDIT':
+          case "WAITING_FOR_EDIT":
             currentStep = 1;
             break;
-          case 'WAITING_FOR_APPROVE':
+          case "WAITING_FOR_APPROVE":
             currentStep = 2;
             break;
-          case 'WAITING_FOR_DELIVERY':
+          case "WAITING_FOR_DELIVERY":
             currentStep = 3;
             break;
           default:
             currentStep = 4;
         }
-  
-        item.progress = currentStep / STEPS_COUNT * 100;
-      })
+
+        item.progress = (currentStep / STEPS_COUNT) * 100;
+      });
     }
-  })
+  });
 
   this.after("READ", WarehouseOrders, async (data, req) => {
-    console.log()
+    console.log();
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
       const STEPS_COUNT = 4;
 
       data.forEach((item) => {
         let currentStep;
-    
+
         switch (item.status.ID) {
-          case 'PACKING':
+          case "PACKING":
             currentStep = 1;
             break;
-          case 'PACKING_IN_PROGRESS':
+          case "PACKING_IN_PROGRESS":
             currentStep = 2;
             break;
-          case 'DELIVERY_IN_PROGRESS':
+          case "DELIVERY_IN_PROGRESS":
             currentStep = 3;
             break;
           default:
             currentStep = 4;
         }
-  
-        item.progress = currentStep / STEPS_COUNT * 100;
-      })
+
+        item.progress = (currentStep / STEPS_COUNT) * 100;
+      });
     }
-  })
+
+    if (data[0]?.ID && data[0]?.deliveryForecast?.ID) {
+      const whOrder = await SELECT.one.from(WarehouseOrders, data[0].ID, (whO) => {
+        whO`.*`, whO.deliveryForecast((dF) => dF`.*`)
+      });
+
+      const deliveryStatistics = getDeliveryStatistics(
+        whOrder.createdAt,
+        whOrder.deliveryForecast.predictedDate,
+        whOrder.deliveryForecast.actualDate
+      );
+
+      data[0].deliveryForecast.daysCounter = deliveryStatistics.daysCounter;
+      data[0].deliveryForecast.residualPercentage =
+        deliveryStatistics.residualPercentage;
+      data[0].deliveryForecast.isCritical = deliveryStatistics.isCritical;
+    }
+  });
 };

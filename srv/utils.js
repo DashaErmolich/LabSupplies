@@ -163,4 +163,24 @@ function getDays(dateString) {
   return dateString ? Math.floor(new Date(dateString).getTime() / 60000) : Math.floor(new Date().getTime() / 60000)
 }
 
-module.exports = { getDays, getRandomBoolean, getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
+function getDeliveryStatistics(created, predicted, actual) {
+  const creationDate = new Date(created).getTime();
+        const predictedDate = new Date(predicted).getTime();
+        const actualDate = new Date(actual).getTime() ||
+            new Date().getTime();
+        const predictedDays = (predictedDate - creationDate) / 60000;
+        const actualDays = (actualDate - creationDate) / 60000;
+        const residualPercentage = ((predictedDays - actualDays) / actualDays) * 100;
+        const residualPercentageRounded = residualPercentage.toFixed(2);
+        const daysCounter = Math.floor(predictedDays - actualDays);
+        const isCritical = daysCounter < 0;
+
+        return {
+          residualPercentage: Math.abs(residualPercentageRounded),
+          daysCounter: Math.abs(daysCounter),
+          isCritical: isCritical,
+
+        }
+}
+
+module.exports = { getDeliveryStatistics, getDays, getRandomBoolean, getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
