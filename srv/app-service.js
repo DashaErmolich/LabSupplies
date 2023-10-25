@@ -549,7 +549,7 @@ module.exports = function (srv) {
 
       // Set operation input document template from a source file.
       const input = PDFServicesSdk.FileRef.createFromLocalFile(
-        path.resolve(__dirname, "WhOrderItemPackingLabel.docx")
+        path.resolve(__dirname, "sources/WhOrderItemPackingLabel.docx")
       );
       documentMergeOperation.setInput(input);
 
@@ -685,7 +685,7 @@ module.exports = function (srv) {
 
       // Set operation input document template from a source file.
       const input = PDFServicesSdk.FileRef.createFromLocalFile(
-        path.resolve(__dirname, "WhOrderReport.docx")
+        path.resolve(__dirname, "sources/WhOrderReport.docx")
       );
       documentMergeOperation.setInput(input);
 

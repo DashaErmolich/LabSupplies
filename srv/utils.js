@@ -171,7 +171,7 @@ function getDeliveryStatistics(created, predicted, actual) {
         const predictedDays = (predictedDate - creationDate) / 60000;
         const actualDays = (actualDate - creationDate) / 60000;
         const residualPercentage = ((predictedDays - actualDays) / actualDays) * 100;
-        const residualPercentageRounded = residualPercentage.toFixed(2);
+        const residualPercentageRounded = residualPercentage > 100 ? 100 : residualPercentage.toFixed(2);
         const daysCounter = Math.floor(predictedDays - actualDays);
         const isCritical = daysCounter < 0;
 
