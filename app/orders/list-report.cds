@@ -1,7 +1,13 @@
 using AppService as service from '../../srv/app-service';
-using from '../../db/schema';
 
-annotate service.Orders with @(UI.SelectionFields: [deliveryTo.address.region_code, ]);
+annotate service.Orders with @(
+    UI.SelectionFields : [
+        deliveryTo_ID,
+        processor_email,
+        status_ID,
+        warehouseOrders.ID,
+    ]
+);
 
 annotate service.Orders with @(UI.LineItem: {
     $value             : [
@@ -69,6 +75,20 @@ annotate service.Orders with @(
                 Sign  : #I,
                 Option: #EQ,
                 Low   : 'WAITING_FOR_APPROVE',
+            }, ],
+        }, ],
+    },
+    UI.SelectionVariant #waitingEdit: {
+        $Type        : 'UI.SelectionVariantType',
+        Text         : '{i18n>waitingEditOrders}',
+        SelectOptions: [{
+            $Type       : 'UI.SelectOptionType',
+            PropertyName: status_ID,
+            Ranges      : [{
+                $Type : 'UI.SelectionRangeType',
+                Sign  : #I,
+                Option: #EQ,
+                Low   : 'WAITING_FOR_EDIT',
             }, ],
         }, ],
     },

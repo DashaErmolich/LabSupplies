@@ -162,53 +162,11 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
     ],
 });
 
-annotate service.Orders with {
-    notes                  @UI.MultiLineText;
-    deliveryTo             @mandatory;
-    isNotActionable        @UI.Hidden;
-    isNotApprovable        @UI.Hidden;
-    isNotEditable          @UI.Hidden;
-    isNotRejectable        @UI.Hidden;
-    isRelatedOrdersVisible @UI.Hidden;
-};
-
-annotate service.Addresses with {
-    postCode @UI.HiddenFilter;
-    building @UI.HiddenFilter;
-    street   @UI.HiddenFilter;
-    ID       @UI.Hidden;
-}
-
-annotate service.OrderItems with {
-    item @mandatory;
-    qty  @mandatory;
-}
-
-annotate service.Warehouses with {
-    ID @UI.HiddenFilter;
-}
-
 annotate AppService.OrderItems with @(UI.PresentationVariant #Items: {
     $Type         : 'UI.PresentationVariantType',
     Visualizations: ['@UI.LineItem#Items', ],
     GroupBy       : [item.warehouse.name, ],
 });
-
-annotate AppService.Catalogue with {
-    productID     @UI.Hidden;
-    title         @UI.HiddenFilter;
-    description   @UI.HiddenFilter;
-    supplierCatNo @UI.HiddenFilter;
-    warehouseID   @UI.Hidden;
-    name          @UI.HiddenFilter;
-}
-
-annotate AppService.DeliveryTargets with {
-    departmentID @UI.Hidden;
-    name         @UI.HiddenFilter;
-    countryName  @UI.HiddenFilter;
-    regionName   @UI.HiddenFilter;
-}
 
 annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
     $Type      : 'UI.DataPointType',
@@ -276,15 +234,6 @@ annotate AppService.Attachments with @(UI.LineItem #Attachments: [
         Value: notes,
     },
 ]);
-
-annotate service.Attachments with {
-    content   @mandatory;
-    notes     @UI.MultiLineText;
-    fileName  @UI.Hidden;
-    ID        @UI.Hidden;
-    mediaType @UI.Hidden;
-    order     @UI.Hidden;
-};
 
 // WH ORDERS
 

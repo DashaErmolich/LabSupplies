@@ -191,7 +191,7 @@ module.exports = function (srv) {
         warehouse_ID: req.data.item_warehouse_ID,
       });
 
-      if (!whp.stock) {
+      if (whp?.stock && whp.stock === 0) {
         req.warn({
           message: "This item is not available now",
         });
@@ -201,34 +201,56 @@ module.exports = function (srv) {
     }
   });
 
-  // this.before("UPDATE", OrderItems.drafts, async (req) => {
-  //   console.log(1);
+  this.before("UPDATE", OrderItems.drafts, async (req) => {
+    if (req.data.item_product_ID && req.data.item_warehouse_ID) {
+      const parentOrderID = await SELECT.from(
+        OrderItems.drafts,
+        req.data.ID
+      ).columns("order_ID");
+      if (parentOrderID?.order_ID) {
+        const items = await SELECT.from(OrderItems.drafts).where({
+          order_ID: parentOrderID?.order_ID,
+          ID: { "<>": req.data.ID },
+        });
 
-  //   const items = await SELECT.from(OrderItems.drafts).where({
-  //     item_product_ID: req.data.item_product_ID,
-  //     item_warehouse_ID: req.data.item_warehouse_ID
-  //   });
-
-  //   console.log(1);
-  //   const item = await SELECT.from(OrderItems.drafts, req.data.ID);
-  //   const items = await SELECT.from(OrderItems.drafts).where({
-  //     order_ID: item.order_ID,
-  //   });
-  //   const a =
-  //     items.filter(
-  //       (v) =>
-  //         v.item_product_ID !== item.item_product_ID &&
-  //         v.item_warehouse_ID !== item.item_warehouse_ID
-  //     ).length <
-  //     items.length - 1;
-
-  //   if (a) {
-  //     req.error({
-  //       message: `Item already exists in list`,
-  //       target: "item_product_ID",
-  //     });
-  //   }
-  // });
+        if (
+          items.some(
+            ({ item_warehouse_ID, item_product_ID }) =>
+              item_warehouse_ID === req.data.item_warehouse_ID &&
+              item_product_ID === req.data.item_product_ID
+          )
+        ) {
+          req.error({
+            message: "Item already exists in list",
+            target: "item_warehouse_ID",
+          });
+        }
+      }
+    } else if (
+      (req.data.item_product_ID && !req.data.item_warehouse_ID) ||
+      (req.data.item_warehouse_ID && !req.data.item_product_ID)
+    ) {
+      const item = await SELECT.from(OrderItems.drafts, req.data.ID);
+      if (item.ID) {
+        const items = await SELECT.from(OrderItems.drafts).where({
+          order_ID: item.order_ID,
+        });
+        const whId = req.data.item_warehouse_ID || item.item_warehouse_ID;
+        const prId = req.data.item_product_ID || item.item_product_ID;
+        if (
+          items.some(
+            ({ item_warehouse_ID, item_product_ID }) =>
+              item_warehouse_ID === whId && item_product_ID === prId
+          )
+        ) {
+          req.error({
+            message: "Item already exists in list",
+            target: "item_warehouse_ID",
+          });
+        }
+      }
+    }
+  });
 
   this.on("approveOrder", async (req) => {
     const orderID = req.params[0].ID;
@@ -320,6 +342,12 @@ module.exports = function (srv) {
         order.contact((c) => c`.*`),
         order.items((items) => items`.*`);
     });
+
+    if (order.status_ID === 'WAITING_FOR_EDIT') {
+      await UPDATE(Orders, orderID).with({
+        processor_email: order.contact.email,
+      })
+    }
 
     try {
       await sendNotifications(
@@ -577,6 +605,7 @@ module.exports = function (srv) {
             whOrder.items((whItem) => {
               whItem.qty,
                 whItem.item((item) => {
+                  whItem.ID,
                   item.warehouse((wh) => {
                     wh.name,
                       wh.address((whAddress) => {
@@ -590,7 +619,7 @@ module.exports = function (srv) {
                         }),
                         product.supplier((s) => {
                           s.name;
-                        })
+                        });
                     });
                 }),
                 whItem.order((order) => {
@@ -690,7 +719,6 @@ module.exports = function (srv) {
       });
     }
   });
-
 
   this.before(["approveOrder", "rejectOrder"], async (req) => {
     if (req.params[0].ID) {

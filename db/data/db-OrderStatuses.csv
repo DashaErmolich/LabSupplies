@@ -4,11 +4,11 @@ WAITING_FOR_APPROVE;Waiting for Approve;2;Critical
 APPROVED;Approved;3;Good
 REJECTED;Rejected and Closed;1;Error
 WAITING_FOR_DELIVERY;Waiting for Delivery;2;Critical
-CLOSED;Closed;3;Good
+CLOSED;Completed and Closed;3;Good
 WAITING_FOR_EDIT;Waiting for Edit;2;Critical
 PACKING;Waiting for Packing;0;Neutral
 WAITING_FOR_COLLECTION;Waiting for Collection;2;Critical
 COLLECTED;Collected;3;Good
 PACKING_IN_PROGRESS;Packing in Progress;2;Critical
 DELIVERY_IN_PROGRESS;Delivery in Progress;2;Critical
-DELIVERED;Delivered;3;Good
+DELIVERED;Delivered and Closed;3;Good

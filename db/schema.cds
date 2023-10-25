@@ -22,7 +22,7 @@ aspect Order : cuid, managed {
 }
 
 entity Orders : Order {
-    deliveryTo                     : Association to one Departments;
+    deliveryTo                     : Association to one Departments @mandatory;
     contact                        : Association to one Contacts
                                          on contact.email = $self.createdBy;
     items                          : Composition of many OrderItems
@@ -41,14 +41,14 @@ entity Orders : Order {
 }
 
 entity DeliveryForecasts : cuid {
-    order                      : Association to one WarehouseOrders;
-    predictedDate              : Timestamp;
-    actualDate                 : Timestamp;
-    virtual daysCounter        : Integer;
-    virtual residualPercentage : Integer;
-    virtual isCritical        : Boolean default false;
-    virtual bulletChartTargetValue: Integer;
-    virtual bulletChartForecastValue: Integer;
+    order                            : Association to one WarehouseOrders;
+    predictedDate                    : Timestamp;
+    actualDate                       : Timestamp;
+    virtual daysCounter              : Integer;
+    virtual residualPercentage       : Integer;
+    virtual isCritical               : Boolean default false;
+    virtual bulletChartTargetValue   : Integer;
+    virtual bulletChartForecastValue : Integer;
 }
 
 entity WarehouseOrders : Order {
@@ -57,7 +57,9 @@ entity WarehouseOrders : Order {
                            on items.order = $self;
     processor        : Association to one WarehouseContacts;
     warehouse        : Association to one Warehouses;
-    deliveryForecast : Association to one DeliveryForecasts on deliveryForecast.order = $self;
+    deliveryForecast : Association to one DeliveryForecasts
+                           on deliveryForecast.order = $self;
+
     @Core.MediaType                  : 'application/pdf'
     @Core.ContentDisposition.Filename: fileName
     @Core.ContentDisposition.Type    : 'inline'
@@ -77,7 +79,7 @@ entity OrderStatuses {
 entity Attachments : cuid {
     @Core.MediaType                  : mediaType
     @Core.ContentDisposition.Filename: fileName
-    content   : LargeBinary;
+    content   : LargeBinary @mandatory;
 
     @Core.IsMediaType                : true
     mediaType : String;
@@ -147,8 +149,8 @@ entity WarehouseContacts : Contact {
 // -----------------------------------
 
 aspect OrderItem : cuid {
-    item : Association to one WarehouseProducts;
-    qty  : Integer;
+    item : Association to one WarehouseProducts @mandatory;
+    qty  : Integer                              @mandatory;
 }
 
 //@assert.unique.item: [item]

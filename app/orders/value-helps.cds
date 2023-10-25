@@ -1,11 +1,11 @@
-using from '../../srv/app-service';
+using AppService as service from '../../srv/app-service';
 using from '../../db/schema';
 using from './object-page';
 using from '../../db/common';
 
 // ObjectPage - Delivery Info
 
-annotate AppService.Orders with {
+annotate service.Orders with {
     deliveryTo @Common: {
         Text           : deliveryTo.name,
         TextArrangement: #TextOnly,
@@ -33,10 +33,56 @@ annotate AppService.Orders with {
             CollectionPath : 'DeliveryTargets',
             SearchSupported: true,
         }
-    }
+    };
+    // processor  @Common: {
+    //     Text           : processor.fullName,
+    //     TextArrangement: #TextOnly,
+    //     ValueList      : {
+    //         $Type          : 'Common.ValueListType',
+    //         Parameters     : [
+    //             {
+    //                 $Type            : 'Common.ValueListParameterDisplayOnly',
+    //                 ValueListProperty: 'fullName',
+    //             },
+    //             {
+    //                 $Type            : 'Common.ValueListParameterDisplayOnly',
+    //                 ValueListProperty: 'title',
+    //             },
+    //             {
+    //                 $Type            : 'Common.ValueListParameterOut',
+    //                 ValueListProperty: 'email',
+    //                 LocalDataProperty: processor_email,
+    //             },
+    //         ],
+    //         CollectionPath : 'Contacts',
+    //         SearchSupported: true,
+    //     }
+    // };
 };
 
-annotate AppService.DeliveryTargets with {
+// annotate service.WarehouseOrders with {
+//     ID @(
+//         Common.ValueList               : {
+//                     Text           : wa.fullName,
+//             $Type         : 'Common.ValueListType',
+//             CollectionPath: 'OrdersCatalogue',
+//             Parameters    : [
+//                 {
+//                     $Type            : 'Common.ValueListParameterDisplayOnly',
+//                     ValueListProperty: 'orderTitle',
+//                 },
+//                 {
+//                     $Type            : 'Common.ValueListParameterOut',
+//                     ValueListProperty: 'whOrderID',
+//                     LocalDataProperty: ID,
+//                 },
+//             ],
+//         },
+//     )
+// };
+
+
+annotate service.DeliveryTargets with {
     countryCode @Common: {
         ValueListWithFixedValues: true,
         Label                   : '{i18n>country}',
@@ -94,7 +140,7 @@ annotate AppService.DeliveryTargets with {
     }
 };
 
-annotate AppService.Orders with @(Common.SideEffects #delivery: {
+annotate service.Orders with @(Common.SideEffects #delivery: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [deliveryTo_ID, ],
     TargetEntities  : [deliveryTo, ],
@@ -102,7 +148,7 @@ annotate AppService.Orders with @(Common.SideEffects #delivery: {
 
 // ObjectPage - Items Info
 
-annotate AppService.OrderItems with {
+annotate service.OrderItems with {
     item @Common: {
         Text           : item.product.supplierCatNo,
         TextArrangement: #TextOnly,
@@ -146,7 +192,7 @@ annotate AppService.OrderItems with {
     }
 };
 
-annotate AppService.OrderItems with @(Common.SideEffects: {
+annotate service.OrderItems with @(Common.SideEffects: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [item_product_ID, ],
     TargetEntities  : [item, ],
@@ -155,7 +201,7 @@ annotate AppService.OrderItems with @(Common.SideEffects: {
 
 // ObjectPage - Items Info Linked Filters
 
-annotate AppService.Catalogue with {
+annotate service.Catalogue with {
     warehouseCountryCode @Common: {
         ValueListWithFixedValues: true,
         Label                   : '{i18n>warehouseCountry}',
@@ -215,7 +261,7 @@ annotate AppService.Catalogue with {
 
 // ObjectPage - Items Info Other Filters
 
-annotate AppService.Catalogue with {
+annotate service.Catalogue with {
     category @Common: {
         Text                    : category.name,
         TextArrangement         : #TextOnly,
@@ -253,63 +299,3 @@ annotate AppService.Catalogue with {
         }
     };
 };
-
-annotate AppService.WarehouseOrders with @(
-    UI.FieldGroup #WhContact : {
-        $Type : 'UI.FieldGroupType',
-        Data : [
-            {
-                $Type : 'UI.DataFieldForAnnotation',
-                Target : 'parentOrder/contact/@Communication.Contact',
-                Label : '{i18n>deliveryRequestor}',
-            },
-            {
-                $Type : 'UI.DataFieldForAnnotation',
-                Target : 'processor/@Communication.Contact',
-                Label : '{i18n>processedBy}',
-            },
-        ],
-    }
-);
-annotate AppService.WarehouseOrders with @(
-    UI.FieldGroup #delivery : {
-        $Type : 'UI.FieldGroupType',
-        Data : [
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.name,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.region.country.name,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.region.name,
-                Label : '{i18n>region}',
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.city,
-                Label : '{i18n>city}',
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.postCode,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.street,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.deliveryTo.address.building,
-            },
-            {
-                $Type : 'UI.DataField',
-                Value : parentOrder.notes,
-                Label : '{i18n>orderRequestorNotes}',
-            },
-        ],
-    }
-);

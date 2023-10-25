@@ -55,7 +55,7 @@ service AppService @(requires: 'authenticated-user') {
                                }
                            })
                            statusID : String @mandatory,
-                           notes : String @UI.MultiLineText @title: '{i18n>notes}');
+                           notes : String  @UI.MultiLineText  @title:'{i18n>notes}'  );
     }
 
     @readonly
@@ -127,7 +127,20 @@ service AppService @(requires: 'authenticated-user') {
     entity WarehouseContacts   as projection on db.WarehouseContacts;
     entity Attachments         as projection on db.Attachments;
     entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
-    entity DeliveryForecasts as projection on db.DeliveryForecasts;
+    entity DeliveryForecasts   as projection on db.DeliveryForecasts;
+
+    view OrdersCatalogue as
+        select from Orders as o
+        inner join WarehouseOrders as who
+            on o.ID = who.parentOrder.ID
+        {
+            o.ID       as orderID,
+            o.title    as orderTitle,
+            o.status   as orderStatus,
+            who.ID     as whOrderID,
+            who.title  as whOrderTitle,
+            who.status as whOrderStatus,
+        }
 }
 
 @path: '/admin'
@@ -145,5 +158,5 @@ service AdminService {
     entity OrderItems          as projection on db.OrderItems;
     //entity Organisation as projection on db.Organisation;
     entity Attachments         as projection on db.Attachments;
-    entity DeliveryForecasts         as projection on db.DeliveryForecasts;
+    entity DeliveryForecasts   as projection on db.DeliveryForecasts;
 }

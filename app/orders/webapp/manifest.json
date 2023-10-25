@@ -144,18 +144,22 @@
                                     },
                                     {
                                         "key": "tab2",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingEdit"
                                     },
                                     {
                                         "key": "tab3",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
                                     },
                                     {
                                         "key": "tab4",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
+                                    },
+                                    {
+                                        "key": "tab5",
                                         "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#completed"
                                     }
                                 ],
-                                "showCounts": false
+                                "showCounts": true
                             }
                         }
                     }
@@ -198,7 +202,8 @@
                                                 "navigateToInstance": true,
                                                 "enableAutoScroll": true
                                             },
-                                            "enabled": "{= ${isNotApprovable} === false }"
+                                            "enabled": "{= ${isNotApprovable} === false }",
+                                            "press": "orders.OPExtend.onApprovePress"
                                         },
                                         "DataFieldForAction::AppService.rejectOrder": {
                                             "afterExecution": {
@@ -275,7 +280,11 @@
         },
         "extends": {
             "extensions": {
-                "sap.ui.controllerExtensions": {}
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ObjectPage.ObjectPageController": {
+                        "controllerName": "orders.OPExtend"
+                    }
+                }
             }
         }
     },
