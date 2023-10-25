@@ -2,7 +2,7 @@ using AppService as service from '../../srv/app-service';
 using from './annotations';
 
 annotate service.Orders with @(
-    UI.HeaderInfo         : {
+    UI.HeaderInfo            : {
         Title   : {
             $Type: 'UI.DataField',
             Value: title,
@@ -10,7 +10,7 @@ annotate service.Orders with @(
         TypeName: 'Order',
     },
 
-    UI.HeaderFacets       : [
+    UI.HeaderFacets          : [
         {
             $Type : 'UI.ReferenceFacet',
             ID    : 'Contact',
@@ -21,8 +21,13 @@ annotate service.Orders with @(
             ID    : 'Status',
             Target: 'status/@UI.DataPoint#Status',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'radialChart',
+            Target: '@UI.Chart#radialChart',
+        },
     ],
-    UI.FieldGroup #Contact: {
+    UI.FieldGroup #Contact   : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -41,7 +46,23 @@ annotate service.Orders with @(
                 Label: '{i18n>reviewNotes}',
             },
         ],
-    }
+    },
+    UI.Chart #radialChart    : {
+        Title            : '{i18n>progressIndicator}',
+        ChartType        : #Donut,
+        Measures         : [progress, ],
+        MeasureAttributes: [{
+            $Type    : 'UI.ChartMeasureAttributeType',
+            Measure  : progress,
+            Role     : #Axis1,
+            DataPoint: '@UI.DataPoint#radialChart',
+        }, ],
+    },
+    UI.DataPoint #radialChart: {
+        Value      : progress,
+        TargetValue: 100,
+        Criticality: status.criticalityCode,
+    },
 );
 
 annotate service.Orders with @(UI.Facets: [
@@ -255,6 +276,11 @@ annotate AppService.WarehouseOrders with @(
             ID    : 'name',
             Target: 'status/@UI.DataPoint#name',
         },
+                {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'radialChart',
+            Target: '@UI.Chart#radialChart',
+        },
     ],
 
     UI.Facets               : [
@@ -325,7 +351,23 @@ annotate AppService.WarehouseOrders with @(
                 Label: '{i18n>orderRequestorNotes}',
             },
         ],
-    }
+    },
+    UI.Chart #radialChart    : {
+        Title            : '{i18n>progressIndicator}',
+        ChartType        : #Donut,
+        Measures         : [progress, ],
+        MeasureAttributes: [{
+            $Type    : 'UI.ChartMeasureAttributeType',
+            Measure  : progress,
+            Role     : #Axis1,
+            DataPoint: '@UI.DataPoint#radialChart',
+        }, ],
+    },
+    UI.DataPoint #radialChart: {
+        Value      : progress,
+        TargetValue: 100,
+        Criticality: status.criticalityCode,
+    },
 );
 
 

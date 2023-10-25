@@ -1,59 +1,76 @@
 using AppService as service from '../../srv/app-service';
 
-annotate service.Orders with @(UI.LineItem: {
-    $value             : [
-        {
-            $Type: 'UI.DataField',
-            Value: createdAt,
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: title,
-        },
-        {
-            $Type: 'UI.DataField',
-            Label: '{i18n>createdBy}',
-            Value: contact.fullName,
-        },
-        {
-            $Type: 'UI.DataField',
-            Label: '{i18n>processedBy}',
-            Value: processor.fullName,
-        },
-        {
-            $Type                    : 'UI.DataField',
-            Value                    : status.name,
-            Criticality              : status.criticalityCode,
-            CriticalityRepresentation: #WithIcon,
-        },
-        {
-            $Type                 : 'UI.DataField',
-            Value                 : deliveryTo.name,
-            ![@HTML5.CssDefaults] : {width: 'auto'}
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: deliveryTo_ID,
-            ![@UI.Hidden]
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: status_ID,
-            ![@UI.Hidden]
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: processor_email,
-            ![@UI.Hidden]
-        },
-        {
-            $Type: 'UI.DataField',
-            Value: ID,
-            ![@UI.Hidden]
-        },
-    ],
-    ![@UI.Criticality] : status.criticalityCode,
-});
+annotate service.Orders with @(
+    UI.LineItem           : {
+        $value             : [
+            {
+                $Type: 'UI.DataField',
+                Value: createdAt,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: title,
+            },
+            {
+                $Type                 : 'UI.DataFieldForAnnotation',
+                Label                 : '{i18n>progressIndicator}',
+                Target                : '@UI.DataPoint#progress',
+                ![@UI.Importance]     : #Low,
+                ![@HTML5.CssDefaults] : {width: 'auto'},
+            },
+            {
+                $Type: 'UI.DataField',
+                Label: '{i18n>createdBy}',
+                Value: contact.fullName,
+            },
+            {
+                $Type: 'UI.DataField',
+                Label: '{i18n>processedBy}',
+                Value: processor.fullName,
+            },
+            {
+                $Type                    : 'UI.DataField',
+                Value                    : status.name,
+                Criticality              : status.criticalityCode,
+                CriticalityRepresentation: #WithIcon,
+            },
+            {
+                $Type                 : 'UI.DataField',
+                Value                 : deliveryTo.name,
+                ![@HTML5.CssDefaults] : {width: 'auto'}
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: deliveryTo_ID,
+                ![@UI.Hidden]
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: status_ID,
+                ![@UI.Hidden]
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: processor_email,
+                ![@UI.Hidden]
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: ID,
+                ![@UI.Hidden]
+            },
+        ],
+        ![@UI.Criticality] : status.criticalityCode,
+    },
+    UI.DataPoint #progress: {
+        $Type                    : 'UI.DataPointType',
+        Value                    : progress,
+        Title                    : '{i18n>progressIndicator}',
+        TargetValue              : 100,
+        Visualization            : #Progress,
+        //Criticality              : status.criticalityCode,
+    },
+);
 
 annotate service.Orders with @(
     UI.SelectionVariant #waitingApprove : {

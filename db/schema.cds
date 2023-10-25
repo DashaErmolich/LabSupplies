@@ -16,9 +16,10 @@ using {
 namespace db;
 
 aspect Order : cuid, managed {
-    title  : String;
-    notes  : String;
-    status : Association to one OrderStatuses;
+    title            : String;
+    notes            : String;
+    status           : Association to one OrderStatuses;
+    virtual progress : Integer default 0;
 }
 
 entity Orders : Order {

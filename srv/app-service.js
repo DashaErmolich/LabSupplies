@@ -771,4 +771,58 @@ module.exports = function (srv) {
       }
     }
   });
+
+  this.after("READ", Orders, async (data, req) => {
+    console.log()
+    if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
+      const STEPS_COUNT = 4;
+
+      data.forEach((item) => {
+        let currentStep;
+    
+        switch (item.status.ID) {
+          case 'WAITING_FOR_EDIT':
+            currentStep = 1;
+            break;
+          case 'WAITING_FOR_APPROVE':
+            currentStep = 2;
+            break;
+          case 'WAITING_FOR_DELIVERY':
+            currentStep = 3;
+            break;
+          default:
+            currentStep = 4;
+        }
+  
+        item.progress = currentStep / STEPS_COUNT * 100;
+      })
+    }
+  })
+
+  this.after("READ", WarehouseOrders, async (data, req) => {
+    console.log()
+    if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
+      const STEPS_COUNT = 4;
+
+      data.forEach((item) => {
+        let currentStep;
+    
+        switch (item.status.ID) {
+          case 'PACKING':
+            currentStep = 1;
+            break;
+          case 'PACKING_IN_PROGRESS':
+            currentStep = 2;
+            break;
+          case 'DELIVERY_IN_PROGRESS':
+            currentStep = 3;
+            break;
+          default:
+            currentStep = 4;
+        }
+  
+        item.progress = currentStep / STEPS_COUNT * 100;
+      })
+    }
+  })
 };
