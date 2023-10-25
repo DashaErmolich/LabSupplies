@@ -17,6 +17,10 @@ annotate service.Orders with {
   isRelatedOrdersVisible @UI.Hidden;
 };
 
+annotate service.OrderItems with {
+  ID       @UI.Hidden;
+}
+
 annotate service.WarehouseOrderItems with {
   item     @UI.Hidden;
   content  @UI.Hidden;

@@ -1,14 +1,5 @@
 using AppService as service from '../../srv/app-service';
 
-// annotate service.Orders with @(
-//     UI.SelectionFields : [
-//         deliveryTo_ID,
-//         processor_email,
-//         status_ID,
-//         warehouseOrders.ID,
-//     ]
-// );
-
 annotate service.Orders with @(UI.LineItem: {
     $value             : [
         {
@@ -27,7 +18,7 @@ annotate service.Orders with @(UI.LineItem: {
         {
             $Type: 'UI.DataField',
             Label: '{i18n>processedBy}',
-            Value: contact.manager.fullName,
+            Value: processor.fullName,
         },
         {
             $Type: 'UI.DataField',

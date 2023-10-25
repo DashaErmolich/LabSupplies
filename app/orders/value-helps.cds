@@ -309,11 +309,3 @@ annotate service.Orders with @(
         deliveryTo_ID,
     ]
 );
-annotate service.Orders with {
-    deliveryTo @Common.Label : '{i18n>departmentTitle}';
-    ID @Common.Label : '{i18n>orderID}';
-};
-
-annotate service.Contacts with {
-    email @Common.Label : '{i18n>processorFullName}'
-};

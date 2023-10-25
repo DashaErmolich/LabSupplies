@@ -183,12 +183,28 @@
                                 "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
                                     "tableSettings": {
                                         "creationMode": {}
+                                    },
+                                    "columns": {
+                                        "DataField::item::product::title": {
+                                            "width": "auto"
+                                        },
+                                        "DataField::ID": {
+                                            "availability": "Hidden"
+                                        },
+                                        "DataField::item::warehouse::name": {
+                                            "width": "auto"
+                                        }
                                     }
                                 },
                                 "attachments/@com.sap.vocabularies.UI.v1.LineItem#Attachments": {
                                     "tableSettings": {
                                         "creationMode": {
                                             "createAtEnd": true
+                                        }
+                                    },
+                                    "columns": {
+                                        "DataField::content": {
+                                            "width": "auto"
                                         }
                                     }
                                 }

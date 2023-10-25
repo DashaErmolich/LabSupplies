@@ -1,6 +1,5 @@
 using db as schema from '../../db/schema';
-using {Regions} from '../../db/common.cds';
-using AppService from '../../srv/app-service.cds';
+using AppService as service from '../../srv/app-service.cds';
 
 annotate schema.Departments with {
   name @title: '{i18n>departmentTitle}';
@@ -66,11 +65,25 @@ annotate schema.Attachments with {
   notes   @title: '{i18n>notes}';
 };
 
-annotate AppService.DeliveryTargets with {
+annotate service.DeliveryTargets with {
   countryName @title: '{i18n>country}';
   regionName  @title: '{i18n>region}';
 }
 
-annotate AppService.WarehouseOrders with {
+annotate service.WarehouseOrders with {
   ID @title: '{i18n>whOrderTitle}';
 }
+
+
+annotate service.Orders with {
+  deliveryTo @Common.Label: '{i18n>departmentTitle}';
+  ID         @Common.Label: '{i18n>orderID}';
+};
+
+annotate service.Contacts with {
+  email @Common.Label: '{i18n>processorFullName}'
+};
+
+annotate service.Warehouses with {
+  ID @Common.Label: '{i18n>warehouseID}'
+};
