@@ -200,17 +200,9 @@ annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
 annotate AppService.Orders with @(UI.Identification: [
     {
         $Type             : 'UI.DataFieldForAction',
-        Action            : 'AppService.approveOrder',
-        Label             : '{i18n>approveOrder}',
-        Criticality       : 3,
-        ![@UI.Hidden]     : isNotActionable,
-        ![@UI.Importance] : #High,
-    },
-    {
-        $Type             : 'UI.DataFieldForAction',
         Action            : 'AppService.rejectOrder',
         Label             : '{i18n>rejectOrder}',
-        Criticality       : 1,
+        // Criticality       : 1,
         ![@UI.Hidden]     : isNotActionable,
         ![@UI.Importance] : #High,
     },

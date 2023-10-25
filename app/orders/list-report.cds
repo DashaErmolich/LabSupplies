@@ -8,15 +8,18 @@ annotate service.Orders with @(
                 Value: createdAt,
             },
             {
-                $Type: 'UI.DataField',
-                Value: title,
+                $Type                 : 'UI.DataField',
+                Value                 : title,
+                ![@HTML5.CssDefaults] : {width: 'auto'},
+                ![@UI.Importance]     : #High,
             },
             {
-                $Type                 : 'UI.DataFieldForAnnotation',
-                Label                 : '{i18n>progressIndicator}',
-                Target                : '@UI.DataPoint#progress',
-                ![@UI.Importance]     : #Low,
-                ![@HTML5.CssDefaults] : {width: 'auto'},
+                $Type                    : 'UI.DataField',
+                Value                    : status.name,
+                Criticality              : status.criticalityCode,
+                CriticalityRepresentation: #WithIcon,
+                ![@HTML5.CssDefaults]    : {width: 'auto'},
+                ![@UI.Importance]        : #High,
             },
             {
                 $Type: 'UI.DataField',
@@ -29,10 +32,10 @@ annotate service.Orders with @(
                 Value: processor.fullName,
             },
             {
-                $Type                    : 'UI.DataField',
-                Value                    : status.name,
-                Criticality              : status.criticalityCode,
-                CriticalityRepresentation: #WithIcon,
+                $Type                 : 'UI.DataFieldForAnnotation',
+                Label                 : '{i18n>progressIndicator}',
+                Target                : '@UI.DataPoint#progress',
+                ![@HTML5.CssDefaults] : {width: 'auto'},
             },
             {
                 $Type                 : 'UI.DataField',
@@ -63,12 +66,11 @@ annotate service.Orders with @(
         ![@UI.Criticality] : status.criticalityCode,
     },
     UI.DataPoint #progress: {
-        $Type                    : 'UI.DataPointType',
-        Value                    : progress,
-        Title                    : '{i18n>progressIndicator}',
-        TargetValue              : 100,
-        Visualization            : #Progress,
-        //Criticality              : status.criticalityCode,
+        $Type        : 'UI.DataPointType',
+        Value        : progress,
+        Title        : '{i18n>progressIndicator}',
+        TargetValue  : 100,
+        Visualization: #Progress,
     },
 );
 

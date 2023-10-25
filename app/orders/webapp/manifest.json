@@ -202,13 +202,15 @@
                                 "header": {
                                     "anchorBarVisible": true,
                                     "actions": {
-                                        "DataFieldForAction::AppService.approveOrder": {
-                                            "afterExecution": {
-                                                "navigateToInstance": true,
-                                                "enableAutoScroll": true
-                                            },
+                                        "approveOrder": {
+                                            "visible" : "{= ${isNotActionable} === false }",
+                                            "text": "Approve",
                                             "enabled": "{= ${isNotApprovable} === false }",
-                                            "press": "orders.OPExtend.onApprovePress"
+                                            "press": ".extension.orders.OPExtend.onApprovePress",
+                                            "position": {
+												"placement": "Before",
+												"anchor": "DataFieldForAction::AppService.rejectOrder"
+											}
                                         },
                                         "DataFieldForAction::AppService.rejectOrder": {
                                             "afterExecution": {
