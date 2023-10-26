@@ -1,4 +1,7 @@
 {
+  "xsappname": "labsupplies",
+  "tenant-mode": "dedicated",
+  "description": "Security profile of called application",
   "scopes": [
     {
       "name": "$XSAPPNAME.Manager",
@@ -35,4 +38,3 @@
     ]
   }
 }
-

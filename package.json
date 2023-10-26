@@ -6,18 +6,24 @@
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
+        "@adobe/pdfservices-node-sdk": "^3.4.2",
+        "@sap-cloud-sdk/core": "^1.54.2",
+        "@sap-cloud-sdk/mail-client": "^3.7.0",
         "@sap/cds": "^7",
         "@sap/cds-hana": "^2",
         "@sap/xssec": "^3",
+        "cors": "^2.8.5",
         "express": "^4",
-        "passport": "^0"
+        "node-cron": "^3.0.2",
+        "passport": "^0",
+        "qrcode": "^1.5.3"
     },
     "devDependencies": {
         "@cap-js/sqlite": "^1",
+        "@sap/approuter": "^14.3.2",
         "@sap/cds-dk": "^7",
-        "@sap/ux-specification": "^1.108.15",
-        "rimraf": "^3.0.2",
-        "@sap/approuter": "^14.3.2"
+        "@sap/ux-specification": "^1.108.16",
+        "rimraf": "^3.0.2"
     },
     "scripts": {
         "start": "cds-serve",
@@ -31,7 +37,8 @@
         "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
         "undeploy": "cf undeploy LabSupplies --delete-services --delete-service-keys --delete-service-brokers",
         "watch-orders": "cds watch --open orders/webapp/index.html?sap-ui-xx-viewCache=false",
-        "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false"
+        "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false",
+        "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false"
     },
     "cds": {
         "requires": {
@@ -44,6 +51,7 @@
     },
     "sapux": [
         "app/orders",
-        "app/test"
+        "app/test",
+        "app/project1"
     ]
 }

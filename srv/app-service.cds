@@ -1,29 +1,30 @@
 using db from '../db/schema';
 
 @path: '/app'
-service AppService @(requires: 'Manager') {
-    entity Contacts          as projection on db.Contacts;
-    entity Departments       as projection on db.Departments;
+service AppService @(requires: 'authenticated-user') {
+    entity Contacts            as projection on db.Contacts;
+    entity Departments         as projection on db.Departments;
 
     @odata.draft.enabled
-    // @(restrict: [
-    //     {
-    //         grant: [
-    //             'READ',
-    //             'WRITE'
-    //         ],
-    //         to   : ['Manager']
-    //     },
-    //     {
-    //         grant: ['UPDATE'],
-    //         to   : ['Reviewer', 'Manager'],
-    //     },
-    // ])
-    entity Orders            as projection on db.Orders actions {
+    entity Orders @(restrict: [
+        {grant: 'READ'},
+        {
+            grant: 'WRITE',
+            to   : ['Manager'],
+            where: 'processor_email = $user'
+        },
+        {
+            grant: [
+                'approveOrder',
+                'rejectOrder'
+            ],
+            to   : 'Reviewer',
+        },
+    ])                         as projection on db.Orders actions {
 
         @(
             cds.odata.bindingparameter.name: '_it',
-            Common.SideEffects             : {TargetEntities: ['_it']}
+            Common.SideEffects             : {TargetEntities: ['_it']},
         )
         action approveOrder();
 
@@ -53,31 +54,31 @@ service AppService @(requires: 'Manager') {
                                }
                            })
                            statusID : String @mandatory,
-                           notes : String);
+                           notes : String  @UI.MultiLineText  @title:'{i18n>notes}'  );
     }
 
     @readonly
-    entity Products          as projection on db.Products;
+    entity Products            as projection on db.Products;
 
     @readonly
-    entity Suppliers         as projection on db.Suppliers;
+    entity Suppliers           as projection on db.Suppliers;
 
     @readonly
-    entity Categories        as projection on db.Categories;
+    entity Categories          as projection on db.Categories;
 
     @readonly
-    entity WarehouseProducts as projection on db.WarehouseProducts;
+    entity WarehouseProducts   as projection on db.WarehouseProducts;
 
     @readonly
-    entity Warehouses        as projection on db.Warehouses;
+    entity Warehouses          as projection on db.Warehouses;
 
     @readonly
-    entity Addresses         as projection on db.Addresses;
+    entity Addresses           as projection on db.Addresses;
 
     @readonly
-    entity OrderStatuses     as projection on db.OrderStatuses;
+    entity OrderStatuses       as projection on db.OrderStatuses;
 
-    entity OrderItems        as projection on db.OrderItems;
+    entity OrderItems          as projection on db.OrderItems;
 
     view Catalogue as
         select from WarehouseProducts as wp
@@ -105,34 +106,38 @@ service AppService @(requires: 'Manager') {
                os.ID = 'WAITING_FOR_EDIT'
             or os.ID = 'REJECTED';
 
-    entity WarehouseOrders   as projection on db.WarehouseOrders;
+    entity WarehouseOrders     as projection on db.WarehouseOrders;
 
     view DeliveryTargets as
         select from Departments as d
         inner join Addresses as a
-            on d.address.ID = a.ID {
-                d.ID as departmentID,
-                d.name as name,
-                a.region.code as regionCode,
-                a.region.name as regionName,
-                a.region.country.code as countryCode,
-                a.region.country.name as countryName,
-            }
-        where d.name <> 'Supplies'
-}
+            on d.address.ID = a.ID
+        {
+            d.ID                  as departmentID,
+            d.name                as name,
+            a.region.code         as regionCode,
+            a.region.name         as regionName,
+            a.region.country.code as countryCode,
+            a.region.country.name as countryName,
+        }
+        where
+            d.name <> 'Supplies';
 
-@path: '/admin'
-service AdminService {
-    //entity Contacts          as projection on db.Contacts;
-    //entity Departments       as projection on db.Departments;
-    entity Orders            as projection on db.Orders;
-    entity Products          as projection on db.Products;
-    entity Suppliers         as projection on db.Suppliers;
-    entity Categories        as projection on db.Categories;
-    entity WarehouseProducts as projection on db.WarehouseProducts;
-    //entity Warehouses        as projection on db.Warehouses;
-    entity Addresses         as projection on db.Addresses;
-    entity OrderStatuses     as projection on db.OrderStatuses;
-    entity OrderItems        as projection on db.OrderItems;
-//entity Organisation as projection on db.Organisation;
+    entity WarehouseContacts   as projection on db.WarehouseContacts;
+    entity Attachments         as projection on db.Attachments;
+    entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
+    entity DeliveryForecasts   as projection on db.DeliveryForecasts;
+
+    view OrdersCatalogue as
+        select from Orders as o
+        inner join WarehouseOrders as who
+            on o.ID = who.parentOrder.ID
+        {
+            o.ID       as orderID,
+            o.title    as orderTitle,
+            o.status   as orderStatus,
+            who.ID     as whOrderID,
+            who.title  as whOrderTitle,
+            who.status as whOrderStatus,
+        }
 }

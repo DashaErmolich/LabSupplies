@@ -7,8 +7,8 @@
         "applicationVersion": {
             "version": "0.0.1"
         },
-        "title": "{{appTitle}}",
-        "description": "{{appDescription}}",
+        "title": "LabSupplies",
+        "description": "Suppliers managers application",
         "resources": "resources.json",
         "sourceTemplate": {
             "id": "@sap/generator-fiori:lrop",
@@ -23,6 +23,20 @@
                     "annotations": [],
                     "localUri": "localService/metadata.xml",
                     "odataVersion": "4.0"
+                }
+            }
+        },
+        "crossNavigation": {
+            "inbounds": {
+                "laborder-manage": {
+                    "semanticObject": "laborder",
+                    "action": "manage",
+                    "title": "LabSupplies",
+                    "subTitle": "LabSupplies",
+                    "signature": {
+                        "parameters": {},
+                        "additionalParameters": "allowed"
+                    }
                 }
             }
         }
@@ -94,6 +108,11 @@
                     "pattern": "Orders({key}):?query:",
                     "name": "OrdersObjectPage",
                     "target": "OrdersObjectPage"
+                },
+                {
+                    "pattern": "Orders({key})/warehouseOrders({key2}):?query:",
+                    "name": "Orders_warehouseOrdersObjectPage",
+                    "target": "Orders_warehouseOrdersObjectPage"
                 }
             ],
             "targets": {
@@ -112,7 +131,36 @@
                                     }
                                 }
                             },
-                            "initialLoad": "Enabled"
+                            "initialLoad": "Enabled",
+                            "views": {
+                                "paths": [
+                                    {
+                                        "key": "tab0",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#all"
+                                    },
+                                    {
+                                        "key": "tab1",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingApprove"
+                                    },
+                                    {
+                                        "key": "tab2",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingEdit"
+                                    },
+                                    {
+                                        "key": "tab3",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
+                                    },
+                                    {
+                                        "key": "tab4",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
+                                    },
+                                    {
+                                        "key": "tab5",
+                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#completed"
+                                    }
+                                ],
+                                "showCounts": true
+                            }
                         }
                     }
                 },
@@ -124,11 +172,22 @@
                         "settings": {
                             "editableHeaderContent": false,
                             "entitySet": "Orders",
-                            "navigation": {},
+                            "navigation": {
+                                "warehouseOrders": {
+                                    "detail": {
+                                        "route": "Orders_warehouseOrdersObjectPage"
+                                    }
+                                }
+                            },
                             "controlConfiguration": {
                                 "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
                                     "tableSettings": {
                                         "creationMode": {}
+                                    },
+                                    "columns": {
+                                        "DataField::ID": {
+                                            "availability": "Hidden"
+                                        }
                                     }
                                 },
                                 "attachments/@com.sap.vocabularies.UI.v1.LineItem#Attachments": {
@@ -143,15 +202,78 @@
                                 "header": {
                                     "anchorBarVisible": true,
                                     "actions": {
-                                        "DataFieldForAction::AppService.approveOrder": {
-                                            "afterExecution": {
-                                                "navigateToInstance": true,
-                                                "enableAutoScroll": true
-                                            }
+                                        "approveOrder": {
+                                            "visible" : "{= ${isNotActionable} === false }",
+                                            "text": "Approve",
+                                            "enabled": "{= ${isNotApprovable} === false }",
+                                            "press": ".extension.orders.OPExtend.onApprovePress",
+                                            "position": {
+												"placement": "Before",
+												"anchor": "DataFieldForAction::AppService.rejectOrder"
+											}
                                         },
                                         "DataFieldForAction::AppService.rejectOrder": {
                                             "afterExecution": {
                                                 "navigateToInstance": true
+                                            },
+                                            "enabled": "{= ${isNotRejectable} === false }"
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "sections": {
+                                        "myCustomSection": {
+                                            "template": "orders.custom.fragment.WarehouseOrdersSection",
+                                            "title": "Related Orders",
+                                            "visible": "{= ${isRelatedOrdersVisible} === true }",
+                                            "position": {
+                                                "placement": "Before",
+                                                "anchor": "Items"
+                                            },
+                                            "type": "XMLFragment"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "Orders_warehouseOrdersObjectPage": {
+                    "type": "Component",
+                    "id": "Orders_warehouseOrdersObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/Orders/warehouseOrders",
+                            "navigation": {},
+                            "controlConfiguration": {
+                                "items/@com.sap.vocabularies.UI.v1.LineItem#WhOrderItems": {
+                                    "columns": {
+                                        "WarehouseProductLabel": {
+                                            "header": "Label",
+                                            "position": {
+                                                "anchor": "DataField::status::name",
+                                                "placement": "After"
+                                            },
+                                            "template": "orders.ext.fragment.WarehouseProductLabel"
+                                        }
+                                    }
+                                }
+                            },
+                            "content": {
+                                "header": {
+                                    "facets": {
+                                        "WarehouseReportButton": {
+                                            "template": "orders.ext.fragment.WarehouseReportButton",
+                                            "position": {
+                                                "placement": "After",
+                                                "anchor": "residualPercentage"
+                                            },
+                                            "title": "Report",
+                                            "stashed": false,
+                                            "requestGroupId": "Heroes",
+                                            "flexSettings": {
+                                                "designtime": "Default"
                                             }
                                         }
                                     }
@@ -164,12 +286,20 @@
         },
         "extends": {
             "extensions": {
-                "sap.ui.controllerExtensions": {}
+                "sap.ui.controllerExtensions": {
+                    "sap.fe.templates.ObjectPage.ObjectPageController": {
+                        "controllerName": "orders.OPExtend"
+                    }
+                }
             }
         }
     },
     "sap.fiori": {
         "registrationIds": [],
         "archeType": "transactional"
+    },
+    "sap.cloud": {
+        "public": true,
+        "service": "laborders"
     }
 }

@@ -8,7 +8,9 @@ modules:
   path: gen/srv
   requires:
   - name: LabSupplies-db
-  - name: LabSupplies-uaa
+  - name: uaa_LabSupplies
+  - name: LabSupplies-destination-service
+  - name: jobscheduler-srv
   provides:
   - name: srv-api
     properties:
@@ -22,35 +24,43 @@ modules:
   path: gen/db
   requires:
   - name: LabSupplies-db
-  - name: LabSupplies-uaa
   parameters:
     buildpack: nodejs_buildpack
-- name: LabSupplies
-  type: approuter.nodejs
-  path: app/
+- name: LabSupplies-destination-content
+  type: com.sap.application.content
   requires:
-  - name: srv-api
-    group: destinations
-    properties:
-      forwardAuthToken: true
-      name: srv-api
-      url: ~{srv-url}
-  - name: LabSupplies-uaa
   - name: LabSupplies-destination-service
-    group: destinations
-    properties:
-      forwardAuthToken: false
-      name: ui5
-      url: https://ui5.sap.com
+    parameters:
+      content-target: true
+  - name: LabSupplies_html_repo_host
+    parameters:
+      service-key:
+        name: LabSupplies_html_repo_host-key
+  - name: uaa_LabSupplies
+    parameters:
+      service-key:
+        name: uaa_LabSupplies-key
   parameters:
-    disk-quota: 256M
-    keep-existing-routes: true
-    memory: 256M
+    content:
+      instance:
+        destinations:
+        - Name: laborders_LabSupplies_html_repo_host
+          ServiceInstanceName: LabSupplies-html5-app-host-service
+          ServiceKeyName: LabSupplies_html_repo_host-key
+          sap.cloud.service: laborders
+        - Authentication: OAuth2UserTokenExchange
+          Name: laborders_uaa_LabSupplies
+          ServiceInstanceName: LabSupplies-xsuaa-service
+          ServiceKeyName: uaa_LabSupplies-key
+          sap.cloud.service: laborders
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
 - name: LabSupplies-app-content
   type: com.sap.application.content
   path: .
   requires:
-  - name: LabSupplies-repo-host
+  - name: LabSupplies_html_repo_host
     parameters:
       content-target: true
   build-parameters:
@@ -76,26 +86,11 @@ resources:
   parameters:
     service: hana
     service-plan: hdi-shared
-- name: LabSupplies-uaa
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      tenant-mode: dedicated
-      xsappname: LabSupplies-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
-- name: LabSupplies-repo-host
-  type: org.cloudfoundry.managed-service
-  parameters:
-    service: html5-apps-repo
-    service-name: LabSupplies-html5-srv
-    service-plan: app-host
 - name: LabSupplies-destination-service
   type: org.cloudfoundry.managed-service
   parameters:
     config:
-      HTML5Runtime_enabled: false
+      HTML5Runtime_enabled: true
       init_data:
         instance:
           destinations:
@@ -104,11 +99,41 @@ resources:
             ProxyType: Internet
             Type: HTTP
             URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            Name: LabSupplies-srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
           existing_destinations_policy: update
       version: 1.0.0
     service: destination
     service-name: LabSupplies-destination-service
     service-plan: lite
+  requires:
+  - name: srv-api
+- name: LabSupplies_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: LabSupplies-html5-app-host-service
+    service-plan: app-host
+- name: uaa_LabSupplies
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: LabSupplies-xsuaa-service
+    service-plan: application
+- name: jobscheduler-srv
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: jobscheduler
+    service-plan: lite
+    service-name: jobscheduler-srv
+    config:
+      enable-xsuaa-support: true
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
@@ -116,4 +141,5 @@ build-parameters:
   before-all:
   - builder: custom
     commands:
-    - npx cds build --production
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production

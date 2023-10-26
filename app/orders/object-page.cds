@@ -2,7 +2,7 @@ using AppService as service from '../../srv/app-service';
 using from './annotations';
 
 annotate service.Orders with @(
-    UI.HeaderInfo         : {
+    UI.HeaderInfo            : {
         Title   : {
             $Type: 'UI.DataField',
             Value: title,
@@ -10,7 +10,7 @@ annotate service.Orders with @(
         TypeName: 'Order',
     },
 
-    UI.HeaderFacets       : [
+    UI.HeaderFacets          : [
         {
             $Type : 'UI.ReferenceFacet',
             ID    : 'Contact',
@@ -21,8 +21,13 @@ annotate service.Orders with @(
             ID    : 'Status',
             Target: 'status/@UI.DataPoint#Status',
         },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'radialChart',
+            Target: '@UI.Chart#radialChart',
+        },
     ],
-    UI.FieldGroup #Contact: {
+    UI.FieldGroup #Contact   : {
         $Type: 'UI.FieldGroupType',
         Data : [
             {
@@ -41,7 +46,23 @@ annotate service.Orders with @(
                 Label: '{i18n>reviewNotes}',
             },
         ],
-    }
+    },
+    UI.Chart #radialChart    : {
+        Title            : '{i18n>progressIndicator}',
+        ChartType        : #Donut,
+        Measures         : [progress, ],
+        MeasureAttributes: [{
+            $Type    : 'UI.ChartMeasureAttributeType',
+            Measure  : progress,
+            Role     : #Axis1,
+            DataPoint: '@UI.DataPoint#radialChart',
+        }, ],
+    },
+    UI.DataPoint #radialChart: {
+        Value      : progress,
+        TargetValue: 100,
+        Criticality: status.criticalityCode,
+    },
 );
 
 annotate service.Orders with @(UI.Facets: [
@@ -75,6 +96,7 @@ annotate AppService.OrderItems with @(UI.LineItem #Items: [
         $Type                   : 'UI.DataField',
         Value                   : item.product.title,
         ![@Common.FieldControl] : #ReadOnly,
+        ![@HTML5.CssDefaults]   : {width: 'auto'}
     },
     {
         $Type                   : 'UI.DataField',
@@ -162,54 +184,11 @@ annotate service.Orders with @(UI.FieldGroup #Delivery: {
     ],
 });
 
-annotate service.Orders with {
-    notes      @UI.MultiLineText;
-    deliveryTo @mandatory;
-};
-
-annotate service.Addresses with {
-    postCode @UI.HiddenFilter;
-    building @UI.HiddenFilter;
-    street   @UI.HiddenFilter;
-    ID       @UI.Hidden;
-}
-
-annotate service.OrderItems with {
-    item @mandatory;
-    qty  @mandatory;
-}
-
-annotate service.Warehouses with {
-    ID @UI.HiddenFilter;
-}
-
 annotate AppService.OrderItems with @(UI.PresentationVariant #Items: {
     $Type         : 'UI.PresentationVariantType',
     Visualizations: ['@UI.LineItem#Items', ],
     GroupBy       : [item.warehouse.name, ],
 });
-
-annotate AppService.Catalogue with {
-    productID     @UI.Hidden;
-    title         @UI.HiddenFilter;
-    description   @UI.HiddenFilter;
-    supplierCatNo @UI.HiddenFilter;
-    warehouseID   @UI.Hidden;
-    name @UI.HiddenFilter;
-}
-
-annotate AppService.Regions with {
-    // name  @UI.HiddenFilter;
-    // descr @UI.HiddenFilter;
-    // code  @UI.HiddenFilter;
-};
-
-annotate AppService.DeliveryTargets with {
-    departmentID @UI.Hidden;
-    name @UI.HiddenFilter;
-    countryName @UI.HiddenFilter;
-    regionName @UI.HiddenFilter;
-}
 
 annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
     $Type      : 'UI.DataPointType',
@@ -218,24 +197,14 @@ annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
     Criticality: criticalityCode,
 });
 
-annotate AppService.Orders with @(UI.Identification: [
-    {
-        $Type             : 'UI.DataFieldForAction',
-        Action            : 'AppService.approveOrder',
-        Label             : '{i18n>approveOrder}',
-        Criticality       : 3,
-        ![@UI.Hidden]     : isApproveHidden,
-        ![@UI.Importance] : #High,
-    },
-    {
-        $Type             : 'UI.DataFieldForAction',
-        Action            : 'AppService.rejectOrder',
-        Label             : '{i18n>rejectOrder}',
-        Criticality       : 1,
-        ![@UI.Hidden]     : isRejectHidden,
-        ![@UI.Importance] : #High,
-    },
-]);
+annotate AppService.Orders with @(UI.Identification: [{
+    $Type             : 'UI.DataFieldForAction',
+    Action            : 'AppService.rejectOrder',
+    Label             : '{i18n>rejectOrder}',
+    // Criticality       : 1,
+    ![@UI.Hidden]     : isNotActionable,
+    ![@UI.Importance] : #High,
+}, ]);
 
 annotate AppService.Contacts with @(
     Communication.Contact : {
@@ -278,14 +247,222 @@ annotate AppService.Attachments with @(UI.LineItem #Attachments: [
     },
 ]);
 
-annotate service.Attachments with {
-    content   @mandatory;
-    notes     @UI.MultiLineText;
-    count     @UI.Hidden;
-    fileName  @UI.Hidden;
-    ID        @UI.Hidden;
-    mediaType @UI.Hidden;
-    url       @UI.Hidden;
-    order     @UI.Hidden;
+// WH ORDERS
 
-};
+annotate AppService.WarehouseOrders with @(
+    UI.HeaderInfo            : {Title: {
+        $Type: 'UI.DataField',
+        Value: title,
+    }, },
+
+    UI.HeaderFacets          : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'WhContact',
+            Target: '@UI.FieldGroup#WhContact',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'name',
+            Target: 'status/@UI.DataPoint#name',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'radialChart',
+            Target: '@UI.Chart#radialChart',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'daysCounter',
+            Target: 'deliveryForecast/@UI.DataPoint#daysCounter',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            ID    : 'residualPercentage',
+            Target: 'deliveryForecast/@UI.DataPoint#residualPercentage',
+        },
+    ],
+
+    UI.Facets                : [
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : '{i18n>productsInfo}',
+            ID    : 'WhOrderItems',
+            Target: 'items/@UI.LineItem#WhOrderItems',
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : '{i18n>deliveryInfo}',
+            ID    : 'delivery',
+            Target: '@UI.FieldGroup#delivery',
+        },
+    ],
+    UI.FieldGroup #WhContact : {
+        $Type: 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target: 'parentOrder/contact/@Communication.Contact',
+                Label : '{i18n>deliveryRequestor}',
+            },
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target: 'processor/@Communication.Contact',
+                Label : '{i18n>processedBy}',
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: deliveryForecast.predictedDate,
+            },
+        ],
+    },
+    UI.FieldGroup #delivery  : {
+        $Type: 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.name,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.region.country.name,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.region.name,
+                Label: '{i18n>region}',
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.city,
+                Label: '{i18n>city}',
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.postCode,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.street,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.deliveryTo.address.building,
+            },
+            {
+                $Type: 'UI.DataField',
+                Value: parentOrder.notes,
+                Label: '{i18n>orderRequestorNotes}',
+            },
+        ],
+    },
+    UI.Chart #radialChart    : {
+        Title            : '{i18n>progressIndicator}',
+        ChartType        : #Donut,
+        Measures         : [progress, ],
+        MeasureAttributes: [{
+            $Type    : 'UI.ChartMeasureAttributeType',
+            Measure  : progress,
+            Role     : #Axis1,
+            DataPoint: '@UI.DataPoint#radialChart',
+        }, ],
+    },
+    UI.DataPoint #radialChart: {
+        Value      : progress,
+        TargetValue: 100,
+        Criticality: status.criticalityCode,
+    },
+);
+
+annotate service.DeliveryForecasts with @(
+    UI.DataPoint #residualPercentage: {
+        $Type      : 'UI.DataPointType',
+        Value      : residualPercentage,
+        Title      : '{i18n>deliveryForecastResiduals}',
+        Criticality: {$edmJson: {$If: [
+            {$Eq: [
+                {$Path: 'isCritical'},
+                true
+            ]},
+            1,
+            3
+        ]}},
+    },
+    UI.DataPoint #daysCounter       : {
+        $Type      : 'UI.DataPointType',
+        Value      : daysCounter,
+        Title      : '{i18n>deliveryForecastDaysCounter}',
+        Criticality: {$edmJson: {$If: [
+            {$Eq: [
+                {$Path: 'isCritical'},
+                true
+            ]},
+            1,
+            3
+        ]}},
+    },
+);
+
+
+annotate AppService.OrderStatuses with @(UI.DataPoint #name: {
+    $Type      : 'UI.DataPointType',
+    Value      : name,
+    Title      : '{i18n>status}',
+    Criticality: criticalityCode,
+});
+
+
+annotate AppService.WarehouseOrderItems with @(UI.LineItem #WhOrderItems: [
+    {
+        $Type: 'UI.DataField',
+        Value: item.product.supplierCatNo,
+    },
+    {
+        $Type                 : 'UI.DataField',
+        Value                 : item.product.title,
+        ![@HTML5.CssDefaults] : {width: 'auto'}
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: qty,
+    },
+    {
+        $Type: 'UI.DataField',
+        Value: item.product.supplier.name,
+    },
+    {
+        $Type      : 'UI.DataField',
+        Value      : status.name,
+        Criticality: status.criticalityCode,
+    },
+]);
+
+annotate AppService.WarehouseContacts with @(
+    Communication.Contact : {
+        $Type: 'Communication.ContactType',
+        org  : warehouse.name,
+        email: [{
+            $Type  : 'Communication.EmailAddressType',
+            type   : #work,
+            address: email,
+        }, ],
+        fn   : fullName,
+        role : title,
+        tel  : [{
+            $Type: 'Communication.PhoneNumberType',
+            type : #work,
+            uri  : tel,
+        }, ],
+        adr  : [{
+            $Type   : 'Communication.AddressType',
+            type    : #work,
+            street  : warehouse.address.street,
+            locality: warehouse.address.city,
+            region  : warehouse.address.region.name,
+            code    : warehouse.address.postCode,
+            country : warehouse.address.region.country.name,
+        }, ],
+        photo: photoUrl,
+    },
+    Common.IsNaturalPerson: true
+);

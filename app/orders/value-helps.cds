@@ -1,11 +1,11 @@
-using from '../../srv/app-service';
+using AppService as service from '../../srv/app-service';
 using from '../../db/schema';
 using from './object-page';
 using from '../../db/common';
 
 // ObjectPage - Delivery Info
 
-annotate AppService.Orders with {
+annotate service.Orders with {
     deliveryTo @Common: {
         Text           : deliveryTo.name,
         TextArrangement: #TextOnly,
@@ -36,7 +36,7 @@ annotate AppService.Orders with {
     }
 };
 
-annotate AppService.DeliveryTargets with {
+annotate service.DeliveryTargets with {
     countryCode @Common: {
         ValueListWithFixedValues: true,
         Label                   : '{i18n>country}',
@@ -94,7 +94,7 @@ annotate AppService.DeliveryTargets with {
     }
 };
 
-annotate AppService.Orders with @(Common.SideEffects #delivery: {
+annotate service.Orders with @(Common.SideEffects #delivery: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [deliveryTo_ID, ],
     TargetEntities  : [deliveryTo, ],
@@ -102,7 +102,7 @@ annotate AppService.Orders with @(Common.SideEffects #delivery: {
 
 // ObjectPage - Items Info
 
-annotate AppService.OrderItems with {
+annotate service.OrderItems with {
     item @Common: {
         Text           : item.product.supplierCatNo,
         TextArrangement: #TextOnly,
@@ -146,7 +146,7 @@ annotate AppService.OrderItems with {
     }
 };
 
-annotate AppService.OrderItems with @(Common.SideEffects: {
+annotate service.OrderItems with @(Common.SideEffects: {
     $Type           : 'Common.SideEffectsType',
     SourceProperties: [item_product_ID, ],
     TargetEntities  : [item, ],
@@ -155,7 +155,7 @@ annotate AppService.OrderItems with @(Common.SideEffects: {
 
 // ObjectPage - Items Info Linked Filters
 
-annotate AppService.Catalogue with {
+annotate service.Catalogue with {
     warehouseCountryCode @Common: {
         ValueListWithFixedValues: true,
         Label                   : '{i18n>warehouseCountry}',
@@ -215,7 +215,7 @@ annotate AppService.Catalogue with {
 
 // ObjectPage - Items Info Other Filters
 
-annotate AppService.Catalogue with {
+annotate service.Catalogue with {
     category @Common: {
         Text                    : category.name,
         TextArrangement         : #TextOnly,
@@ -253,3 +253,82 @@ annotate AppService.Catalogue with {
         }
     };
 };
+
+
+// List Report
+
+
+annotate service.WarehouseOrders with {
+    ID @(Common.ValueList : {
+            $Type : 'Common.ValueListType',
+            CollectionPath : 'WarehouseOrders',
+            Parameters : [
+                    {
+                        $Type : 'Common.ValueListParameterInOut',
+                        LocalDataProperty : ID,
+                        ValueListProperty : 'ID',
+                    },
+                ],
+            Label : 'GGGGG',
+        },
+        Common.ValueListWithFixedValues : true
+)};
+annotate service.WarehouseOrders with {
+    ID @Common.Text : {
+        $value : title,
+        ![@UI.TextArrangement] : #TextOnly,
+    }
+};
+
+annotate service.WarehouseOrders with {
+    ID @Common.Label : '{i18n>relatedOrdersTitles}'
+};
+annotate service.Contacts with {
+    email @(Common.ValueList : {
+            $Type : 'Common.ValueListType',
+            CollectionPath : 'Contacts',
+            Parameters : [
+                {
+                    $Type : 'Common.ValueListParameterInOut',
+                    LocalDataProperty : email,
+                    ValueListProperty : 'email',
+                },
+            ],
+        },
+        Common.ValueListWithFixedValues : true,
+        Common.Text : {
+            $value : fullName,
+            ![@UI.TextArrangement] : #TextFirst,
+        }
+)};
+
+annotate service.Orders with @(
+    UI.SelectionFields : [
+        processor.email,
+        warehouseOrders.ID,
+        deliveryTo_ID,
+    ]
+);
+
+annotate service.WarehouseOrders with @(
+    UI.FieldGroup #WhContact : {
+        $Type : 'UI.FieldGroupType',
+        Data : [
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'parentOrder/contact/@Communication.Contact',
+                Label : '{i18n>deliveryRequestor}',
+            },
+            {
+                $Type : 'UI.DataFieldForAnnotation',
+                Target : 'processor/@Communication.Contact',
+                Label : '{i18n>processedBy}',
+            },
+            {
+                $Type : 'UI.DataField',
+                Value : deliveryForecast.predictedDate,
+                Label : '{i18n>predictedDeliveryDate}',
+            },
+        ],
+    }
+);
