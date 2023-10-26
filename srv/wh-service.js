@@ -1,10 +1,14 @@
-const cds = require("@sap/cds");
 const { getRandomBoolean, sendNotifications } = require("./utils");
 const scheduler = require("node-cron");
 
 module.exports = function (srv) {
-  const { WarehouseOrderItems, WarehouseOrders, DeliveryForecasts, Orders, WarehouseContacts, Contacts } =
-    srv.entities;
+  const {
+    WarehouseOrderItems,
+    WarehouseOrders,
+    DeliveryForecasts,
+    Orders,
+    WarehouseContacts,
+  } = srv.entities;
 
   const repeatIntervalCronPattern =
     process.env.SCHEDULER_REPEAT_PATTERN || "* * * * *"; // Every minute
@@ -65,29 +69,33 @@ module.exports = function (srv) {
             await UPDATE(WarehouseOrders, whOItem.order_ID).with({
               status_ID: "DELIVERY_IN_PROGRESS",
             });
-  
+
             const whContact = await SELECT.from(WarehouseContacts, itemUser);
-            const whOrder = await SELECT.from(WarehouseOrders, whOItem.order_ID, (whO) => {
-              whO`.*`, whO.parentOrder((pO) => {
-                pO.title, pO.processor((pOp) => pOp`.*`)
-              })
-            })
-  
+            const whOrder = await SELECT.from(
+              WarehouseOrders,
+              whOItem.order_ID,
+              (whO) => {
+                whO`.*`,
+                  whO.parentOrder((pO) => {
+                    pO.title, pO.processor((pOp) => pOp`.*`);
+                  });
+              }
+            );
+
             try {
               await sendNotifications(
-                'DELIVERY_IN_PROGRESS',
+                "DELIVERY_IN_PROGRESS",
                 whOrder.title,
                 whContact,
                 whOrder.parentOrder.processor,
-                '',
+                ""
               );
             } catch (error) {
-              console.log(error)
+              console.log(error);
             }
           } catch (error) {
-            console.log(error)
+            console.log(error);
           }
-          
         }
 
         return true;
@@ -96,6 +104,7 @@ module.exports = function (srv) {
       }
     } else {
       req.error({
+        code: 410,
         message: errorMessage,
       });
     }
@@ -103,16 +112,16 @@ module.exports = function (srv) {
 
   this.on(["updateDelivery", "triggerDeliveryUpdate"], async (req) => {
     const data = await SELECT.from(WarehouseOrders, (whOrder) => {
-      whOrder`.*`, whOrder.processor((whOP) => whOP`.*`)
-        whOrder.parentOrder((pO) => {
-          pO`.*`, pO.warehouseOrders((pOwhO) => pOwhO`.*`);
-        });
+      whOrder`.*`, whOrder.processor((whOP) => whOP`.*`);
+      whOrder.parentOrder((pO) => {
+        pO`.*`, pO.warehouseOrders((pOwhO) => pOwhO`.*`);
+      });
     }).where({
       status_ID: "DELIVERY_IN_PROGRESS",
     });
 
     let parentOrdersID = [];
-    let whOProcessors = []
+    let whOProcessors = [];
 
     for (let i = 0; i < data.length; i++) {
       const order = data[i];
@@ -129,7 +138,7 @@ module.exports = function (srv) {
         });
 
         parentOrdersID.push(order.parentOrder_ID);
-        whOProcessors.push(order.processor_email)
+        whOProcessors.push(order.processor_email);
       }
     }
 
@@ -137,11 +146,11 @@ module.exports = function (srv) {
       const parentOrders = await SELECT.from(Orders, (order) => {
         order`.*`,
           order.warehouseOrders((whO) => {
-            whO`.*`,  whO.processor((pr) => pr`.*`);
+            whO`.*`, whO.processor((pr) => pr`.*`);
           }),
           order.contact((c) => {
             c`.*`;
-          })
+          });
       }).where({
         ID: {
           in: parentOrdersID,
@@ -150,32 +159,31 @@ module.exports = function (srv) {
 
       for (let i = 0; i < parentOrders.length; i++) {
         const pOrder = parentOrders[i];
-        const whProcessor = data.find((item) => item.processor_email === whOProcessors[i])?.processor
+        const whProcessor = data.find(
+          (item) => item.processor_email === whOProcessors[i]
+        )?.processor;
         if (!pOrder.warehouseOrders.some((o) => o.status_ID !== "DELIVERED")) {
-
           try {
             await UPDATE(Orders, pOrder.ID).with({
               status_ID: "CLOSED",
             });
-  
+
             try {
               await sendNotifications(
-                'CLOSED',
+                "CLOSED",
                 pOrder.title,
                 whProcessor,
                 pOrder.contact,
                 pOrder.reviewNotes
               );
             } catch (error) {
-              console.log(error)
+              console.log(error);
             }
           } catch (error) {
-            console.log(error)
+            console.log(error);
           }
         }
       }
-
-      console.log();
     }
   });
 };

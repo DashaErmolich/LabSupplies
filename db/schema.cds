@@ -154,7 +154,6 @@ aspect OrderItem : cuid {
     qty  : Integer                              @mandatory;
 }
 
-//@assert.unique.item: [item]
 entity OrderItems : OrderItem {
     order : Association to one Orders;
 }
