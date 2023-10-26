@@ -26,7 +26,8 @@
 								scale="%"
 								icon="sap-icon://line-charts"
 								withMargin="false"
-								valueColor="{= ${deliveryForecast/isCritical} === true ? 'Error' : 'Good'  }"/>
+								indicator="{deliveryForecast/trend}"
+								valueColor="{deliveryForecast/criticalityName}"/>
 						</TileContent>
 					</GenericTile>
 				</l:HorizontalLayout>

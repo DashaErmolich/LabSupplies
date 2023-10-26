@@ -1,4 +1,4 @@
-@server = http://localhost:4049
+@server = http://localhost:4064
 
 
 ### CREATE ORDER
@@ -24,6 +24,7 @@ Content-Type: application/json
 
 
 ### UPDATE DELIVERY
+
 POST  {{server}}/wh/updateDelivery
 Content-Type: application/json
 
@@ -36,3 +37,28 @@ GET  {{server}}/wh/collectItem(id='3154b693-f5ae-47b2-a5e3-d21f4c879118',userEma
 
 ### DELETE ORDER
 DELETE  {{server}}/admin/Orders(f12aa170-c0d3-4d6f-8ee5-b1b8f18cdcba)
+
+###
+POST {{server}}/wh/updateDelivery
+Content-Type: application/json
+
+{}
+
+
+
+###
+
+PATCH  {{server}}/admin/WarehouseOrders(530b16c0-8be3-4b63-a8bc-144bdb0614c5)
+Content-Type: application/json
+
+{
+    "status_ID": "DELIVERY_IN_PROGRESS"
+}
+
+###
+PATCH {{server}}/admin/Orders(0e266e04-5d96-41b1-bf74-62261b99caeb)
+Content-Type: application/json
+
+{
+    "status_ID": "DELIVERY_IN_PROGRESS"
+}

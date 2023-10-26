@@ -42,14 +42,14 @@ entity Orders : Order {
 }
 
 entity DeliveryForecasts : cuid {
-    order                            : Association to one WarehouseOrders;
-    predictedDate                    : Timestamp;
-    actualDate                       : Timestamp;
-    virtual daysCounter              : Integer;
-    virtual residualPercentage       : Integer;
-    virtual isCritical               : Boolean default false;
-    virtual bulletChartTargetValue   : Integer;
-    virtual bulletChartForecastValue : Integer;
+    order                      : Association to one WarehouseOrders;
+    predictedDate              : Timestamp;
+    actualDate                 : Timestamp;
+    virtual daysCounter        : Integer;
+    virtual residualPercentage : Integer;
+    virtual isCritical         : Boolean default false;
+    virtual criticalityName    : String;
+    virtual trend              : String;
 }
 
 entity WarehouseOrders : Order {

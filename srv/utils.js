@@ -24,32 +24,42 @@ async function postNotification(notification) {
 }
 
 function createNotification(orderStatusID, title, recipientEmail) {
-  let notificationTypeKey = 'OrderReview';
+  let notificationTypeKey = "OrderReview";
+  let priority = 'Medium';
 
   switch (orderStatusID) {
     case "WAITING_FOR_APPROVE":
       notificationTypeKey = "OrderReview";
+      priority = "Medium";
       break;
     case "REJECTED":
       notificationTypeKey = "OrderReject";
+      priority = "Hight";
       break;
     case "WAITING_FOR_EDIT":
       notificationTypeKey = "OrderEdit";
+      priority = "Medium";
       break;
     case "CLOSED":
       notificationTypeKey = "OrderCompleted";
+      priority = "Low";
       break;
     case "WAITING_FOR_DELIVERY":
+      notificationTypeKey = "OrderPacking";
+      priority = "Medium";
+      break;
+    case "DELIVERY_IN_PROGRESS":
       notificationTypeKey = "OrderDelivery";
+      priority = "Medium";
       break;
   }
   return {
     OriginId: "LabSupplies",
     NotificationTypeKey: notificationTypeKey,
-    NotificationTypeVersion: "1.1",
+    NotificationTypeVersion: "2.1",
     NavigationTargetAction: "display",
     NavigationTargetObject: "masterDetail",
-    Priority: "High",
+    Priority: priority,
     ProviderId: "",
     ActorId: "",
     ActorType: "",
@@ -148,7 +158,16 @@ function getEmailConfig(
       message = `
       <p>${contactFrom.fullName} (${
         contactFrom.email
-      }) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>
+      }) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName} and redirected related orders to warehouses.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      status = "In Packing";
+      break;
+    case "DELIVERY_IN_PROGRESS":
+      message = `
+      <p>${contactFrom.fullName} (${
+        contactFrom.email
+      }) started delivery of <b>Order ${orderTitle}</b>.</p>
       <br>
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
       status = "In Delivery";
@@ -183,7 +202,11 @@ async function sendNotifications(
     orderTitle,
     reviewNotes
   );
-  let notification = createNotification(orderStatusID, orderTitle, contactTo.email);
+  let notification = createNotification(
+    orderStatusID,
+    orderTitle,
+    contactTo.email
+  );
 
   try {
     await sendMail({ destinationName: "MailBrevo" }, [mailConfig]);
@@ -228,13 +251,18 @@ function getDeliveryStatistics(created, predicted, actual) {
   const actualDate = new Date(actualTime - creationTime);
   const daysCounter = Math.floor(actualDate / MS_MIN);
 
-  const residualPercentage = ((predictedDays - daysCounter) / (daysCounter || 1) * 100).toFixed(2);
-  const isCritical = residualPercentage < 0;
+  const residualPercentage = (
+    ((daysCounter - predictedDays) / (predictedDays || 1)) *
+    100
+  ).toFixed(2);
+  const isCritical = residualPercentage > 0;
 
   return {
     residualPercentage: Math.abs(residualPercentage),
     daysCounter: Math.abs(daysCounter),
     isCritical: isCritical,
+    criticalityName: isCritical ? "Error" : "Good",
+    trend: isCritical ? 'Up' : 'Down',
   };
 }
 

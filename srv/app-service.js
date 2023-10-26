@@ -274,23 +274,23 @@ module.exports = function (srv) {
         status_ID: "WAITING_FOR_DELIVERY",
         processor_email: order.contact.email,
       });
+
+      try {
+        await sendNotifications(
+          'WAITING_FOR_DELIVERY',
+          order.title,
+          order.contact.manager,
+          order.contact,
+          order.reviewNotes
+        );
+      } catch (error) {
+        req.warn({
+          message: error.message,
+        });
+      }
     } catch (error) {
       req.error({
         message: "Something bad happened. Check order.",
-      });
-    }
-
-    try {
-      await sendNotifications(
-        order.status_ID,
-        order.title,
-        order.contact.manager,
-        order.contact,
-        order.reviewNotes
-      );
-    } catch (error) {
-      req.warn({
-        message: error.message,
       });
     }
   });
@@ -765,6 +765,8 @@ module.exports = function (srv) {
         whOrder.deliveryForecast.residualPercentage =
           deliveryStatistics.residualPercentage;
         whOrder.deliveryForecast.isCritical = deliveryStatistics.isCritical;
+        whOrder.deliveryForecast.criticalityName = deliveryStatistics.criticalityName;
+        whOrder.deliveryForecast.trend = deliveryStatistics.trend;
       }
     }
   });

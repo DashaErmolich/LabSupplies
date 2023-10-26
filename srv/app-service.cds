@@ -144,18 +144,22 @@ service AppService @(requires: 'authenticated-user') {
 
 @path: '/admin'
 service AdminService {
-    //entity Contacts          as projection on db.Contacts;
-    //entity Departments       as projection on db.Departments;
+    entity Contacts            as projection on db.Contacts;
+    entity Departments         as projection on db.Departments;
     entity Orders              as projection on db.Orders;
     entity Products            as projection on db.Products;
     entity Suppliers           as projection on db.Suppliers;
     entity Categories          as projection on db.Categories;
     entity WarehouseProducts   as projection on db.WarehouseProducts;
-    //entity Warehouses        as projection on db.Warehouses;
+    entity Warehouses          as projection on db.Warehouses;
     entity Addresses           as projection on db.Addresses;
     entity OrderStatuses       as projection on db.OrderStatuses;
     entity OrderItems          as projection on db.OrderItems;
-    //entity Organisation as projection on db.Organisation;
+    entity WarehouseOrders     as projection on db.WarehouseOrders;
+    entity WarehouseContacts   as projection on db.WarehouseContacts;
     entity Attachments         as projection on db.Attachments;
+    entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
     entity DeliveryForecasts   as projection on db.DeliveryForecasts;
+
+
 }
