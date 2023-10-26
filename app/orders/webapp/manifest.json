@@ -7,8 +7,8 @@
         "applicationVersion": {
             "version": "0.0.1"
         },
-        "title": "{{appTitle}}",
-        "description": "{{appDescription}}",
+        "title": "LabSupplies",
+        "description": "Suppliers managers application",
         "resources": "resources.json",
         "sourceTemplate": {
             "id": "@sap/generator-fiori:lrop",
@@ -31,8 +31,8 @@
                 "laborder-manage": {
                     "semanticObject": "laborder",
                     "action": "manage",
-                    "title": "{{flpTitle}}",
-                    "subTitle": "{{flpSubtitle}}",
+                    "title": "LabSupplies",
+                    "subTitle": "LabSupplies",
                     "signature": {
                         "parameters": {},
                         "additionalParameters": "allowed"

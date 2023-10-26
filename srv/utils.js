@@ -1,28 +1,52 @@
 const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
-const { sendMail } = require('@sap-cloud-sdk/mail-client');
+const { sendMail } = require("@sap-cloud-sdk/mail-client");
 
 function removeDuplicates(array) {
-  return [... new Set(array)];
+  return [...new Set(array)];
 }
 
 async function postNotification(notification) {
   const notificationEndpoint = "v2/Notification.svc";
-  const csrfHeaders = await buildCsrfHeaders({ destinationName:  'FLP-notification-service'}, { url: notificationEndpoint });
-  const response = await executeHttpRequest({ destinationName:  'FLP-notification-service'}, {
+  const csrfHeaders = await buildCsrfHeaders(
+    { destinationName: "FLP-notification-service" },
+    { url: notificationEndpoint }
+  );
+  const response = await executeHttpRequest(
+    { destinationName: "FLP-notification-service" },
+    {
       url: `${notificationEndpoint}/Notifications`,
       method: "post",
       data: notification,
       headers: csrfHeaders,
-  });
+    }
+  );
   return response.data.d;
 }
 
-function createNotification(title, recipientEmail) {
+function createNotification(orderStatusID, title, recipientEmail) {
+  let notificationTypeKey = 'OrderReview';
 
+  switch (orderStatusID) {
+    case "WAITING_FOR_APPROVE":
+      notificationTypeKey = "OrderReview";
+      break;
+    case "REJECTED":
+      notificationTypeKey = "OrderReject";
+      break;
+    case "WAITING_FOR_EDIT":
+      notificationTypeKey = "OrderEdit";
+      break;
+    case "CLOSED":
+      notificationTypeKey = "OrderCompleted";
+      break;
+    case "WAITING_FOR_DELIVERY":
+      notificationTypeKey = "OrderDelivery";
+      break;
+  }
   return {
     OriginId: "LabSupplies",
-    NotificationTypeKey: "OrderReview",
-    NotificationTypeVersion: "1.0",
+    NotificationTypeKey: notificationTypeKey,
+    NotificationTypeVersion: "1.1",
     NavigationTargetAction: "display",
     NavigationTargetObject: "masterDetail",
     Priority: "High",
@@ -32,22 +56,21 @@ function createNotification(title, recipientEmail) {
     ActorDisplayText: "",
     ActorImageURL: "",
     Properties: [
-        {
-            Key: "orderTitle",
-            Language: "en",
-            Value: title,
-            Type: "String",
-            IsSensitive: false
-        }
+      {
+        Key: "orderTitle",
+        Language: "en",
+        Value: title,
+        Type: "String",
+        IsSensitive: false,
+      },
     ],
     Recipients: [
-    {
-        RecipientId: recipientEmail
-    }
-]
+      {
+        RecipientId: recipientEmail,
+      },
+    ],
+  };
 }
-}
-
 
 function setOrderStatus(reqData, statusID) {
   reqData.status_ID = statusID;
@@ -63,12 +86,12 @@ async function getOrdersCount(entity) {
   const query = SELECT.from(entity).limit(1);
   query.SELECT.count = true;
   const orderWithCount = await cds.run(query);
-  return orderWithCount['$count'];
+  return orderWithCount["$count"];
 }
 
 async function getOrderTitle(entity, titleKey) {
   let count = await getOrdersCount(entity);
-  const orderNum = `${count++}`.padStart(3, '0');
+  const orderNum = `${++count}`.padStart(3, "0");
   return `${titleKey}-${orderNum}`;
 }
 
@@ -78,47 +101,62 @@ function setOrderTitle(reqData, orderTitle) {
 }
 
 async function getContact(entity, email) {
-  return await SELECT.one
-  .from(entity, email)
+  return await SELECT.one.from(entity, email);
 }
 
-function getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, reviewerNotes) {
-  let message = '';
-  let status = '';
+function getEmailConfig(
+  orderStatusID,
+  contactFrom,
+  contactTo,
+  orderTitle,
+  reviewerNotes
+) {
+  let message = "";
+  let status = "";
 
-  switch(orderStatusID) {
-    case 'WAITING_FOR_APPROVE':
+  switch (orderStatusID) {
+    case "WAITING_FOR_APPROVE":
       message = `<p>${contactFrom.fullName} (${contactFrom.email}) requested approve for <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>`;
-      status = 'Approve Request';
+      status = "Approve Request";
       break;
-    case 'REJECTED':
-      message = `<p>${contactFrom.fullName} (${contactFrom.email}) has rejected and closed <b>Order ${orderTitle}</b> created by ${contactTo.fullName}.</p>
+    case "REJECTED":
+      message = `<p>${contactFrom.fullName} (${
+        contactFrom.email
+      }) has rejected and closed <b>Order ${orderTitle}</b> created by ${
+        contactTo.fullName
+      }.</p>
       <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || 'none'}.</p>`;
-      status = 'Reject';
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      status = "Reject";
       break;
-    case 'WAITING_FOR_EDIT':
+    case "WAITING_FOR_EDIT":
       message = `
-      <p>${contactFrom.fullName} (${contactFrom.email}) requested edit of <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>
+      <p>${contactFrom.fullName} (${
+        contactFrom.email
+      }) requested edit of <b>Order ${orderTitle}</b> by ${
+        contactTo.fullName
+      }.</p>
       <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || 'none'}.</p>`;
-      status = 'Edit Request';
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      status = "Edit Request";
       break;
-    case 'CLOSED':
+    case "CLOSED":
       message = ` <b>Order ${orderTitle}</b> is delivered.</p>`;
-      status = 'Close';
+      status = "Completed";
       break;
-    case 'WAITING_FOR_DELIVERY':
+    case "WAITING_FOR_DELIVERY":
       message = `
-      <p>${contactFrom.fullName} (${contactFrom.email}) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>
+      <p>${contactFrom.fullName} (${
+        contactFrom.email
+      }) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>
       <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || 'none'}.</p>`;
-      status = 'In delivery';
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      status = "In Delivery";
       break;
-    }
+  }
 
   const mailConfig = {
-    from: 'labsupplies.notification@example.com',
+    from: "labsupplies.notification@example.com",
     to: `${contactTo.email}`,
     subject: `Order ${orderTitle} ${status}`,
     text: `
@@ -126,26 +164,39 @@ function getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, revie
         ${message}
       <p>This mail was send automatically by LabSupplies application, do not reply on it.</p>
     </div>
-    `
-  }
+    `,
+  };
   return mailConfig;
 }
 
-
-async function sendNotifications(orderStatusID, orderTitle, contactFrom, contactTo, reviewNotes) {
-  let mailConfig = getEmailConfig(orderStatusID, contactFrom, contactTo, orderTitle, reviewNotes);
-  let notification = createNotification(orderTitle, contactTo.email);
+async function sendNotifications(
+  orderStatusID,
+  orderTitle,
+  contactFrom,
+  contactTo,
+  reviewNotes
+) {
+  let mailConfig = getEmailConfig(
+    orderStatusID,
+    contactFrom,
+    contactTo,
+    orderTitle,
+    reviewNotes
+  );
+  let notification = createNotification(orderStatusID, orderTitle, contactTo.email);
 
   try {
-    await sendMail({ destinationName: 'MailBrevo' }, [mailConfig]);
+    await sendMail({ destinationName: "MailBrevo" }, [mailConfig]);
   } catch (error) {
-    throw new Error(`Sorry, email was not been sent to ${user.manager.email}.`)
+    throw new Error(`Sorry, email was not been sent to ${user.manager.email}.`);
   }
 
   try {
     await postNotification(notification);
   } catch (error) {
-    throw new Error(`Sorry, notification was not been sent to ${user.manager.email}.`);
+    throw new Error(
+      `Sorry, notification was not been sent to ${user.manager.email}.`
+    );
   }
 }
 
@@ -160,27 +211,45 @@ function getRandomBoolean(probability) {
 }
 
 function getDays(dateString) {
-  return dateString ? Math.floor(new Date(dateString).getTime() / 60000) : Math.floor(new Date().getTime() / 60000)
+  return dateString
+    ? Math.floor(new Date(dateString).getTime() / 60000)
+    : Math.floor(new Date().getTime() / 60000);
 }
 
 function getDeliveryStatistics(created, predicted, actual) {
-  const creationDate = new Date(created).getTime();
-        const predictedDate = new Date(predicted).getTime();
-        const actualDate = new Date(actual).getTime() ||
-            new Date().getTime();
-        const predictedDays = (predictedDate - creationDate) / 60000;
-        const actualDays = (actualDate - creationDate) / 60000;
-        const residualPercentage = ((predictedDays - actualDays) / actualDays) * 100;
-        const residualPercentageRounded = residualPercentage > 100 ? 100 : residualPercentage.toFixed(2);
-        const daysCounter = Math.floor(predictedDays - actualDays);
-        const isCritical = daysCounter < 0;
+  const MS_MIN = 60000;
 
-        return {
-          residualPercentage: Math.abs(residualPercentageRounded),
-          daysCounter: Math.abs(daysCounter),
-          isCritical: isCritical,
+  const creationTime = new Date(created).getTime();
+  const predictedTime = new Date(predicted).getTime();
+  const actualTime = new Date(actual).getTime() || new Date().getTime();
 
-        }
+  const predictedDate = new Date(predictedTime - creationTime);
+  const predictedDays = Math.floor(predictedDate / MS_MIN);
+  const actualDate = new Date(actualTime - creationTime);
+  const daysCounter = Math.floor(actualDate / MS_MIN);
+
+  const residualPercentage = ((predictedDays - daysCounter) / (daysCounter || 1) * 100).toFixed(2);
+  const isCritical = residualPercentage < 0;
+
+  return {
+    residualPercentage: Math.abs(residualPercentage),
+    daysCounter: Math.abs(daysCounter),
+    isCritical: isCritical,
+  };
 }
 
-module.exports = { getDeliveryStatistics, getDays, getRandomBoolean, getRandomInt, sendNotifications, removeDuplicates, postNotification, createNotification, setOrderStatus, setOrderProcessor, setOrderTitle, getOrderTitle, getContact };
+module.exports = {
+  getDeliveryStatistics,
+  getDays,
+  getRandomBoolean,
+  getRandomInt,
+  sendNotifications,
+  removeDuplicates,
+  postNotification,
+  createNotification,
+  setOrderStatus,
+  setOrderProcessor,
+  setOrderTitle,
+  getOrderTitle,
+  getContact,
+};

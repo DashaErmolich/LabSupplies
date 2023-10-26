@@ -17,7 +17,6 @@
 					>
 						<TileContent
 							id="_IDGenTileContent1"
-							footerColor="{= ${deliveryForecast/isCritical} ? 'Error' : 'Good' }"
 							unit="DAYS"
 							footer="{deliveryForecast/daysCounter}"
 							>
@@ -27,7 +26,7 @@
 								scale="%"
 								icon="sap-icon://line-charts"
 								withMargin="false"
-								valueColor="{= ${deliveryForecast/isCritical} ? 'Error' : 'Good' }"/>
+								valueColor="{= ${deliveryForecast/isCritical} === true ? 'Error' : 'Good'  }"/>
 						</TileContent>
 					</GenericTile>
 				</l:HorizontalLayout>

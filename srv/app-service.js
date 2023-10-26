@@ -35,8 +35,12 @@ module.exports = function (srv) {
   } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
-    setOrderStatus(req.data, "OPENED");
-    setOrderProcessor(req.data, req.user.id);
+    try {
+      setOrderStatus(req.data, "OPENED");
+      setOrderProcessor(req.data, req.user.id);
+    } catch (error) {
+      req.error(error)
+    }
   });
 
   this.before("CREATE", Orders, async (req) => {
@@ -579,7 +583,7 @@ module.exports = function (srv) {
         });
       }
     } catch (err) {
-      req.err({
+      req.error({
         message: "Something bad happened. Unable to load label.",
       });
     }
@@ -715,7 +719,7 @@ module.exports = function (srv) {
         });
       }
     } catch (err) {
-      req.err({
+      req.error({
         message: "Something bad happened. Unable to load label.",
       });
     }

@@ -197,16 +197,14 @@ annotate AppService.OrderStatuses with @(UI.DataPoint #Status: {
     Criticality: criticalityCode,
 });
 
-annotate AppService.Orders with @(UI.Identification: [
-    {
-        $Type             : 'UI.DataFieldForAction',
-        Action            : 'AppService.rejectOrder',
-        Label             : '{i18n>rejectOrder}',
-        // Criticality       : 1,
-        ![@UI.Hidden]     : isNotActionable,
-        ![@UI.Importance] : #High,
-    },
-]);
+annotate AppService.Orders with @(UI.Identification: [{
+    $Type             : 'UI.DataFieldForAction',
+    Action            : 'AppService.rejectOrder',
+    Label             : '{i18n>rejectOrder}',
+    // Criticality       : 1,
+    ![@UI.Hidden]     : isNotActionable,
+    ![@UI.Importance] : #High,
+}, ]);
 
 annotate AppService.Contacts with @(
     Communication.Contact : {
@@ -393,14 +391,7 @@ annotate service.DeliveryForecasts with @(
     UI.DataPoint #daysCounter       : {
         $Type      : 'UI.DataPointType',
         Value      : daysCounter,
-        Title      : {$edmJson: {$If: [
-            {$Eq: [
-                {$Path: 'isCritical'},
-                true
-            ]},
-            '{i18n>deliveryForecastDaysLeft}',
-            '{i18n>deliveryForecastDaysPast}'
-        ]}},
+        Title      : '{i18n>deliveryForecastDaysCounter}',
         Criticality: {$edmJson: {$If: [
             {$Eq: [
                 {$Path: 'isCritical'},
