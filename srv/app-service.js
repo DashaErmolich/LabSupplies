@@ -8,19 +8,12 @@ const {
   getContact,
   sendNotifications,
   getRandomInt,
-  getDays,
   getDeliveryStatistics,
 } = require("./utils");
-const PDFServicesSdk = require("@adobe/pdfservices-node-sdk"),
-  fs = require("fs");
-const { Readable, Writable, PassThrough } = require("stream");
+const PDFServicesSdk = require("@adobe/pdfservices-node-sdk");
+const { Readable, PassThrough } = require("stream");
 path = require("path");
 const QRCode = require("qrcode");
-
-const TEST_EMAIL = "dasha.ermolich@gmail.com";
-
-const { sendMail, MailConfig } = require("@sap-cloud-sdk/mail-client");
-const { Order } = require("@sap-cloud-sdk/core");
 
 module.exports = function (srv) {
   const {
@@ -39,7 +32,10 @@ module.exports = function (srv) {
       setOrderStatus(req.data, "OPENED");
       setOrderProcessor(req.data, req.user.id);
     } catch (error) {
-      req.error(error)
+      req.error({
+        code: 410,
+        message: error.message,
+      });
     }
   });
 
@@ -51,6 +47,7 @@ module.exports = function (srv) {
   this.before("SAVE", Orders, async (req) => {
     if (!req.data.items.length) {
       req.error({
+        code: 410,
         message: "Add at least one item to order",
       });
     } else {
@@ -137,12 +134,14 @@ module.exports = function (srv) {
           });
         } catch (error) {
           req.error({
+            code: 410,
             message: "Something bad happened. Check order products.",
           });
         }
       }
     } else {
       req.error({
+        code: 410,
         message: "Some items are unavailable",
       });
     }
@@ -177,11 +176,13 @@ module.exports = function (srv) {
 
       if (req.data.qty > whp.stock) {
         req.error({
+          code: 410,
           message: "There are no such items in stock",
           target: "qty",
         });
       } else if (req.data.qty <= 0) {
         req.error({
+          code: 410,
           message: "Enter the valid value",
           target: "qty",
         });
@@ -226,6 +227,7 @@ module.exports = function (srv) {
           )
         ) {
           req.error({
+            code: 410,
             message: "Item already exists in list",
             target: "item_warehouse_ID",
           });
@@ -249,6 +251,7 @@ module.exports = function (srv) {
           )
         ) {
           req.error({
+            code: 410,
             message: "Item already exists in list",
             target: "item_warehouse_ID",
           });
@@ -277,7 +280,7 @@ module.exports = function (srv) {
 
       try {
         await sendNotifications(
-          'WAITING_FOR_DELIVERY',
+          "WAITING_FOR_DELIVERY",
           order.title,
           order.contact.manager,
           order.contact,
@@ -290,6 +293,7 @@ module.exports = function (srv) {
       }
     } catch (error) {
       req.error({
+        code: 410,
         message: "Something bad happened. Check order.",
       });
     }
@@ -316,6 +320,7 @@ module.exports = function (srv) {
       });
     } catch (error) {
       req.error({
+        code: 410,
         message: error.message,
       });
     }
@@ -332,6 +337,7 @@ module.exports = function (srv) {
           });
         } catch (error) {
           req.error({
+            code: 410,
             message: "Something bad happened. Check order.",
           });
         }
@@ -584,6 +590,7 @@ module.exports = function (srv) {
       }
     } catch (err) {
       req.error({
+        code: 410,
         message: "Something bad happened. Unable to load label.",
       });
     }
@@ -720,6 +727,7 @@ module.exports = function (srv) {
       }
     } catch (err) {
       req.error({
+        code: 410,
         message: "Something bad happened. Unable to load label.",
       });
     }
@@ -731,7 +739,7 @@ module.exports = function (srv) {
 
       if (order.processor_email !== req.user.id) {
         req.error({
-          code: "403",
+          code: 410,
           message: "Forbidden",
         });
       }
@@ -746,7 +754,6 @@ module.exports = function (srv) {
       const whOrders = await SELECT.from(WarehouseOrders, (whOrder) => {
         whOrder`.*`, whOrder.deliveryForecast((v) => v`.*`);
       }).where({ parentOrder_ID: data[0].ID });
-      console.log();
 
       const dataWhOrders = data[0].warehouseOrders;
 
@@ -765,14 +772,14 @@ module.exports = function (srv) {
         whOrder.deliveryForecast.residualPercentage =
           deliveryStatistics.residualPercentage;
         whOrder.deliveryForecast.isCritical = deliveryStatistics.isCritical;
-        whOrder.deliveryForecast.criticalityName = deliveryStatistics.criticalityName;
+        whOrder.deliveryForecast.criticalityName =
+          deliveryStatistics.criticalityName;
         whOrder.deliveryForecast.trend = deliveryStatistics.trend;
       }
     }
   });
 
   this.after("READ", Orders, async (data, req) => {
-    console.log();
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
       const STEPS_COUNT = 4;
 
@@ -799,7 +806,6 @@ module.exports = function (srv) {
   });
 
   this.after("READ", WarehouseOrders, async (data, req) => {
-    console.log();
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
       const STEPS_COUNT = 4;
 
@@ -825,9 +831,13 @@ module.exports = function (srv) {
     }
 
     if (data[0]?.ID && data[0]?.deliveryForecast?.ID) {
-      const whOrder = await SELECT.one.from(WarehouseOrders, data[0].ID, (whO) => {
-        whO`.*`, whO.deliveryForecast((dF) => dF`.*`)
-      });
+      const whOrder = await SELECT.one.from(
+        WarehouseOrders,
+        data[0].ID,
+        (whO) => {
+          whO`.*`, whO.deliveryForecast((dF) => dF`.*`);
+        }
+      );
 
       const deliveryStatistics = getDeliveryStatistics(
         whOrder.createdAt,

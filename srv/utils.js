@@ -25,7 +25,7 @@ async function postNotification(notification) {
 
 function createNotification(orderStatusID, title, recipientEmail) {
   let notificationTypeKey = "OrderReview";
-  let priority = 'Medium';
+  let priority = "Medium";
 
   switch (orderStatusID) {
     case "WAITING_FOR_APPROVE":
@@ -158,7 +158,9 @@ function getEmailConfig(
       message = `
       <p>${contactFrom.fullName} (${
         contactFrom.email
-      }) approved <b>Order ${orderTitle}</b> by ${contactTo.fullName} and redirected related orders to warehouses.</p>
+      }) approved <b>Order ${orderTitle}</b> by ${
+        contactTo.fullName
+      } and redirected related orders to warehouses.</p>
       <br>
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
       status = "In Packing";
@@ -262,7 +264,7 @@ function getDeliveryStatistics(created, predicted, actual) {
     daysCounter: Math.abs(daysCounter),
     isCritical: isCritical,
     criticalityName: isCritical ? "Error" : "Good",
-    trend: isCritical ? 'Up' : 'Down',
+    trend: isCritical ? "Up" : "Down",
   };
 }
 

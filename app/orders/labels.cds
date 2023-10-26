@@ -58,6 +58,7 @@ annotate schema.Orders with {
   notes       @title: '{i18n>orderNotes}';
   reviewNotes @title: '{i18n>reviewNotes}';
   title       @title: '{i18n>title}';
+  progress    @title: '{i18n>progressIndicator}';
 }
 
 annotate schema.Attachments with {
