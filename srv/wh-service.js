@@ -1,5 +1,6 @@
 const { ERROR_MESSAGES, showError } = require("./erorrs");
-const { getRandomBoolean, sendNotifications } = require("./utils");
+const { sendNotifications } = require("./notifications");
+const { getRandomBoolean } = require("./utils");
 const scheduler = require("node-cron");
 
 module.exports = function (srv) {

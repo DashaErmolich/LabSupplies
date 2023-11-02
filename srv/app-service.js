@@ -6,7 +6,6 @@ const {
   setOrderTitle,
   getOrderTitle,
   getContact,
-  sendNotifications,
   getRandomInt,
   getDeliveryStatistics,
 } = require("./utils");
@@ -14,7 +13,8 @@ const {
 const QRCode = require("qrcode");
 
 const { ERROR_MESSAGES, showError } = require("./erorrs");
-const { getReportStream, PDF_TEMPLATE_PATHS } = require("./pdf-report");
+const { PDF_TEMPLATE_PATHS, getPdfReportStream } = require("./pdf-report");
+const { sendNotifications } = require("./notifications");
 
 module.exports = function (srv) {
   const {
@@ -506,7 +506,7 @@ module.exports = function (srv) {
       errorCorrectionLevel: "H",
     });
 
-    return getReportStream(labelData, PDF_TEMPLATE_PATHS.productLabel);
+    return getPdfReportStream(labelData, PDF_TEMPLATE_PATHS.productLabel);
   });
 
   this.on("READ", WarehouseOrders, async (req, next) => {
@@ -584,7 +584,7 @@ module.exports = function (srv) {
       );
     }
 
-    return getReportStream(reportData, PDF_TEMPLATE_PATHS.whOrderReport);
+    return getPdfReportStream(reportData, PDF_TEMPLATE_PATHS.whOrderReport);
   });
 
   this.before(["approveOrder", "rejectOrder"], async (req) => {

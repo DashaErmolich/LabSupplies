@@ -1,7 +1,6 @@
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk");
 const { Readable, PassThrough } = require("stream");
 path = require("path");
-const QRCode = require("qrcode");
 
 const PDF_TEMPLATE_PATHS = {
   whOrderReport: "sources/WhOrderReport.docx",
@@ -63,4 +62,4 @@ async function getPdfReportStream(reportData, templatePath) {
   }
 }
 
-module.exports = { PDF_TEMPLATE_PATHS, getReportStream: getPdfReportStream };
+module.exports = { PDF_TEMPLATE_PATHS, getPdfReportStream };
