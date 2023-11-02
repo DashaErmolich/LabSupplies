@@ -45,22 +45,16 @@ function getRandomBoolean(probability) {
 }
 
 function getDays(dateString) {
+  const MS_MIN = 60000;
+
   return dateString
-    ? Math.floor(new Date(dateString).getTime() / 60000)
-    : Math.floor(new Date().getTime() / 60000);
+    ? Math.floor(new Date(dateString).getTime() / MS_MIN)
+    : Math.floor(new Date().getTime() / MS_MIN);
 }
 
 function getDeliveryStatistics(created, predicted, actual) {
-  const MS_MIN = 60000;
-
-  const creationTime = new Date(created).getTime();
-  const predictedTime = new Date(predicted).getTime();
-  const actualTime = new Date(actual).getTime() || new Date().getTime();
-
-  const predictedDate = new Date(predictedTime - creationTime);
-  const predictedDays = Math.floor(predictedDate / MS_MIN);
-  const actualDate = new Date(actualTime - creationTime);
-  const daysCounter = Math.floor(actualDate / MS_MIN);
+  const predictedDays = getDays(predicted) - getDays(created);
+  const daysCounter = getDays(actual) - getDays(created);
 
   const residualPercentage = (
     ((daysCounter - predictedDays) / (predictedDays || 1)) *
