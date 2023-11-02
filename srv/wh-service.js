@@ -1,3 +1,4 @@
+const { ERROR_MESSAGES, showError } = require("./erorrs");
 const { getRandomBoolean, sendNotifications } = require("./utils");
 const scheduler = require("node-cron");
 
@@ -45,10 +46,10 @@ module.exports = function (srv) {
     let isError = false;
 
     if (whOItem.order.processor_email !== itemUser) {
-      errorMessage = "Unable to update. You are not the processor.";
+      errorMessage = ERROR_MESSAGES.actions.forbidden;
       isError = true;
     } else if (whOItem.status_ID === "COLLECTED") {
-      errorMessage = "Product is already collected.";
+      errorMessage = ERROR_MESSAGES.actions.collectItem;
       isError = true;
     }
 
@@ -103,10 +104,7 @@ module.exports = function (srv) {
         return false;
       }
     } else {
-      req.error({
-        code: 410,
-        message: errorMessage,
-      });
+      showError(req, errorMessage);
     }
   });
 
