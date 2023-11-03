@@ -1,4 +1,11 @@
-const { getRandomBoolean, sendNotifications } = require("./utils");
+const { ERROR_MESSAGES, showError } = require("./erorrs");
+const { sendNotifications } = require("./notifications");
+const {
+  WhOrderItemStatuses,
+  WhOrderStatuses,
+  OrderStatuses,
+} = require("./statuses");
+const { getRandomBoolean } = require("./utils");
 const scheduler = require("node-cron");
 
 module.exports = function (srv) {
@@ -34,40 +41,39 @@ module.exports = function (srv) {
 
     const whOItemsNotCollected = await SELECT.from(WarehouseOrderItems).where({
       order_ID: whOItem.order_ID,
-      status_ID: "WAITING_FOR_COLLECTION",
+      status_ID: WhOrderItemStatuses.CollectingWaiting,
       ID: {
         "<>": itemID,
       },
     });
 
     let errorMessage = "";
-
     let isError = false;
 
     if (whOItem.order.processor_email !== itemUser) {
-      errorMessage = "Unable to update. You are not the processor.";
+      errorMessage = ERROR_MESSAGES.actions.forbidden;
       isError = true;
-    } else if (whOItem.status_ID === "COLLECTED") {
-      errorMessage = "Product is already collected.";
+    } else if (whOItem.status_ID === WhOrderItemStatuses.Collected) {
+      errorMessage = ERROR_MESSAGES.actions.collectItem;
       isError = true;
     }
 
     if (!isError) {
       try {
         await UPDATE(WarehouseOrderItems, itemID).with({
-          status_ID: "COLLECTED",
+          status_ID: WhOrderItemStatuses.Collected,
         });
 
-        if (whOItem.status_ID === "PACKING") {
+        if (whOItem.order.status_ID === WhOrderStatuses.PackingWaiting) {
           await UPDATE(WarehouseOrders, whOItem.order_ID).with({
-            status_ID: "PACKING_IN_PROGRESS",
+            status_ID: WhOrderStatuses.PackingInProgress,
           });
         }
 
         if (!whOItemsNotCollected.length) {
           try {
             await UPDATE(WarehouseOrders, whOItem.order_ID).with({
-              status_ID: "DELIVERY_IN_PROGRESS",
+              status_ID: WhOrderStatuses.DeliveryInProgress,
             });
 
             const whContact = await SELECT.from(WarehouseContacts, itemUser);
@@ -84,7 +90,7 @@ module.exports = function (srv) {
 
             try {
               await sendNotifications(
-                "DELIVERY_IN_PROGRESS",
+                WhOrderStatuses.DeliveryInProgress,
                 whOrder.title,
                 whContact,
                 whOrder.parentOrder.processor,
@@ -103,10 +109,7 @@ module.exports = function (srv) {
         return false;
       }
     } else {
-      req.error({
-        code: 410,
-        message: errorMessage,
-      });
+      showError(req, errorMessage);
     }
   });
 
@@ -114,10 +117,12 @@ module.exports = function (srv) {
     const data = await SELECT.from(WarehouseOrders, (whOrder) => {
       whOrder`.*`, whOrder.processor((whOP) => whOP`.*`);
       whOrder.parentOrder((pO) => {
-        pO`.*`, pO.warehouseOrders((pOwhO) => pOwhO`.*`);
+        pO`.*`,
+          pO.processor((pOpr) => pOpr`.*`),
+          pO.warehouseOrders((pOwhO) => pOwhO`.*`);
       });
     }).where({
-      status_ID: "DELIVERY_IN_PROGRESS",
+      status_ID: WhOrderStatuses.DeliveryInProgress,
     });
 
     let parentOrdersID = [];
@@ -129,13 +134,17 @@ module.exports = function (srv) {
       const isDelivered = getRandomBoolean(0.5);
 
       if (isDelivered) {
-        await UPDATE(WarehouseOrders, order.ID).with({
-          status_ID: "DELIVERED",
-        });
-
-        await UPDATE(DeliveryForecasts, { order_ID: order.ID }).with({
-          actualDate: new Date().getTime(),
-        });
+        try {
+          await UPDATE(WarehouseOrders, order.ID).with({
+            status_ID: WhOrderStatuses.Delivered,
+          });
+  
+          await UPDATE(DeliveryForecasts, { order_ID: order.ID }).with({
+            actualDate: new Date().getTime(),
+          });
+        } catch (error) {
+          showError(req)
+        }
 
         parentOrdersID.push(order.parentOrder_ID);
         whOProcessors.push(order.processor_email);
@@ -162,25 +171,29 @@ module.exports = function (srv) {
         const whProcessor = data.find(
           (item) => item.processor_email === whOProcessors[i]
         )?.processor;
-        if (!pOrder.warehouseOrders.some((o) => o.status_ID !== "DELIVERED")) {
+        if (
+          !pOrder.warehouseOrders.some(
+            (o) => o.status_ID !== WhOrderStatuses.Delivered
+          )
+        ) {
           try {
             await UPDATE(Orders, pOrder.ID).with({
-              status_ID: "CLOSED",
+              status_ID: OrderStatuses.Closed,
             });
 
             try {
               await sendNotifications(
-                "CLOSED",
+                OrderStatuses.Closed,
                 pOrder.title,
                 whProcessor,
                 pOrder.contact,
                 pOrder.reviewNotes
               );
             } catch (error) {
-              console.log(error);
+              showError(req)
             }
           } catch (error) {
-            console.log(error);
+            showError(req)
           }
         }
       }

@@ -32,7 +32,7 @@ Content-Type: application/json
 {}
 
 ### UPDATE ITEM COLLECT
-GET  {{server}}/wh/collectItem(id='3154b693-f5ae-47b2-a5e3-d21f4c879118',userEmail='ray.moyer.test@cvs.com')
+GET  {{server}}/wh/collectItem(id='d89e5733-a650-4b0b-9801-3e43dbb7d1ed',userEmail='everly.pack.test@meta.com')
 
 
 ### DELETE ORDER
@@ -61,4 +61,13 @@ Content-Type: application/json
 
 {
     "status_ID": "DELIVERY_IN_PROGRESS"
+}
+
+###
+
+PATCH  {{server}}/wh/WarehouseOrders(1ef26827-9311-49c9-9673-54cf4a528fb7)
+Content-Type: application/json
+
+{
+    "status_ID": "WAITING_FOR_PACKING"
 }

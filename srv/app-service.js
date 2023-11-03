@@ -6,14 +6,17 @@ const {
   setOrderTitle,
   getOrderTitle,
   getContact,
-  sendNotifications,
   getRandomInt,
   getDeliveryStatistics,
+  setOrdersProgress,
 } = require("./utils");
-const PDFServicesSdk = require("@adobe/pdfservices-node-sdk");
-const { Readable, PassThrough } = require("stream");
-path = require("path");
+
 const QRCode = require("qrcode");
+
+const { ERROR_MESSAGES, showError } = require("./erorrs");
+const { PDF_TEMPLATE_PATHS, getPdfReportStream } = require("./pdf-report");
+const { sendNotifications } = require("./notifications");
+const { ORDER_STATUSES, WH_ORDER_STATUSES, OrderStatuses, WhOrderItemStatuses, WhOrderStatuses } = require("./statuses");
 
 module.exports = function (srv) {
   const {
@@ -29,13 +32,10 @@ module.exports = function (srv) {
 
   this.before("NEW", Orders.drafts, async (req) => {
     try {
-      setOrderStatus(req.data, "OPENED");
+      setOrderStatus(req.data, OrderStatuses.Opened);
       setOrderProcessor(req.data, req.user.id);
     } catch (error) {
-      req.error({
-        code: 410,
-        message: error.message,
-      });
+      showError(req, error.message);
     }
   });
 
@@ -46,12 +46,9 @@ module.exports = function (srv) {
 
   this.before("SAVE", Orders, async (req) => {
     if (!req.data.items.length) {
-      req.error({
-        code: 410,
-        message: "Add at least one item to order",
-      });
+      showError(req, ERROR_MESSAGES.orders.emptyProductsList);
     } else {
-      setOrderStatus(req.data, "WAITING_FOR_APPROVE");
+      setOrderStatus(req.data,OrderStatuses.ApproveWaiting);
       const userContact = await getContact(Contacts, req.user.id);
       setOrderProcessor(req.data, userContact.manager_email);
     }
@@ -133,17 +130,11 @@ module.exports = function (srv) {
             stock: item.whItem.stock - item.listItem.qty,
           });
         } catch (error) {
-          req.error({
-            code: 410,
-            message: "Something bad happened. Check order products.",
-          });
+          showError(req, ERROR_MESSAGES.warehouseProducts.stockUpdate);
         }
       }
     } else {
-      req.error({
-        code: 410,
-        message: "Some items are unavailable",
-      });
+      showError(req, ERROR_MESSAGES.warehouseProducts.stockValidate);
     }
 
     return next();
@@ -175,17 +166,9 @@ module.exports = function (srv) {
       });
 
       if (req.data.qty > whp.stock) {
-        req.error({
-          code: 410,
-          message: "There are no such items in stock",
-          target: "qty",
-        });
+        showError(req, ERROR_MESSAGES.orderItems.qtyStockValidation, "qty");
       } else if (req.data.qty <= 0) {
-        req.error({
-          code: 410,
-          message: "Enter the valid value",
-          target: "qty",
-        });
+        showError(req, ERROR_MESSAGES.orderItems.qtyInvalid, "qty");
       }
     }
   });
@@ -226,11 +209,11 @@ module.exports = function (srv) {
               item_product_ID === req.data.item_product_ID
           )
         ) {
-          req.error({
-            code: 410,
-            message: "Item already exists in list",
-            target: "item_warehouse_ID",
-          });
+          showError(
+            req,
+            ERROR_MESSAGES.orderItems.productsUnique,
+            "item_warehouse_ID"
+          );
         }
       }
     } else if (
@@ -250,11 +233,11 @@ module.exports = function (srv) {
               item_warehouse_ID === whId && item_product_ID === prId
           )
         ) {
-          req.error({
-            code: 410,
-            message: "Item already exists in list",
-            target: "item_warehouse_ID",
-          });
+          showError(
+            req,
+            ERROR_MESSAGES.orderItems.productsUnique,
+            "item_warehouse_ID"
+          );
         }
       }
     }
@@ -292,10 +275,7 @@ module.exports = function (srv) {
         });
       }
     } catch (error) {
-      req.error({
-        code: 410,
-        message: "Something bad happened. Check order.",
-      });
+      showError(req, ERROR_MESSAGES.actions.approveOrder);
     }
   });
 
@@ -319,13 +299,10 @@ module.exports = function (srv) {
         reviewNotes: req.data.notes,
       });
     } catch (error) {
-      req.error({
-        code: 410,
-        message: error.message,
-      });
+      showError(req, ERROR_MESSAGES.actions.rejectOrder);
     }
 
-    if (req.data.statusID === "REJECTED") {
+    if (req.data.statusID === OrderStatuses.Rejected) {
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         try {
@@ -336,10 +313,7 @@ module.exports = function (srv) {
             stock: item.item.stock + item.qty,
           });
         } catch (error) {
-          req.error({
-            code: 410,
-            message: "Something bad happened. Check order.",
-          });
+          showError(req, ERROR_MESSAGES.warehouseProducts.stockUpdate);
         }
       }
     }
@@ -354,7 +328,7 @@ module.exports = function (srv) {
         order.items((items) => items`.*`);
     });
 
-    if (order.status_ID === "WAITING_FOR_EDIT") {
+    if (order.status_ID === OrderStatuses.EditWaiting) {
       await UPDATE(Orders, orderID).with({
         processor_email: order.contact.email,
       });
@@ -398,7 +372,7 @@ module.exports = function (srv) {
         if (isReviewerRole) {
           order.isNotActionable = false;
           switch (orderStatusID) {
-            case "WAITING_FOR_APPROVE":
+            case OrderStatuses.ApproveWaiting:
               order.isNotApprovable = false;
               order.isNotRejectable = false;
               break;
@@ -408,8 +382,8 @@ module.exports = function (srv) {
           order.isNotRejectable = true;
 
           if (
-            orderStatusID === "WAITING_FOR_EDIT" ||
-            orderStatusID === "OPEN"
+            orderStatusID === OrderStatuses.EditWaiting ||
+            orderStatusID === OrderStatuses.Opened
           ) {
             order.isNotEditable = false;
           }
@@ -457,7 +431,7 @@ module.exports = function (srv) {
 
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
-        .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
+        .map((item) => ({ ...item, status_ID: WhOrderItemStatuses.CollectingWaiting }));
       const whOrderTitle = `${order.title}/${await getOrderTitle(
         WarehouseOrders,
         `WHO-${wh.address.region_code}`
@@ -471,7 +445,7 @@ module.exports = function (srv) {
         title: whOrderTitle,
         items: whOrderItems,
         parentOrder_ID: orderID,
-        status_ID: "PACKING",
+        status_ID: WhOrderStatuses.PackingWaiting,
         processor_email: contacts.sort(
           (a, b) => a.orders.length - b.orders.length
         )[0].email,
@@ -493,107 +467,48 @@ module.exports = function (srv) {
       return next();
     }
 
-    try {
-      // Initial setup, create credentials instance.
-      const credentials =
-        PDFServicesSdk.Credentials.servicePrincipalCredentialsBuilder()
-          .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
-          .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
-          .build();
-
-      const labelData = await SELECT.one.from(
-        WarehouseOrderItems,
-        req.data.ID,
-        (whItem) => {
-          whItem.qty,
-            whItem.item((item) => {
-              item.warehouse((wh) => {
-                wh.name,
-                  wh.address((whAddress) => {
-                    whAddress`.*`;
-                  });
-              }),
-                item.product((product) => {
-                  product`.*`,
-                    product.category((cat) => {
-                      cat.name;
-                    });
+    const labelData = await SELECT.one.from(
+      WarehouseOrderItems,
+      req.data.ID,
+      (whItem) => {
+        whItem.qty,
+          whItem.item((item) => {
+            item.warehouse((wh) => {
+              wh.name,
+                wh.address((whAddress) => {
+                  whAddress`.*`;
                 });
             }),
-            whItem.order((order) => {
-              order.title,
-                order.createdAt,
-                order.parentOrder((pOrder) => {
-                  pOrder.processor_email,
-                    pOrder.title,
-                    pOrder.createdAt,
-                    pOrder.deliveryTo((dTo) => {
-                      dTo.name,
-                        dTo.address((address) => {
-                          address`.*`;
-                        });
-                    });
-                });
-            });
-        }
-      );
-
-      labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, {
-        errorCorrectionLevel: "H",
-      });
-
-      // Create an ExecutionContext using credentials
-      const executionContext =
-        PDFServicesSdk.ExecutionContext.create(credentials);
-
-      // Create a new DocumentMerge options instance
-      const documentMerge = PDFServicesSdk.DocumentMerge,
-        documentMergeOptions = documentMerge.options,
-        options = new documentMergeOptions.DocumentMergeOptions(
-          labelData,
-          documentMergeOptions.OutputFormat.PDF
-        );
-
-      // Create a new operation instance using the options instance
-      const documentMergeOperation = documentMerge.Operation.createNew(options);
-
-      // Set operation input document template from a source file.
-      const input = PDFServicesSdk.FileRef.createFromLocalFile(
-        path.resolve(__dirname, "sources/WhOrderItemPackingLabel.docx")
-      );
-      documentMergeOperation.setInput(input);
-
-      // Execute the operation and Save the result to the specified location.
-      const result = await documentMergeOperation.execute(executionContext);
-      const stream = new Readable();
-      await _streamToData(stream, result);
-
-      const resultOutput = new Array();
-      resultOutput.push({
-        value: stream,
-      });
-      return resultOutput;
-
-      async function _streamToData(outStream, result) {
-        return new Promise((resolve) => {
-          const str = new PassThrough();
-          result.writeToStream(str);
-
-          str.on("data", (chunk) => {
-            outStream.push(chunk);
+              item.product((product) => {
+                product`.*`,
+                  product.category((cat) => {
+                    cat.name;
+                  });
+              });
+          }),
+          whItem.order((order) => {
+            order.title,
+              order.createdAt,
+              order.parentOrder((pOrder) => {
+                pOrder.processor_email,
+                  pOrder.title,
+                  pOrder.createdAt,
+                  pOrder.deliveryTo((dTo) => {
+                    dTo.name,
+                      dTo.address((address) => {
+                        address`.*`;
+                      });
+                  });
+              });
           });
-          str.on("end", () => {
-            outStream.push(null);
-            resolve(true);
-          });
-        });
       }
-    } catch (err) {
-      req.error({
-        code: 410,
-        message: "Something bad happened. Unable to load label.",
-      });
-    }
+    );
+
+    labelData.logo = await QRCode.toDataURL(`${req.data.ID}`, {
+      errorCorrectionLevel: "H",
+    });
+
+    return getPdfReportStream(labelData, PDF_TEMPLATE_PATHS.productLabel);
   });
 
   this.on("READ", WarehouseOrders, async (req, next) => {
@@ -601,136 +516,77 @@ module.exports = function (srv) {
       return next();
     }
 
-    try {
-      // Initial setup, create credentials instance.
-      const credentials =
-        PDFServicesSdk.Credentials.servicePrincipalCredentialsBuilder()
-          .withClientId(process.env.PDF_SERVICES_CLIENT_ID)
-          .withClientSecret(process.env.PDF_SERVICES_CLIENT_SECRET)
-          .build();
+    const reportData = await SELECT.one.from(
+      WarehouseOrders,
+      req.data.ID,
+      (whOrder) => {
+        whOrder`.*`,
+          whOrder.items((whItem) => {
+            whItem.qty,
+              whItem.item((item) => {
+                whItem.ID,
+                  item.warehouse((wh) => {
+                    wh.name,
+                      wh.address((whAddress) => {
+                        whAddress`.*`;
+                      });
+                  }),
+                  item.product((product) => {
+                    product`.*`,
+                      product.category((cat) => {
+                        cat.name;
+                      }),
+                      product.supplier((s) => {
+                        s.name;
+                      });
+                  });
+              }),
+              whItem.order((order) => {
+                order.title,
+                  order.createdAt,
+                  order.parentOrder((pOrder) => {
+                    pOrder.processor_email,
+                      pOrder.title,
+                      pOrder.createdAt,
+                      pOrder.deliveryTo((dTo) => {
+                        dTo.name,
+                          dTo.address((address) => {
+                            address`.*`;
+                          });
+                      });
+                  });
+              });
+          }),
+          whOrder.parentOrder((pOrder) => {
+            pOrder.processor_email,
+              pOrder.title,
+              pOrder.createdAt,
+              pOrder.deliveryTo((dTo) => {
+                dTo.name,
+                  dTo.address((address) => {
+                    address`.*`;
+                  });
+              });
+          }),
+          whOrder.warehouse((wh) => {
+            wh`.*`,
+              wh.address((whA) => {
+                whA`.*`;
+              });
+          });
+      }
+    );
 
-      const reportData = await SELECT.one.from(
-        WarehouseOrders,
-        req.data.ID,
-        (whOrder) => {
-          whOrder`.*`,
-            whOrder.items((whItem) => {
-              whItem.qty,
-                whItem.item((item) => {
-                  whItem.ID,
-                    item.warehouse((wh) => {
-                      wh.name,
-                        wh.address((whAddress) => {
-                          whAddress`.*`;
-                        });
-                    }),
-                    item.product((product) => {
-                      product`.*`,
-                        product.category((cat) => {
-                          cat.name;
-                        }),
-                        product.supplier((s) => {
-                          s.name;
-                        });
-                    });
-                }),
-                whItem.order((order) => {
-                  order.title,
-                    order.createdAt,
-                    order.parentOrder((pOrder) => {
-                      pOrder.processor_email,
-                        pOrder.title,
-                        pOrder.createdAt,
-                        pOrder.deliveryTo((dTo) => {
-                          dTo.name,
-                            dTo.address((address) => {
-                              address`.*`;
-                            });
-                        });
-                    });
-                });
-            }),
-            whOrder.parentOrder((pOrder) => {
-              pOrder.processor_email,
-                pOrder.title,
-                pOrder.createdAt,
-                pOrder.deliveryTo((dTo) => {
-                  dTo.name,
-                    dTo.address((address) => {
-                      address`.*`;
-                    });
-                });
-            }),
-            whOrder.warehouse((wh) => {
-              wh`.*`,
-                wh.address((whA) => {
-                  whA`.*`;
-                });
-            });
+    for (let i = 0; i < reportData.items.length; i++) {
+      reportData.items[i].logo = await QRCode.toDataURL(
+        `${reportData.items[i].ID}`,
+        {
+          errorCorrectionLevel: "H",
         }
       );
-
-      for (let i = 0; i < reportData.items.length; i++) {
-        reportData.items[i].logo = await QRCode.toDataURL(
-          `${reportData.items[i].ID}`,
-          {
-            errorCorrectionLevel: "H",
-          }
-        );
-      }
-
-      // Create an ExecutionContext using credentials
-      const executionContext =
-        PDFServicesSdk.ExecutionContext.create(credentials);
-
-      // Create a new DocumentMerge options instance
-      const documentMerge = PDFServicesSdk.DocumentMerge,
-        documentMergeOptions = documentMerge.options,
-        options = new documentMergeOptions.DocumentMergeOptions(
-          reportData,
-          documentMergeOptions.OutputFormat.PDF
-        );
-
-      // Create a new operation instance using the options instance
-      const documentMergeOperation = documentMerge.Operation.createNew(options);
-
-      // Set operation input document template from a source file.
-      const input = PDFServicesSdk.FileRef.createFromLocalFile(
-        path.resolve(__dirname, "sources/WhOrderReport.docx")
-      );
-      documentMergeOperation.setInput(input);
-
-      // Execute the operation and Save the result to the specified location.
-      const result = await documentMergeOperation.execute(executionContext);
-      const stream = new Readable();
-      await _streamToData(stream, result);
-
-      const resultOutput = new Array();
-      resultOutput.push({
-        value: stream,
-      });
-      return resultOutput;
-
-      async function _streamToData(outStream, result) {
-        return new Promise((resolve) => {
-          const str = new PassThrough();
-          result.writeToStream(str);
-
-          str.on("data", (chunk) => {
-            outStream.push(chunk);
-          });
-          str.on("end", () => {
-            outStream.push(null);
-            resolve(true);
-          });
-        });
-      }
-    } catch (err) {
-      req.error({
-        code: 410,
-        message: "Something bad happened. Unable to load label.",
-      });
     }
+
+    return getPdfReportStream(reportData, PDF_TEMPLATE_PATHS.whOrderReport);
   });
 
   this.before(["approveOrder", "rejectOrder"], async (req) => {
@@ -738,10 +594,7 @@ module.exports = function (srv) {
       const order = await SELECT.one.from(Orders, req.params[0].ID);
 
       if (order.processor_email !== req.user.id) {
-        req.error({
-          code: 410,
-          message: "Forbidden",
-        });
+        showError(req, ERROR_MESSAGES.actions.forbidden);
       }
     }
   });
@@ -779,55 +632,15 @@ module.exports = function (srv) {
     }
   });
 
-  this.after("READ", Orders, async (data, req) => {
+  this.after("READ", [Orders, Orders.drafts], async (data, req) => {
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
-      const STEPS_COUNT = 4;
-
-      data.forEach((item) => {
-        let currentStep;
-
-        switch (item.status.ID) {
-          case "WAITING_FOR_EDIT":
-            currentStep = 1;
-            break;
-          case "WAITING_FOR_APPROVE":
-            currentStep = 2;
-            break;
-          case "WAITING_FOR_DELIVERY":
-            currentStep = 3;
-            break;
-          default:
-            currentStep = 4;
-        }
-
-        item.progress = (currentStep / STEPS_COUNT) * 100;
-      });
+      setOrdersProgress(ORDER_STATUSES, data);
     }
   });
 
   this.after("READ", WarehouseOrders, async (data, req) => {
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
-      const STEPS_COUNT = 4;
-
-      data.forEach((item) => {
-        let currentStep;
-
-        switch (item.status.ID) {
-          case "PACKING":
-            currentStep = 1;
-            break;
-          case "PACKING_IN_PROGRESS":
-            currentStep = 2;
-            break;
-          case "DELIVERY_IN_PROGRESS":
-            currentStep = 3;
-            break;
-          default:
-            currentStep = 4;
-        }
-
-        item.progress = (currentStep / STEPS_COUNT) * 100;
-      });
+      setOrdersProgress(WH_ORDER_STATUSES, data);
     }
 
     if (data[0]?.ID && data[0]?.deliveryForecast?.ID) {
