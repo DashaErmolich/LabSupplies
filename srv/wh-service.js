@@ -142,6 +142,14 @@ module.exports = function (srv) {
           await UPDATE(DeliveryForecasts, { order_ID: order.ID }).with({
             actualDate: new Date().getTime(),
           });
+  
+          await sendNotifications(
+            WhOrderStatuses.Delivered,
+            order.title,
+            order.processor,
+            order.parentOrder.processor,
+            '',
+          );
         } catch (error) {
           showError(req)
         }
