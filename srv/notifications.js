@@ -2,43 +2,151 @@ const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
 const { sendMail } = require("@sap-cloud-sdk/mail-client");
 const { OrderStatuses, WhOrderStatuses } = require("./statuses");
 
-function getFlpNotification(orderStatusID, title, recipientEmail) {
-  let notificationTypeKey = "OrderReview";
-  let priority = "Medium";
+const ORDER_NOTIFICATIONS = [
+  {
+    id: OrderStatuses.EditWaiting,
+    flp: {
+      notificationTypeKey: "OrderEdit",
+      priority: "Medium",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `
+      <p>${contactFrom.fullName} (${
+          contactFrom.email
+        }) requested edit of <b>Order ${orderTitle}</b> by ${
+          contactTo.fullName
+        }.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      },
+      status: "Edit Request",
+      emoji: "✏️",
+    },
+  },
+  {
+    id: OrderStatuses.ApproveWaiting,
+    flp: {
+      notificationTypeKey: "OrderReview",
+      priority: "Medium",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `<p>${contactFrom.fullName} (${contactFrom.email}) requested approve for <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>`;
+      },
+      status: "Approve Request",
+      emoji: "☑️",
+    },
+  },
+  {
+    id: OrderStatuses.DeliveryWaiting,
+    flp: {
+      notificationTypeKey: "OrderPacking",
+      priority: "Medium",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `
+      <p>${contactFrom.fullName} (${
+          contactFrom.email
+        }) approved <b>Order ${orderTitle}</b> by ${
+          contactTo.fullName
+        } and redirected related orders to warehouses.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      },
+      status: "In Packing",
+      emoji: "📦",
+    },
+  },
+  {
+    id: OrderStatuses.Rejected,
+    flp: {
+      notificationTypeKey: "OrderReject",
+      priority: "Hight",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `<p>${contactFrom.fullName} (${
+          contactFrom.email
+        }) has rejected and closed <b>Order ${orderTitle}</b> created by ${
+          contactTo.fullName
+        }.</p>
+        <br>
+        <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      },
+      status: "Reject",
+      emoji: "❌",
+    },
+  },
+  {
+    id: OrderStatuses.Closed,
+    flp: {
+      notificationTypeKey: "OrderCompleted",
+      priority: "Low",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return ` <b>Order ${orderTitle}</b> is delivered.</p>`;
+      },
+      status: "Completed",
+      emoji: "✅",
+    },
+  },
+];
 
-  switch (orderStatusID) {
-    case OrderStatuses.ApproveWaiting:
-      notificationTypeKey = "OrderReview";
-      priority = "Medium";
-      break;
-    case OrderStatuses.Rejected:
-      notificationTypeKey = "OrderReject";
-      priority = "Hight";
-      break;
-    case OrderStatuses.EditWaiting:
-      notificationTypeKey = "OrderEdit";
-      priority = "Medium";
-      break;
-    case OrderStatuses.Closed:
-      notificationTypeKey = "OrderCompleted";
-      priority = "Low";
-      break;
-    case OrderStatuses.DeliveryWaiting:
-      notificationTypeKey = "OrderPacking";
-      priority = "Medium";
-      break;
-    case WhOrderStatuses.DeliveryInProgress:
-      notificationTypeKey = "OrderDelivery";
-      priority = "Medium";
-      break;
-  }
+const WH_ORDER_NOTIFICATIONS = [
+  {
+    id: WhOrderStatuses.DeliveryInProgress,
+    flp: {
+      notificationTypeKey: "OrderDelivery",
+      priority: "Medium",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `
+      <p>${contactFrom.fullName} (${
+          contactFrom.email
+        }) started delivery of <b>Order ${orderTitle}</b>.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      },
+      status: "In Delivery",
+      emoji: "🚚",
+    },
+  },
+  {
+    id: WhOrderStatuses.Delivered,
+    flp: {
+      notificationTypeKey: "OrderDelivered",
+      priority: "Low",
+    },
+    email: {
+      message: function (contactFrom, contactTo, reviewerNotes, orderTitle) {
+        return `
+      <p><b>Order ${orderTitle}</b> is delivered.</p>
+      <br>
+      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
+      },
+      status: "Delivered",
+      emoji: "✔️",
+    },
+  },
+];
+
+function getFlpNotification(orderStatusID, title, recipientEmail) {
+  let notificationData = [
+    ...ORDER_NOTIFICATIONS,
+    ...WH_ORDER_NOTIFICATIONS,
+  ].find((item) => item.id === orderStatusID).flp;
+
   return {
     OriginId: "LabSupplies",
-    NotificationTypeKey: notificationTypeKey,
+    NotificationTypeKey: notificationData.notificationTypeKey,
     NotificationTypeVersion: "2.2",
     NavigationTargetAction: "display",
     NavigationTargetObject: "masterDetail",
-    Priority: priority,
+    Priority: notificationData.priority,
     ProviderId: "",
     ActorId: "",
     ActorType: "",
@@ -68,68 +176,17 @@ function getEmailConfig(
   orderTitle,
   reviewerNotes
 ) {
-  let message = "";
-  let status = "";
-
-  switch (orderStatusID) {
-    case OrderStatuses.ApproveWaiting:
-      message = `<p>${contactFrom.fullName} (${contactFrom.email}) requested approve for <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>`;
-      status = "Approve Request";
-      break;
-    case OrderStatuses.Rejected:
-      message = `<p>${contactFrom.fullName} (${
-        contactFrom.email
-      }) has rejected and closed <b>Order ${orderTitle}</b> created by ${
-        contactTo.fullName
-      }.</p>
-      <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
-      status = "Reject";
-      break;
-    case OrderStatuses.EditWaiting:
-      message = `
-      <p>${contactFrom.fullName} (${
-        contactFrom.email
-      }) requested edit of <b>Order ${orderTitle}</b> by ${
-        contactTo.fullName
-      }.</p>
-      <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
-      status = "Edit Request";
-      break;
-    case OrderStatuses.Closed:
-      message = ` <b>Order ${orderTitle}</b> is delivered.</p>`;
-      status = "Completed";
-      break;
-    case OrderStatuses.DeliveryWaiting:
-      message = `
-      <p>${contactFrom.fullName} (${
-        contactFrom.email
-      }) approved <b>Order ${orderTitle}</b> by ${
-        contactTo.fullName
-      } and redirected related orders to warehouses.</p>
-      <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
-      status = "In Packing";
-      break;
-    case WhOrderStatuses.DeliveryInProgress:
-      message = `
-      <p>${contactFrom.fullName} (${
-        contactFrom.email
-      }) started delivery of <b>Order ${orderTitle}</b>.</p>
-      <br>
-      <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
-      status = "In Delivery";
-      break;
-  }
+  let emailData = [...ORDER_NOTIFICATIONS, ...WH_ORDER_NOTIFICATIONS].find(
+    (item) => item.id === orderStatusID
+  ).email;
 
   const mailConfig = {
     from: "labsupplies.notification@example.com",
     to: `${contactTo.email}`,
-    subject: `Order ${orderTitle} ${status}`,
+    subject: `${emailData.emoji} Order ${orderTitle} ${emailData.status}`,
     text: `
       <div>
-        ${message}
+        ${emailData.message(contactFrom, contactTo, reviewerNotes, orderTitle)}
       <p>This mail was send automatically by LabSupplies application, do not reply on it.</p>
     </div>
     `,

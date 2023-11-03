@@ -1,6 +1,10 @@
 const { ERROR_MESSAGES, showError } = require("./erorrs");
 const { sendNotifications } = require("./notifications");
-const { WhOrderItemStatuses, WhOrderStatuses, OrderStatuses } = require("./statuses");
+const {
+  WhOrderItemStatuses,
+  WhOrderStatuses,
+  OrderStatuses,
+} = require("./statuses");
 const { getRandomBoolean } = require("./utils");
 const scheduler = require("node-cron");
 
@@ -113,7 +117,9 @@ module.exports = function (srv) {
     const data = await SELECT.from(WarehouseOrders, (whOrder) => {
       whOrder`.*`, whOrder.processor((whOP) => whOP`.*`);
       whOrder.parentOrder((pO) => {
-        pO`.*`, pO.warehouseOrders((pOwhO) => pOwhO`.*`);
+        pO`.*`,
+          pO.processor((pOpr) => pOpr`.*`),
+          pO.warehouseOrders((pOwhO) => pOwhO`.*`);
       });
     }).where({
       status_ID: WhOrderStatuses.DeliveryInProgress,
@@ -128,13 +134,17 @@ module.exports = function (srv) {
       const isDelivered = getRandomBoolean(0.5);
 
       if (isDelivered) {
-        await UPDATE(WarehouseOrders, order.ID).with({
-          status_ID: WhOrderStatuses.Delivered,
-        });
-
-        await UPDATE(DeliveryForecasts, { order_ID: order.ID }).with({
-          actualDate: new Date().getTime(),
-        });
+        try {
+          await UPDATE(WarehouseOrders, order.ID).with({
+            status_ID: WhOrderStatuses.Delivered,
+          });
+  
+          await UPDATE(DeliveryForecasts, { order_ID: order.ID }).with({
+            actualDate: new Date().getTime(),
+          });
+        } catch (error) {
+          showError(req)
+        }
 
         parentOrdersID.push(order.parentOrder_ID);
         whOProcessors.push(order.processor_email);
@@ -161,7 +171,11 @@ module.exports = function (srv) {
         const whProcessor = data.find(
           (item) => item.processor_email === whOProcessors[i]
         )?.processor;
-        if (!pOrder.warehouseOrders.some((o) => o.status_ID !== WhOrderStatuses.Delivered)) {
+        if (
+          !pOrder.warehouseOrders.some(
+            (o) => o.status_ID !== WhOrderStatuses.Delivered
+          )
+        ) {
           try {
             await UPDATE(Orders, pOrder.ID).with({
               status_ID: OrderStatuses.Closed,
@@ -176,10 +190,10 @@ module.exports = function (srv) {
                 pOrder.reviewNotes
               );
             } catch (error) {
-              console.log(error);
+              showError(req)
             }
           } catch (error) {
-            console.log(error);
+            showError(req)
           }
         }
       }

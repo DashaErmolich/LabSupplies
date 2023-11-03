@@ -127,17 +127,4 @@ service AppService @(requires: 'authenticated-user') {
     entity Attachments         as projection on db.Attachments;
     entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
     entity DeliveryForecasts   as projection on db.DeliveryForecasts;
-
-    view OrdersCatalogue as
-        select from Orders as o
-        inner join WarehouseOrders as who
-            on o.ID = who.parentOrder.ID
-        {
-            o.ID       as orderID,
-            o.title    as orderTitle,
-            o.status   as orderStatus,
-            who.ID     as whOrderID,
-            who.title  as whOrderTitle,
-            who.status as whOrderStatus,
-        }
 }

@@ -32,7 +32,7 @@ Content-Type: application/json
 {}
 
 ### UPDATE ITEM COLLECT
-GET  {{server}}/wh/collectItem(id='5369c812-dd54-4ca2-bad8-8f2efac9eb2d',userEmail='ray.moyer.test@cvs.com')
+GET  {{server}}/wh/collectItem(id='d89e5733-a650-4b0b-9801-3e43dbb7d1ed',userEmail='everly.pack.test@meta.com')
 
 
 ### DELETE ORDER
