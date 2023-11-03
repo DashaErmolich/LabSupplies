@@ -15,7 +15,7 @@ target/
 
 # MTA
 *_mta_build_tmp
-*.mtar
+.mtar
 mta_archives/
 
 # Other
