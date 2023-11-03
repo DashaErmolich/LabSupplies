@@ -8,6 +8,7 @@ const {
   getContact,
   getRandomInt,
   getDeliveryStatistics,
+  setOrdersProgress,
 } = require("./utils");
 
 const QRCode = require("qrcode");
@@ -15,6 +16,7 @@ const QRCode = require("qrcode");
 const { ERROR_MESSAGES, showError } = require("./erorrs");
 const { PDF_TEMPLATE_PATHS, getPdfReportStream } = require("./pdf-report");
 const { sendNotifications } = require("./notifications");
+const { ORDER_STATUSES, WH_ORDER_STATUSES, OrderStatuses, WhOrderItemStatuses, WhOrderStatuses } = require("./statuses");
 
 module.exports = function (srv) {
   const {
@@ -30,7 +32,7 @@ module.exports = function (srv) {
 
   this.before("NEW", Orders.drafts, async (req) => {
     try {
-      setOrderStatus(req.data, "OPENED");
+      setOrderStatus(req.data, OrderStatuses.Opened);
       setOrderProcessor(req.data, req.user.id);
     } catch (error) {
       showError(req, error.message);
@@ -46,7 +48,7 @@ module.exports = function (srv) {
     if (!req.data.items.length) {
       showError(req, ERROR_MESSAGES.orders.emptyProductsList);
     } else {
-      setOrderStatus(req.data, "WAITING_FOR_APPROVE");
+      setOrderStatus(req.data,OrderStatuses.ApproveWaiting);
       const userContact = await getContact(Contacts, req.user.id);
       setOrderProcessor(req.data, userContact.manager_email);
     }
@@ -300,7 +302,7 @@ module.exports = function (srv) {
       showError(req, ERROR_MESSAGES.actions.rejectOrder);
     }
 
-    if (req.data.statusID === "REJECTED") {
+    if (req.data.statusID === OrderStatuses.Rejected) {
       for (let i = 0; i < order.items.length; i++) {
         const item = order.items[i];
         try {
@@ -326,7 +328,7 @@ module.exports = function (srv) {
         order.items((items) => items`.*`);
     });
 
-    if (order.status_ID === "WAITING_FOR_EDIT") {
+    if (order.status_ID === OrderStatuses.EditWaiting) {
       await UPDATE(Orders, orderID).with({
         processor_email: order.contact.email,
       });
@@ -370,7 +372,7 @@ module.exports = function (srv) {
         if (isReviewerRole) {
           order.isNotActionable = false;
           switch (orderStatusID) {
-            case "WAITING_FOR_APPROVE":
+            case OrderStatuses.ApproveWaiting:
               order.isNotApprovable = false;
               order.isNotRejectable = false;
               break;
@@ -380,8 +382,8 @@ module.exports = function (srv) {
           order.isNotRejectable = true;
 
           if (
-            orderStatusID === "WAITING_FOR_EDIT" ||
-            orderStatusID === "OPEN"
+            orderStatusID === OrderStatuses.EditWaiting ||
+            orderStatusID === OrderStatuses.Opened
           ) {
             order.isNotEditable = false;
           }
@@ -429,7 +431,7 @@ module.exports = function (srv) {
 
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
-        .map((item) => ({ ...item, status_ID: "WAITING_FOR_COLLECTION" }));
+        .map((item) => ({ ...item, status_ID: WhOrderItemStatuses.CollectingWaiting }));
       const whOrderTitle = `${order.title}/${await getOrderTitle(
         WarehouseOrders,
         `WHO-${wh.address.region_code}`
@@ -443,7 +445,7 @@ module.exports = function (srv) {
         title: whOrderTitle,
         items: whOrderItems,
         parentOrder_ID: orderID,
-        status_ID: "PACKING",
+        status_ID: WhOrderStatuses.PackingWaiting,
         processor_email: contacts.sort(
           (a, b) => a.orders.length - b.orders.length
         )[0].email,
@@ -592,7 +594,7 @@ module.exports = function (srv) {
       const order = await SELECT.one.from(Orders, req.params[0].ID);
 
       if (order.processor_email !== req.user.id) {
-        showError(req, ERROR_MESSAGES.actions.forbidden)
+        showError(req, ERROR_MESSAGES.actions.forbidden);
       }
     }
   });
@@ -630,55 +632,15 @@ module.exports = function (srv) {
     }
   });
 
-  this.after("READ", Orders, async (data, req) => {
+  this.after("READ", [Orders, Orders.drafts], async (data, req) => {
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
-      const STEPS_COUNT = 4;
-
-      data.forEach((item) => {
-        let currentStep;
-
-        switch (item.status.ID) {
-          case "WAITING_FOR_EDIT":
-            currentStep = 1;
-            break;
-          case "WAITING_FOR_APPROVE":
-            currentStep = 2;
-            break;
-          case "WAITING_FOR_DELIVERY":
-            currentStep = 3;
-            break;
-          default:
-            currentStep = 4;
-        }
-
-        item.progress = (currentStep / STEPS_COUNT) * 100;
-      });
+      setOrdersProgress(ORDER_STATUSES, data);
     }
   });
 
   this.after("READ", WarehouseOrders, async (data, req) => {
     if (data[0]?.progress !== undefined && data[0]?.status?.ID !== undefined) {
-      const STEPS_COUNT = 4;
-
-      data.forEach((item) => {
-        let currentStep;
-
-        switch (item.status.ID) {
-          case "PACKING":
-            currentStep = 1;
-            break;
-          case "PACKING_IN_PROGRESS":
-            currentStep = 2;
-            break;
-          case "DELIVERY_IN_PROGRESS":
-            currentStep = 3;
-            break;
-          default:
-            currentStep = 4;
-        }
-
-        item.progress = (currentStep / STEPS_COUNT) * 100;
-      });
+      setOrdersProgress(WH_ORDER_STATUSES, data);
     }
 
     if (data[0]?.ID && data[0]?.deliveryForecast?.ID) {

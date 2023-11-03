@@ -71,7 +71,17 @@ function getDeliveryStatistics(created, predicted, actual) {
   };
 }
 
+function setOrdersProgress(statuses, ordersData) {
+  const stepsCount = Math.max(...statuses.map((item) => item.step));
+
+  ordersData.forEach((item) => {
+    let currentStep = statuses.find((v) => v.id === item.status.ID).step;
+    item.progress = (currentStep / stepsCount) * 100;
+  });
+}
+
 module.exports = {
+  setOrdersProgress,
   getDeliveryStatistics,
   getDays,
   getRandomBoolean,

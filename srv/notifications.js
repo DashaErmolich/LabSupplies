@@ -1,32 +1,33 @@
 const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
 const { sendMail } = require("@sap-cloud-sdk/mail-client");
+const { OrderStatuses, WhOrderStatuses } = require("./statuses");
 
 function getFlpNotification(orderStatusID, title, recipientEmail) {
   let notificationTypeKey = "OrderReview";
   let priority = "Medium";
 
   switch (orderStatusID) {
-    case "WAITING_FOR_APPROVE":
+    case OrderStatuses.ApproveWaiting:
       notificationTypeKey = "OrderReview";
       priority = "Medium";
       break;
-    case "REJECTED":
+    case OrderStatuses.Rejected:
       notificationTypeKey = "OrderReject";
       priority = "Hight";
       break;
-    case "WAITING_FOR_EDIT":
+    case OrderStatuses.EditWaiting:
       notificationTypeKey = "OrderEdit";
       priority = "Medium";
       break;
-    case "CLOSED":
+    case OrderStatuses.Closed:
       notificationTypeKey = "OrderCompleted";
       priority = "Low";
       break;
-    case "WAITING_FOR_DELIVERY":
+    case OrderStatuses.DeliveryWaiting:
       notificationTypeKey = "OrderPacking";
       priority = "Medium";
       break;
-    case "DELIVERY_IN_PROGRESS":
+    case WhOrderStatuses.DeliveryInProgress:
       notificationTypeKey = "OrderDelivery";
       priority = "Medium";
       break;
@@ -34,7 +35,7 @@ function getFlpNotification(orderStatusID, title, recipientEmail) {
   return {
     OriginId: "LabSupplies",
     NotificationTypeKey: notificationTypeKey,
-    NotificationTypeVersion: "2.1",
+    NotificationTypeVersion: "2.2",
     NavigationTargetAction: "display",
     NavigationTargetObject: "masterDetail",
     Priority: priority,
@@ -71,11 +72,11 @@ function getEmailConfig(
   let status = "";
 
   switch (orderStatusID) {
-    case "WAITING_FOR_APPROVE":
+    case OrderStatuses.ApproveWaiting:
       message = `<p>${contactFrom.fullName} (${contactFrom.email}) requested approve for <b>Order ${orderTitle}</b> by ${contactTo.fullName}.</p>`;
       status = "Approve Request";
       break;
-    case "REJECTED":
+    case OrderStatuses.Rejected:
       message = `<p>${contactFrom.fullName} (${
         contactFrom.email
       }) has rejected and closed <b>Order ${orderTitle}</b> created by ${
@@ -85,7 +86,7 @@ function getEmailConfig(
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
       status = "Reject";
       break;
-    case "WAITING_FOR_EDIT":
+    case OrderStatuses.EditWaiting:
       message = `
       <p>${contactFrom.fullName} (${
         contactFrom.email
@@ -96,11 +97,11 @@ function getEmailConfig(
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
       status = "Edit Request";
       break;
-    case "CLOSED":
+    case OrderStatuses.Closed:
       message = ` <b>Order ${orderTitle}</b> is delivered.</p>`;
       status = "Completed";
       break;
-    case "WAITING_FOR_DELIVERY":
+    case OrderStatuses.DeliveryWaiting:
       message = `
       <p>${contactFrom.fullName} (${
         contactFrom.email
@@ -111,7 +112,7 @@ function getEmailConfig(
       <p>Notes by ${contactFrom.fullName}: ${reviewerNotes || "none"}.</p>`;
       status = "In Packing";
       break;
-    case "DELIVERY_IN_PROGRESS":
+    case WhOrderStatuses.DeliveryInProgress:
       message = `
       <p>${contactFrom.fullName} (${
         contactFrom.email
