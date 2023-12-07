@@ -1,6 +1,6 @@
 const PDFServicesSdk = require("@adobe/pdfservices-node-sdk");
 const { Readable, PassThrough } = require("stream");
-path = require("path");
+const path = require("path");
 
 const PDF_TEMPLATE_PATHS = {
   whOrderReport: "sources/WhOrderReport.docx",

@@ -16,9 +16,26 @@ const QRCode = require("qrcode");
 const { ERROR_MESSAGES, showError } = require("./erorrs");
 const { PDF_TEMPLATE_PATHS, getPdfReportStream } = require("./pdf-report");
 const { sendNotifications } = require("./notifications");
-const { ORDER_STATUSES, WH_ORDER_STATUSES, OrderStatuses, WhOrderItemStatuses, WhOrderStatuses } = require("./statuses");
+const {
+  ORDER_STATUSES,
+  WH_ORDER_STATUSES,
+  OrderStatuses,
+  WhOrderItemStatuses,
+  WhOrderStatuses,
+} = require("./statuses");
 
 module.exports = function (srv) {
+  // const {
+  //   Orders,
+  //   OrderItems,
+  //   WarehouseProducts,
+  //   Contacts,
+  //   Warehouses,
+  //   WarehouseOrders,
+  //   WarehouseOrderItems,
+  //   DeliveryForecasts,
+  // } = srv.entities;
+
   const {
     Orders,
     OrderItems,
@@ -28,7 +45,7 @@ module.exports = function (srv) {
     WarehouseOrders,
     WarehouseOrderItems,
     DeliveryForecasts,
-  } = srv.entities;
+  } = require("../@cds-models/AppService");
 
   this.before("NEW", Orders.drafts, async (req) => {
     try {
@@ -48,7 +65,7 @@ module.exports = function (srv) {
     if (!req.data.items.length) {
       showError(req, ERROR_MESSAGES.orders.emptyProductsList);
     } else {
-      setOrderStatus(req.data,OrderStatuses.ApproveWaiting);
+      setOrderStatus(req.data, OrderStatuses.ApproveWaiting);
       const userContact = await getContact(Contacts, req.user.id);
       setOrderProcessor(req.data, userContact.manager_email);
     }
@@ -431,7 +448,10 @@ module.exports = function (srv) {
 
       const whOrderItems = order.items
         .filter((item) => item.item_warehouse_ID === whIDs[i])
-        .map((item) => ({ ...item, status_ID: WhOrderItemStatuses.CollectingWaiting }));
+        .map((item) => ({
+          ...item,
+          status_ID: WhOrderItemStatuses.CollectingWaiting,
+        }));
       const whOrderTitle = `${order.title}/${await getOrderTitle(
         WarehouseOrders,
         `WHO-${wh.address.region_code}`
