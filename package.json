@@ -7,7 +7,6 @@
     "private": true,
     "dependencies": {
         "@adobe/pdfservices-node-sdk": "^3.4.2",
-        "@cap-js/cds-typer": "^0.13.0",
         "@sap-cloud-sdk/core": "^1.54.2",
         "@sap-cloud-sdk/mail-client": "^3.7.0",
         "@sap/cds": "^7",
@@ -20,18 +19,16 @@
         "qrcode": "^1.5.3"
     },
     "devDependencies": {
+        "@cap-js/cds-typer": "^0",
         "@cap-js/sqlite": "^1",
         "@sap/approuter": "^14.3.2",
         "@sap/cds-dk": "^7",
         "@sap/ux-specification": "^1.108.16",
-        "cds2types": "^3.0.0",
-        "rimraf": "^3.0.2",
-        "typescript": "^5.3.2",
-        "@cap-js/cds-typer": "^0"
+        "rimraf": "^3.0.2"
     },
     "scripts": {
         "start": "cds-serve",
-        "watch:hybrid": "cds-ts watch --profile hybrid",
+        "watch:hybrid": "cds watch --profile hybrid",
         "hana-deploy:hybrid-undeploy": "cds deploy --to hana --profile hybrid --auto-undeploy",
         "hana-deploy:hybrid-undeploy:clean": "npm run clean:gen && npm run hana-deploy:hybrid-undeploy",
         "hana-deploy:hybrid": "cds deploy --to hana --profile hybrid",
