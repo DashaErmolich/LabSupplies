@@ -1,57 +1,64 @@
 {
-    "name": "LabSupplies",
-    "version": "1.0.0",
-    "description": "A simple CAP project.",
-    "repository": "<Add your repository here>",
-    "license": "UNLICENSED",
-    "private": true,
-    "dependencies": {
-        "@adobe/pdfservices-node-sdk": "^3.4.2",
-        "@sap-cloud-sdk/core": "^1.54.2",
-        "@sap-cloud-sdk/mail-client": "^3.7.0",
-        "@sap/cds": "^7",
-        "@sap/cds-hana": "^2",
-        "@sap/xssec": "^3",
-        "cors": "^2.8.5",
-        "express": "^4",
-        "node-cron": "^3.0.2",
-        "passport": "^0",
-        "qrcode": "^1.5.3"
-    },
-    "devDependencies": {
-        "@cap-js/sqlite": "^1",
-        "@sap/approuter": "^14.3.2",
-        "@sap/cds-dk": "^7",
-        "@sap/ux-specification": "^1.108.16",
-        "rimraf": "^3.0.2"
-    },
-    "scripts": {
-        "start": "cds-serve",
-        "watch:hybrid": "cds watch --profile hybrid",
-        "hana-deploy:hybrid-undeploy": "cds deploy --to hana --profile hybrid --auto-undeploy",
-        "hana-deploy:hybrid-undeploy:clean": "npm run clean:gen && npm run hana-deploy:hybrid-undeploy",
-        "hana-deploy:hybrid": "cds deploy --to hana --profile hybrid",
-        "clean": "npx rimraf mta_archives resources",
-        "clean:gen": "npx rimraf gen",
-        "build": "rimraf resources mta_archives && mbt build --mtar archive",
-        "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
-        "undeploy": "cf undeploy LabSupplies --delete-services --delete-service-keys --delete-service-brokers",
-        "watch-orders": "cds watch --open orders/webapp/index.html?sap-ui-xx-viewCache=false",
-        "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false",
-        "watch-project1": "cds watch --open project1/webapp/index.html?sap-ui-xx-viewCache=false"
-    },
-    "cds": {
-        "requires": {
-            "[hybrid]": {
-                "db": "hana",
-                "auth": "xsuaa"
-            },
-            "auth": "xsuaa"
-        }
-    },
-    "sapux": [
-        "app/orders",
-        "app/test",
-        "app/project1"
-    ]
+  "name": "labsupplies",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@adobe/pdfservices-node-sdk": "^4.1.0",
+    "@sap-cloud-sdk/connectivity": "^4.3.1",
+    "@sap/cds": "^9.6.4",
+    "@sap/xssec": "^4.12.2",
+    "@cap-js/hana": "^2.5.1",
+    "cors": "^2.8.5",
+    "express": "^4",
+    "node-cron": "^4.2.1",
+    "passport": "^0.7.0",
+    "qrcode": "^1.5.4",
+    "nodemailer": "^7.0.12"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.1.2",
+    "@sap/approuter": "^20.8.8",
+    "@sap/cds-dk": "^9.6.1",
+    "@sap/ux-specification": "^1.142.0",
+    "rimraf": "^6.1.2",
+    "mbt": "^1.2.34",
+    "cds-plugin-ui5": "^0.13.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "dev": "cds watch --profile hybrid",
+    "hana": "cds deploy --to hana --profile hybrid --auto-undeploy",
+    "hana-deploy:hybrid-undeploy:clean": "npm run clean:gen && npm run hana-deploy:hybrid-undeploy",
+    "hana-deploy:hybrid": "cds deploy --to hana --profile hybrid",
+    "clean": "npx rimraf mta_archives resources",
+    "clean:gen": "npx rimraf gen",
+    "build": "npx rimraf resources mta_archives && npx mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "undeploy": "cf undeploy LabSupplies --delete-services --delete-service-keys --delete-service-brokers",
+    "watch-orders": "cds watch --open orders/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "watch-test": "cds watch --open test/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-project1": "cds watch --open project1/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "cds": {
+    "requires": {
+      "[hybrid]": {
+        "db": "hana",
+        "auth": "xsuaa"
+      },
+      "auth": "xsuaa"
+    }
+  },
+  "sapux": [
+    "app/orders",
+    "app/test",
+    "app/project1",
+    "app/project1",
+    "app/project1"
+  ],
+  "workspaces": [
+    "app/*"
+  ]
 }
