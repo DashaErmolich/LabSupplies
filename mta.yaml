@@ -1,16 +1,25 @@
 _schema-version: "3.1"
-ID: LabSupplies
+ID: labsupplies
 description: A simple CAP project.
 version: 1.0.0
+parameters:
+  enable-parallel-deployments: true
+  deploy_mode: html5-repo
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+      - npm ci
+      - npx cds build --production
 modules:
-- name: LabSupplies-srv
+- name: labsupplies-srv
   type: nodejs
   path: gen/srv
   requires:
-  - name: LabSupplies-db
-  - name: uaa_LabSupplies
-  - name: LabSupplies-destination-service
-  - name: jobscheduler-srv
+  - name: labsupplies-db
+  - name: labsupplies-auth
+  - name: labsupplies-destination
+  - name: labsupplies-jobscheduler
   provides:
   - name: srv-api
     properties:
@@ -19,48 +28,48 @@ modules:
     buildpack: nodejs_buildpack
   build-parameters:
     builder: npm
-- name: LabSupplies-db-deployer
+- name: labsupplies-db-deployer
   type: hdb
   path: gen/db
   requires:
-  - name: LabSupplies-db
+  - name: labsupplies-db
   parameters:
     buildpack: nodejs_buildpack
-- name: LabSupplies-destination-content
+- name: labsupplies-destination-content
   type: com.sap.application.content
   requires:
-  - name: LabSupplies-destination-service
+  - name: labsupplies-destination
     parameters:
       content-target: true
-  - name: LabSupplies_html_repo_host
+  - name: labsupplies-html-repo-host
     parameters:
       service-key:
-        name: LabSupplies_html_repo_host-key
-  - name: uaa_LabSupplies
+        name: labsupplies-html-repo-host-key
+  - name: labsupplies-auth
     parameters:
       service-key:
-        name: uaa_LabSupplies-key
+        name: labsupplies-auth-key
   parameters:
     content:
       instance:
         destinations:
-        - Name: laborders_LabSupplies_html_repo_host
-          ServiceInstanceName: LabSupplies-html5-app-host-service
-          ServiceKeyName: LabSupplies_html_repo_host-key
+        - Name: labsupplies-html-repo-host
+          ServiceInstanceName: labsupplies-html5-app-host-service
+          ServiceKeyName: labsupplies-html-repo-host-key
           sap.cloud.service: laborders
         - Authentication: OAuth2UserTokenExchange
-          Name: laborders_uaa_LabSupplies
-          ServiceInstanceName: LabSupplies-xsuaa-service
-          ServiceKeyName: uaa_LabSupplies-key
+          Name: labsupplies-auth
+          ServiceInstanceName: labsupplies-auth
+          ServiceKeyName: labsupplies-auth-key
           sap.cloud.service: laborders
         existing_destinations_policy: update
   build-parameters:
     no-source: true
-- name: LabSupplies-app-content
+- name: labsupplies-app-content
   type: com.sap.application.content
   path: .
   requires:
-  - name: LabSupplies_html_repo_host
+  - name: labsupplies-html-repo-host
     parameters:
       content-target: true
   build-parameters:
@@ -77,16 +86,16 @@ modules:
     build-result: dist
     builder: custom
     commands:
-    - npm install
+    - npm ci
     - npm run build:cf
     supported-platforms: []
 resources:
-- name: LabSupplies-db
+- name: labsupplies-db
   type: com.sap.xs.hdi-container
   parameters:
     service: hana
     service-plan: hdi-shared
-- name: LabSupplies-destination-service
+- name: labsupplies-destination
   type: org.cloudfoundry.managed-service
   parameters:
     config:
@@ -102,44 +111,35 @@ resources:
           - Authentication: NoAuthentication
             HTML5.DynamicDestination: true
             HTML5.ForwardAuthToken: true
-            Name: LabSupplies-srv-api
+            Name: labsupplies-srv-api
             ProxyType: Internet
             Type: HTTP
             URL: ~{srv-api/srv-url}
           existing_destinations_policy: update
       version: 1.0.0
     service: destination
-    service-name: LabSupplies-destination-service
+    service-name: labsupplies-destination
     service-plan: lite
   requires:
   - name: srv-api
-- name: LabSupplies_html_repo_host
+- name: labsupplies-html-repo-host
   type: org.cloudfoundry.managed-service
   parameters:
     service: html5-apps-repo
-    service-name: LabSupplies-html5-app-host-service
+    service-name: labsupplies-html5-app-host-service
     service-plan: app-host
-- name: uaa_LabSupplies
+- name: labsupplies-auth
   type: org.cloudfoundry.managed-service
   parameters:
     path: ./xs-security.json
     service: xsuaa
-    service-name: LabSupplies-xsuaa-service
+    service-name: labsupplies-auth
     service-plan: application
-- name: jobscheduler-srv
+- name: labsupplies-jobscheduler
   type: org.cloudfoundry.managed-service
   parameters:
     service: jobscheduler
     service-plan: lite
-    service-name: jobscheduler-srv
+    service-name: labsupplies-jobscheduler
     config:
       enable-xsuaa-support: true
-parameters:
-  deploy_mode: html5-repo
-  enable-parallel-deployments: true
-build-parameters:
-  before-all:
-  - builder: custom
-    commands:
-    - npm install --production
-    - npx -p @sap/cds-dk cds build --production
