@@ -28,6 +28,7 @@ module.exports = function (srv) {
     WarehouseOrders,
     WarehouseOrderItems,
     DeliveryForecasts,
+    Configuration
   } = srv.entities;
 
   this.before("NEW", Orders.drafts, async (req) => {
@@ -353,12 +354,6 @@ module.exports = function (srv) {
     if (req.data.ID) {
       const order = data.find((order) => order.ID === req.data.ID);
 
-      if (
-        order.isNotApprovable !== undefined ||
-        order.isNotRejectable !== undefined ||
-        order.isNotEditable !== undefined ||
-        order.isNotActionable !== undefined
-      ) {
         let isReviewerRole = req.user.is("Reviewer");
         let orderStatusID = order.status_ID;
 
@@ -388,7 +383,7 @@ module.exports = function (srv) {
             order.isNotEditable = false;
           }
         }
-      }
+      
 
       const whOrder = await SELECT.one.from(WarehouseOrders, {
         parentOrder_ID: req.data.ID,
@@ -454,7 +449,7 @@ module.exports = function (srv) {
 
       const deliveryForecast = {
         order_ID: whOrderGUID,
-        predictedDate: getRandomInt(7, 25) * 60000 + Date.now(),
+        predictedDate: new Date(getRandomInt(7, 25) * 60000 + Date.now()).toISOString(),
       };
 
       await INSERT.into(WarehouseOrders, whOrder);
@@ -664,4 +659,10 @@ module.exports = function (srv) {
       data[0].deliveryForecast.isCritical = deliveryStatistics.isCritical;
     }
   });
+
+  this.on('READ', Configuration, async (req) => {
+    req.reply({
+       isAdmin: req.user.is('Admin'),
+    });
+   });
 };

@@ -5,7 +5,7 @@ using db from '../db/schema';
 service WarehouseService {
   entity Contacts            as projection on db.Contacts;
   entity Departments         as projection on db.Departments;
-  entity Orders              as projection on db.Orders
+  entity Orders              as projection on db.Orders;
 
   @readonly
   entity Products            as projection on db.Products;

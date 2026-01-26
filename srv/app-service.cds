@@ -5,9 +5,13 @@ service AppService @(requires: 'authenticated-user') {
     entity Contacts            as projection on db.Contacts;
     entity Departments         as projection on db.Departments;
 
-    @odata.draft.enabled
+            @odata.draft.enabled
     entity Orders @(restrict: [
         {grant: 'READ'},
+        {
+            grant: 'WRITE',
+            to   : 'Admin',
+        },
         {
             grant: 'WRITE',
             to   : ['Manager'],
@@ -18,44 +22,47 @@ service AppService @(requires: 'authenticated-user') {
                 'approveOrder',
                 'rejectOrder'
             ],
-            to   : 'Reviewer',
+            to   : [
+                'Reviewer'
+            ],
         },
-    ])                         as projection on db.Orders actions {
+    ])                         as projection on db.Orders
+        actions {
 
-        @(
-            cds.odata.bindingparameter.name: '_it',
-            Common.SideEffects             : {TargetEntities: ['_it']},
-        )
-        action approveOrder();
+            @(
+                cds.odata.bindingparameter.name: '_it',
+                Common.SideEffects             : {TargetEntities: ['_it']},
+            )
+            action approveOrder();
 
-        @(
-            cds.odata.bindingparameter.name: '_it',
-            Common.SideEffects             : {TargetEntities: ['_it']}
-        )
-        action rejectOrder(
-                           @(Common:{
-                               Text                    : status.name,
-                               TextArrangement         : #TextOnly,
-                               ValueListWithFixedValues: true,
-                               Label                   : '{i18n>orderStatus}',
-                               ValueListMapping        : {
-                                   Parameters    : [
-                                       {
-                                           $Type            : 'Common.ValueListParameterDisplayOnly',
-                                           ValueListProperty: 'name',
-                                       },
-                                       {
-                                           $Type            : 'Common.ValueListParameterOut',
-                                           ValueListProperty: 'ID',
-                                           LocalDataProperty: statusID,
-                                       },
-                                   ],
-                                   CollectionPath: 'RejectStatuses',
-                               }
-                           })
-                           statusID : String @mandatory,
-                           notes : String  @UI.MultiLineText  @title:'{i18n>notes}'  );
-    }
+            @(
+                cds.odata.bindingparameter.name: '_it',
+                Common.SideEffects             : {TargetEntities: ['_it']}
+            )
+            action rejectOrder(
+                               @(Common: {
+                                   Text                    : status.name,
+                                   TextArrangement         : #TextOnly,
+                                   ValueListWithFixedValues: true,
+                                   Label                   : '{i18n>orderStatus}',
+                                   ValueListMapping        : {
+                                       Parameters    : [
+                                           {
+                                               $Type            : 'Common.ValueListParameterDisplayOnly',
+                                               ValueListProperty: 'name',
+                                           },
+                                           {
+                                               $Type            : 'Common.ValueListParameterOut',
+                                               ValueListProperty: 'ID',
+                                               LocalDataProperty: statusID,
+                                           },
+                                       ],
+                                       CollectionPath: 'RejectStatuses',
+                                   }
+                               })
+                               statusID: String @mandatory,
+                               notes: String  @UI.MultiLineText  @title: '{i18n>notes}'  );
+        }
 
     @readonly
     entity Products            as projection on db.Products;
@@ -85,17 +92,17 @@ service AppService @(requires: 'authenticated-user') {
         inner join Products as p
             on wp.product.ID = p.ID
         {
-            p.ID                                     as productID,
-            p.title                                  as title,
-            p.description                            as description,
-            p.supplierCatNo                          as supplierCatNo,
-            p.supplier.name                          as supplier,
-            p.category                               as category,
-            wp.stock                                 as stock,
-            wp.warehouse.ID                          as warehouseID,
-            wp.warehouse.name                        as name,
-            wp.warehouse.address.region.country.code as warehouseCountryCode,
-            wp.warehouse.address.region.code         as warehouseRegionCode,
+            key p.ID                                     as productID,
+                p.title                                  as title,
+                p.description                            as description,
+                p.supplierCatNo                          as supplierCatNo,
+                p.supplier.name                          as supplier,
+                p.category                               as category,
+                wp.stock                                 as stock,
+                wp.warehouse.ID                          as warehouseID,
+                wp.warehouse.name                        as name,
+                wp.warehouse.address.region.country.code as warehouseCountryCode,
+                wp.warehouse.address.region.code         as warehouseRegionCode,
         }
         where
             wp.stock <> 0;
@@ -113,12 +120,12 @@ service AppService @(requires: 'authenticated-user') {
         inner join Addresses as a
             on d.address.ID = a.ID
         {
-            d.ID                  as departmentID,
-            d.name                as name,
-            a.region.code         as regionCode,
-            a.region.name         as regionName,
-            a.region.country.code as countryCode,
-            a.region.country.name as countryName,
+            key d.ID                  as departmentID,
+                d.name                as name,
+                a.region.code         as regionCode,
+                a.region.name         as regionName,
+                a.region.country.code as countryCode,
+                a.region.country.name as countryName,
         }
         where
             d.name <> 'Supplies';
@@ -127,4 +134,10 @@ service AppService @(requires: 'authenticated-user') {
     entity Attachments         as projection on db.Attachments;
     entity WarehouseOrderItems as projection on db.WarehouseOrderItems;
     entity DeliveryForecasts   as projection on db.DeliveryForecasts;
+
+    @odata.singleton  @cds.persistency.skip
+    entity Configuration {
+        key ID      : String;
+            isAdmin : Boolean;
+    }
 }
