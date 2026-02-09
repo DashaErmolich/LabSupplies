@@ -1,5 +1,5 @@
-const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/core");
-const { sendMail } = require("@sap-cloud-sdk/mail-client");
+const { executeHttpRequest, buildCsrfHeaders } = require("@sap-cloud-sdk/connectivity");
+const { sendMail } = require('./mail-client');
 const { OrderStatuses, WhOrderStatuses } = require("./statuses");
 
 const ORDER_NOTIFICATIONS = [

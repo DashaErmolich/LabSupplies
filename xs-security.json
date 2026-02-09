@@ -10,6 +10,10 @@
     {
       "name": "$XSAPPNAME.Reviewer",
       "description": "Reviewer"
+    },
+    {
+      "name": "$XSAPPNAME.Admin",
+      "description": "Admin"
     }
   ],
   "attributes": [],
@@ -17,24 +21,41 @@
     {
       "name": "Manager",
       "description": "generated",
-      "scope-references": [
-        "$XSAPPNAME.Manager"
-      ],
+      "scope-references": ["$XSAPPNAME.Manager"],
       "attribute-references": []
     },
     {
       "name": "Reviewer",
       "description": "generated",
-      "scope-references": [
-        "$XSAPPNAME.Reviewer"
-      ],
+      "scope-references": ["$XSAPPNAME.Reviewer"],
       "attribute-references": []
+    },
+    {
+      "name": "Admin",
+      "description": "generated",
+      "scope-references": ["$XSAPPNAME.Admin"],
+      "attribute-references": []
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "RC_Admin",
+      "description": "Admin",
+      "role-template-references": ["$XSAPPNAME.Admin", "$XSAPPNAME.Reviewer"]
+    },
+    {
+      "name": "RC_Reviewer",
+      "description": "Reviewer",
+      "role-template-references": ["$XSAPPNAME.Reviewer"]
+    },
+    {
+      "name": "RC_Manager",
+      "description": "Manager",
+      "role-template-references": ["$XSAPPNAME.Manager"]
     }
   ],
   "authorities-inheritance": false,
   "oauth2-configuration": {
-    "redirect-uris": [
-      "https://*.cfapps.us10-001.hana.ondemand.com/**"
-    ]
+    "redirect-uris": ["https://*.cfapps.us10-001.hana.ondemand.com/**"]
   }
 }

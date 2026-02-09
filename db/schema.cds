@@ -130,7 +130,7 @@ aspect Contact {
     key email : User;
     firstName : String;
     lastName  : String;
-    fullName  : String;
+    fullName  : String = (firstName || ' ' || lastName) stored;
     title     : String;
     tel       : String;
     photoUrl  : String;

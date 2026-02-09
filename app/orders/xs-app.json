@@ -5,7 +5,7 @@
     {
       "source": "^/app/(.*)$",
       "target": "/app/$1",
-      "destination": "LabSupplies-srv-api",
+      "destination": "labsupplies-srv-api",
       "csrfProtection": true,
       "authenticationType": "xsuaa",
       "cacheControl": "no-cache, no-store, must-revalidate"
@@ -13,12 +13,6 @@
     {
       "source": "^/resources/(.*)$",
       "target": "/resources/$1",
-      "authenticationType": "none",
-      "destination": "ui5"
-    },
-    {
-      "source": "^/test-resources/(.*)$",
-      "target": "/test-resources/$1",
       "authenticationType": "none",
       "destination": "ui5"
     },

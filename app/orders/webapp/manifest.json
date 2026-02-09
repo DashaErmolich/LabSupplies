@@ -1,305 +1,308 @@
 {
-    "_version": "1.49.0",
-    "sap.app": {
-        "id": "orders",
-        "type": "application",
-        "i18n": "i18n/i18n.properties",
-        "applicationVersion": {
-            "version": "0.0.1"
-        },
-        "title": "LabSupplies",
-        "description": "Suppliers managers application",
-        "resources": "resources.json",
-        "sourceTemplate": {
-            "id": "@sap/generator-fiori:lrop",
-            "version": "1.11.1",
-            "toolsId": "e80165ce-1058-4f23-8c86-52a5c477dd0d"
-        },
-        "dataSources": {
-            "mainService": {
-                "uri": "/app/",
-                "type": "OData",
-                "settings": {
-                    "annotations": [],
-                    "localUri": "localService/metadata.xml",
-                    "odataVersion": "4.0"
-                }
-            }
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "laborder-manage": {
-                    "semanticObject": "laborder",
-                    "action": "manage",
-                    "title": "LabSupplies",
-                    "subTitle": "LabSupplies",
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    }
-                }
-            }
+  "_version": "1.81.0",
+  "sap.app": {
+    "id": "orders",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "LabSupplies",
+    "description": "Suppliers managers application",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.20.1",
+      "toolsId": "e3b9f175-0d76-4919-9ad6-cf26d15cbb37"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/app/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/metadata.xml",
+          "odataVersion": "4.0"
         }
+      }
     },
-    "sap.ui": {
-        "technology": "UI5",
-        "icons": {
-            "icon": "",
-            "favIcon": "",
-            "phone": "",
-            "phone@2": "",
-            "tablet": "",
-            "tablet@2": ""
-        },
-        "deviceTypes": {
-            "desktop": true,
-            "tablet": true,
-            "phone": true
+    "crossNavigation": {
+      "inbounds": {
+        "laborder-manage": {
+          "semanticObject": "laborder",
+          "action": "manage",
+          "title": "LabSupplies",
+          "subTitle": "LabSupplies",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
         }
-    },
-    "sap.ui5": {
-        "flexEnabled": true,
-        "dependencies": {
-            "minUI5Version": "1.119.0",
-            "libs": {
-                "sap.m": {},
-                "sap.ui.core": {},
-                "sap.ushell": {},
-                "sap.fe.templates": {}
-            }
-        },
-        "contentDensities": {
-            "compact": true,
-            "cozy": true
-        },
-        "models": {
-            "i18n": {
-                "type": "sap.ui.model.resource.ResourceModel",
-                "settings": {
-                    "bundleName": "orders.i18n.i18n"
-                }
-            },
-            "": {
-                "dataSource": "mainService",
-                "preload": true,
-                "settings": {
-                    "synchronizationMode": "None",
-                    "operationMode": "Server",
-                    "autoExpandSelect": true,
-                    "earlyRequests": true
-                }
-            },
-            "@i18n": {
-                "type": "sap.ui.model.resource.ResourceModel",
-                "uri": "i18n/i18n.properties"
-            }
-        },
-        "resources": {
-            "css": []
-        },
-        "routing": {
-            "routes": [
-                {
-                    "pattern": ":?query:",
-                    "name": "OrdersList",
-                    "target": "OrdersList"
-                },
-                {
-                    "pattern": "Orders({key}):?query:",
-                    "name": "OrdersObjectPage",
-                    "target": "OrdersObjectPage"
-                },
-                {
-                    "pattern": "Orders({key})/warehouseOrders({key2}):?query:",
-                    "name": "Orders_warehouseOrdersObjectPage",
-                    "target": "Orders_warehouseOrdersObjectPage"
-                }
-            ],
-            "targets": {
-                "OrdersList": {
-                    "type": "Component",
-                    "id": "OrdersList",
-                    "name": "sap.fe.templates.ListReport",
-                    "options": {
-                        "settings": {
-                            "entitySet": "Orders",
-                            "variantManagement": "Page",
-                            "navigation": {
-                                "Orders": {
-                                    "detail": {
-                                        "route": "OrdersObjectPage"
-                                    }
-                                }
-                            },
-                            "initialLoad": "Enabled",
-                            "views": {
-                                "paths": [
-                                    {
-                                        "key": "tab0",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#all"
-                                    },
-                                    {
-                                        "key": "tab1",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingApprove"
-                                    },
-                                    {
-                                        "key": "tab2",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingEdit"
-                                    },
-                                    {
-                                        "key": "tab3",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
-                                    },
-                                    {
-                                        "key": "tab4",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
-                                    },
-                                    {
-                                        "key": "tab5",
-                                        "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#completed"
-                                    }
-                                ],
-                                "showCounts": true
-                            }
-                        }
-                    }
-                },
-                "OrdersObjectPage": {
-                    "type": "Component",
-                    "id": "OrdersObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "editableHeaderContent": false,
-                            "entitySet": "Orders",
-                            "navigation": {
-                                "warehouseOrders": {
-                                    "detail": {
-                                        "route": "Orders_warehouseOrdersObjectPage"
-                                    }
-                                }
-                            },
-                            "controlConfiguration": {
-                                "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
-                                    "tableSettings": {
-                                        "creationMode": {}
-                                    },
-                                    "columns": {
-                                        "DataField::ID": {
-                                            "availability": "Hidden"
-                                        }
-                                    }
-                                },
-                                "attachments/@com.sap.vocabularies.UI.v1.LineItem#Attachments": {
-                                    "tableSettings": {
-                                        "creationMode": {
-                                            "createAtEnd": true
-                                        }
-                                    }
-                                }
-                            },
-                            "content": {
-                                "header": {
-                                    "anchorBarVisible": true,
-                                    "actions": {
-                                        "approveOrder": {
-                                            "visible" : "{= ${isNotActionable} === false }",
-                                            "text": "Approve",
-                                            "enabled": "{= ${isNotApprovable} === false }",
-                                            "press": ".extension.orders.OPExtend.onApprovePress",
-                                            "position": {
-												"placement": "Before",
-												"anchor": "DataFieldForAction::AppService.rejectOrder"
-											}
-                                        },
-                                        "DataFieldForAction::AppService.rejectOrder": {
-                                            "afterExecution": {
-                                                "navigateToInstance": true
-                                            },
-                                            "enabled": "{= ${isNotRejectable} === false }"
-                                        }
-                                    }
-                                },
-                                "body": {
-                                    "sections": {
-                                        "myCustomSection": {
-                                            "template": "orders.custom.fragment.WarehouseOrdersSection",
-                                            "title": "Related Orders",
-                                            "visible": "{= ${isRelatedOrdersVisible} === true }",
-                                            "position": {
-                                                "placement": "Before",
-                                                "anchor": "Items"
-                                            },
-                                            "type": "XMLFragment"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                "Orders_warehouseOrdersObjectPage": {
-                    "type": "Component",
-                    "id": "Orders_warehouseOrdersObjectPage",
-                    "name": "sap.fe.templates.ObjectPage",
-                    "options": {
-                        "settings": {
-                            "contextPath": "/Orders/warehouseOrders",
-                            "navigation": {},
-                            "controlConfiguration": {
-                                "items/@com.sap.vocabularies.UI.v1.LineItem#WhOrderItems": {
-                                    "columns": {
-                                        "WarehouseProductLabel": {
-                                            "header": "Label",
-                                            "position": {
-                                                "anchor": "DataField::status::name",
-                                                "placement": "After"
-                                            },
-                                            "template": "orders.ext.fragment.WarehouseProductLabel"
-                                        }
-                                    }
-                                }
-                            },
-                            "content": {
-                                "header": {
-                                    "facets": {
-                                        "WarehouseReportButton": {
-                                            "template": "orders.ext.fragment.WarehouseReportButton",
-                                            "position": {
-                                                "placement": "After",
-                                                "anchor": "residualPercentage"
-                                            },
-                                            "title": "Report",
-                                            "stashed": false,
-                                            "requestGroupId": "Heroes",
-                                            "flexSettings": {
-                                                "designtime": "Default"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "extends": {
-            "extensions": {
-                "sap.ui.controllerExtensions": {
-                    "sap.fe.templates.ObjectPage.ObjectPageController": {
-                        "controllerName": "orders.OPExtend"
-                    }
-                }
-            }
-        }
-    },
-    "sap.fiori": {
-        "registrationIds": [],
-        "archeType": "transactional"
-    },
-    "sap.cloud": {
-        "public": true,
-        "service": "laborders"
+      }
     }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.144.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "orders.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "OrdersList",
+          "target": "OrdersList"
+        },
+        {
+          "pattern": "Orders({key}):?query:",
+          "name": "OrdersObjectPage",
+          "target": "OrdersObjectPage"
+        },
+        {
+          "pattern": "Orders({key})/warehouseOrders({key2}):?query:",
+          "name": "Orders_warehouseOrdersObjectPage",
+          "target": "Orders_warehouseOrdersObjectPage"
+        }
+      ],
+      "targets": {
+        "OrdersList": {
+          "type": "Component",
+          "id": "OrdersList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "entitySet": "Orders",
+              "variantManagement": "Page",
+              "navigation": {
+                "Orders": {
+                  "detail": {
+                    "route": "OrdersObjectPage"
+                  }
+                }
+              },
+              "initialLoad": "Enabled",
+              "views": {
+                "paths": [
+                  {
+                    "key": "tab0",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#all"
+                  },
+                  {
+                    "key": "tab1",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingApprove"
+                  },
+                  {
+                    "key": "tab2",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingEdit"
+                  },
+                  {
+                    "key": "tab3",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#waitingDelivery"
+                  },
+                  {
+                    "key": "tab4",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#rejected"
+                  },
+                  {
+                    "key": "tab5",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionVariant#completed"
+                  }
+                ],
+                "showCounts": true
+              }
+            }
+          }
+        },
+        "OrdersObjectPage": {
+          "type": "Component",
+          "id": "OrdersObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "entitySet": "Orders",
+              "navigation": {
+                "warehouseOrders": {
+                  "detail": {
+                    "route": "Orders_warehouseOrdersObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "items/@com.sap.vocabularies.UI.v1.LineItem#Items": {
+                  "tableSettings": {
+                    "creationMode": {}
+                  },
+                  "columns": {
+                    "DataField::ID": {
+                      "availability": "Hidden"
+                    }
+                  }
+                },
+                "attachments/@com.sap.vocabularies.UI.v1.LineItem#Attachments": {
+                  "tableSettings": {
+                    "creationMode": {}
+                  }
+                }
+              },
+              "content": {
+                "header": {
+                  "anchorBarVisible": true,
+                  "actions": {
+                    "approveOrder": {
+                      "visible": "{= ${isNotActionable} === false }",
+                      "text": "Approve",
+                      "enabled": "{= ${isNotApprovable} === false }",
+                      "press": ".extension.orders.OPExtend.onApprovePress",
+                      "position": {
+                        "placement": "Before",
+                        "anchor": "DataFieldForAction::AppService.rejectOrder"
+                      }
+                    },
+                    "DataFieldForAction::AppService.rejectOrder": {
+                      "afterExecution": {
+                        "navigateToInstance": true
+                      },
+                      "enabled": "{= ${isNotRejectable} === false }"
+                    }
+                  }
+                },
+                "body": {
+                  "sections": {
+                    "myCustomSection": {
+                      "template": "orders.custom.fragment.WarehouseOrdersSection",
+                      "title": "Related Orders",
+                      "visible": "{= ${isRelatedOrdersVisible} === true }",
+                      "position": {
+                        "placement": "Before",
+                        "anchor": "Items"
+                      },
+                      "type": "XMLFragment"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Orders_warehouseOrdersObjectPage": {
+          "type": "Component",
+          "id": "Orders_warehouseOrdersObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "contextPath": "/Orders/warehouseOrders",
+              "navigation": {},
+              "controlConfiguration": {
+                "items/@com.sap.vocabularies.UI.v1.LineItem#WhOrderItems": {
+                  "columns": {
+                    "WarehouseProductLabel": {
+                      "header": "Label",
+                      "position": {
+                        "anchor": "DataField::status::name",
+                        "placement": "After"
+                      },
+                      "template": "orders.ext.fragment.WarehouseProductLabel"
+                    }
+                  }
+                }
+              },
+              "content": {
+                "header": {
+                  "facets": {
+                    "WarehouseReportButton": {
+                      "template": "orders.ext.fragment.WarehouseReportButton",
+                      "position": {
+                        "placement": "After",
+                        "anchor": "residualPercentage"
+                      },
+                      "title": "Report",
+                      "stashed": false,
+                      "requestGroupId": "Heroes",
+                      "flexSettings": {
+                        "designtime": "Default"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "config": {}
+    },
+    "extends": {
+      "extensions": {
+        "sap.ui.controllerExtensions": {
+          "sap.fe.templates.ObjectPage.ObjectPageController": {
+            "controllerName": "orders.OPExtend"
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "laborders"
+  },
+  "sap.fe": {
+    "app": {
+      "enableLazyLoading": true
+    }
+  }
 }
